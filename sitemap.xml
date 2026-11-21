@@ -45,11 +45,19 @@
          <lastmod>2026-11-21</lastmod>
     </url>
     <url>
+         <loc>https://piashcse.github.io/ktor-E-Commerce/config/</loc>
+         <lastmod>2026-11-21</lastmod>
+    </url>
+    <url>
          <loc>https://piashcse.github.io/ktor-E-Commerce/coupon/</loc>
          <lastmod>2026-11-21</lastmod>
     </url>
     <url>
          <loc>https://piashcse.github.io/ktor-E-Commerce/dashboard/</loc>
+         <lastmod>2026-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://piashcse.github.io/ktor-E-Commerce/errors/</loc>
          <lastmod>2026-11-21</lastmod>
     </url>
     <url>
@@ -62,6 +70,10 @@
     </url>
     <url>
          <loc>https://piashcse.github.io/ktor-E-Commerce/fx/</loc>
+         <lastmod>2026-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://piashcse.github.io/ktor-E-Commerce/health/</loc>
          <lastmod>2026-11-21</lastmod>
     </url>
     <url>

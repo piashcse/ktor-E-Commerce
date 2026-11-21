@@ -6,14 +6,14 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.">
+        <meta name="description" content="High-performance e-commerce backend solution built with Kotlin and Ktor.">
       
       
       
         <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/seller-kyc/">
       
       
-        <link rel="prev" href="../notification/">
+        <link rel="prev" href="../support/">
       
       
         <link rel="next" href="../seller-tools/">
@@ -90,12 +90,14 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="Ktor-E-Commerce" class="md-header__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.06 3c-.43 0-.84.14-1.22.42s-.6.64-.7 1.08L2.11 8.91c-.25 1.09-.05 2.04.61 2.86l.28.28V19c0 .5.2 1 .61 1.39S4.5 21 5 21h14c.5 0 1-.2 1.39-.61S21 19.5 21 19v-6.95l.28-.28c.66-.82.86-1.77.61-2.86L20.86 4.5c-.13-.44-.36-.8-.73-1.08A1.88 1.88 0 0 0 18.94 3zm13.83 1.97 1.08 4.41c.09.43 0 .82-.28 1.17-.25.31-.56.45-.94.45-.31 0-.58-.1-.8-.34-.22-.23-.34-.5-.37-.82L16.97 5zM5.06 5h1.97l-.61 4.84C6.3 10.63 5.91 11 5.25 11c-.41 0-.72-.14-.94-.45-.28-.35-.37-.74-.28-1.17zm3.99 0H11v4.7c0 .35-.11.65-.36.92-.25.26-.56.38-.94.38-.34 0-.63-.12-.86-.41S8.5 10 8.5 9.66V9.5zM13 5h1.95l.55 4.5c.08.42 0 .77-.29 1.07-.26.3-.6.43-1.01.43-.31 0-.59-.12-.84-.38A1.3 1.3 0 0 1 13 9.7zm-5.55 7.05c.63.62 1.41.95 2.35.95.84 0 1.58-.33 2.2-.95.69.62 1.45.95 2.3.95.87 0 1.62-.33 2.25-.95.56.62 1.31.95 2.25.95h.23v6H5v-6h.25c.91 0 1.64-.33 2.2-.95"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -135,20 +137,20 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
       </label>
     
   
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
     
       <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
       </label>
     
   
@@ -179,11 +181,18 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -205,7 +214,7 @@
         <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -215,14 +224,8 @@
     
   </nav>
   
-</header>
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
-            
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
@@ -232,17 +235,118 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  Overview
+
+        </a>
+      </li>
+    
+  
+
+      
         
   
   
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../auth/" class="md-tabs__link">
+          
+  
+  
+  Identity & Access
+
+        </a>
+      </li>
     
   
-  Home
 
-      </a>
-    </li>
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../shop-category/" class="md-tabs__link">
+          
+  
+  
+  Store & Catalog
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../wishlist/" class="md-tabs__link">
+          
+  
+  
+  Cart & Checkout
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../order/" class="md-tabs__link">
+          
+  
+  
+  Orders & Logistics
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../refund-request/" class="md-tabs__link">
+          
+  
+  
+  Returns & Support
+
+        </a>
+      </li>
+    
   
 
       
@@ -256,11 +360,11 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../auth/" class="md-tabs__link">
+        <a href="./" class="md-tabs__link">
           
   
   
-  API Reference
+  Seller Portal
 
         </a>
       </li>
@@ -273,24 +377,31 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
-        
-  
-  
     
+    
+      <li class="md-tabs__item">
+        <a href="../dashboard/" class="md-tabs__link">
+          
   
-  Changelog
+  
+  Platform & Operations
 
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
     </ul>
   </div>
 </nav>
-          
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -312,7 +423,7 @@
     <a href=".." title="Ktor-E-Commerce" class="md-nav__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.06 3c-.43 0-.84.14-1.22.42s-.6.64-.7 1.08L2.11 8.91c-.25 1.09-.05 2.04.61 2.86l.28.28V19c0 .5.2 1 .61 1.39S4.5 21 5 21h14c.5 0 1-.2 1.39-.61S21 19.5 21 19v-6.95l.28-.28c.66-.82.86-1.77.61-2.86L20.86 4.5c-.13-.44-.36-.8-.73-1.08A1.88 1.88 0 0 0 18.94 3zm13.83 1.97 1.08 4.41c.09.43 0 .82-.28 1.17-.25.31-.56.45-.94.45-.31 0-.58-.1-.8-.34-.22-.23-.34-.5-.37-.82L16.97 5zM5.06 5h1.97l-.61 4.84C6.3 10.63 5.91 11 5.25 11c-.41 0-.72-.14-.94-.45-.28-.35-.37-.74-.28-1.17zm3.99 0H11v4.7c0 .35-.11.65-.36.92-.25.26-.56.38-.94.38-.34 0-.63-.12-.86-.41S8.5 10 8.5 9.66V9.5zM13 5h1.95l.55 4.5c.08.42 0 .77-.29 1.07-.26.3-.6.43-1.01.43-.31 0-.59-.12-.84-.38A1.3 1.3 0 0 1 13 9.7zm-5.55 7.05c.63.62 1.41.95 2.35.95.84 0 1.58-.33 2.2-.95.69.62 1.45.95 2.3.95.87 0 1.62-.33 2.25-.95.56.62 1.31.95 2.25.95h.23v6H5v-6h.25c.91 0 1.64-.33 2.2-.95"/></svg>
 
     </a>
     Ktor-E-Commerce
@@ -322,7 +433,7 @@
       <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -338,13 +449,58 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Overview
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Home
+    Overview
     
   </span>
   
@@ -353,39 +509,138 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Storefront Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../health/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Health Checks & Monitoring
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Error Handling & Status Codes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
   
   
-    
   
   
-  
     
     
     
     
+      
       
         
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
-    API Reference
+    Identity & Access
     
   </span>
   
@@ -393,10 +648,10 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            API Reference
+            Identity & Access
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -412,7 +667,7 @@
   
   
   <span class="md-ellipsis">
-    Auth
+    Authentication
     
   </span>
   
@@ -476,6 +731,81 @@
   
   
     <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Store & Catalog
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Store & Catalog
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../shop-category/" class="md-nav__link">
         
   
@@ -504,7 +834,7 @@
   
   
   <span class="md-ellipsis">
-    Shop
+    Shop Management
     
   </span>
   
@@ -550,7 +880,7 @@
   
   
   <span class="md-ellipsis">
-    Brand
+    Brands
     
   </span>
   
@@ -619,7 +949,7 @@
   
   
   <span class="md-ellipsis">
-    Product
+    Products
     
   </span>
   
@@ -688,7 +1018,7 @@
   
   
   <span class="md-ellipsis">
-    Review Rating
+    Reviews & Ratings
     
   </span>
   
@@ -698,6 +1028,58 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Cart & Checkout
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Cart & Checkout
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -711,7 +1093,7 @@
   
   
   <span class="md-ellipsis">
-    WishList
+    Wishlist
     
   </span>
   
@@ -775,12 +1157,110 @@
   
   
     <li class="md-nav__item">
+      <a href="../coupon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coupons & Discounts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX & Currencies
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Orders & Logistics
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Orders & Logistics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Order
+    Orders
     
   </span>
   
@@ -803,30 +1283,7 @@
   
   
   <span class="md-ellipsis">
-    Payment
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../coupon/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Coupon
+    Payments
     
   </span>
   
@@ -872,7 +1329,7 @@
   
   
   <span class="md-ellipsis">
-    Shipping Method
+    Shipping Methods
     
   </span>
   
@@ -895,7 +1352,7 @@
   
   
   <span class="md-ellipsis">
-    Shipments
+    Shipments & Tracking
     
   </span>
   
@@ -918,7 +1375,7 @@
   
   
   <span class="md-ellipsis">
-    Inventory
+    Inventory Control
     
   </span>
   
@@ -952,6 +1409,58 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Returns & Support
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Returns & Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
               
                 
   
@@ -964,7 +1473,7 @@
   
   
   <span class="md-ellipsis">
-    Refund Request
+    Refund Requests
     
   </span>
   
@@ -987,7 +1496,7 @@
   
   
   <span class="md-ellipsis">
-    RMA / Returns
+    RMA / Returns & Exchanges
     
   </span>
   
@@ -1005,12 +1514,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../notification/" class="md-nav__link">
+      <a href="../support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Notifications
+    Support Tickets
     
   </span>
   
@@ -1020,6 +1529,61 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Seller Portal
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Seller Portal
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -1091,6 +1655,15 @@
   <a href="#1-submit-kyc" class="md-nav__link">
     <span class="md-ellipsis">
       1. Submit KYC
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-verify-reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Verify / reject
     </span>
   </a>
   
@@ -1372,6 +1945,58 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Platform & Operations
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Platform & Operations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
               
                 
   
@@ -1379,12 +2004,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../tax/" class="md-nav__link">
+      <a href="../dashboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Tax Rules
+    Dashboard
     
   </span>
   
@@ -1402,12 +2027,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../fraud/" class="md-nav__link">
+      <a href="../analytics/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Fraud & Chargebacks
+    Analytics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Audit Log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
     
   </span>
   
@@ -1431,29 +2102,6 @@
   
   <span class="md-ellipsis">
     Loyalty & Wallet
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../localization/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Localization
     
   </span>
   
@@ -1545,7 +2193,7 @@
   
   
   <span class="md-ellipsis">
-    CMS, SEO & Sitemap
+    CMS & Sitemap
     
   </span>
   
@@ -1563,58 +2211,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../support/" class="md-nav__link">
+      <a href="../localization/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Support Tickets
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fx/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    FX Rates
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api-keys/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    API Keys
+    Localization
     
   </span>
   
@@ -1678,12 +2280,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../privacy-policy/" class="md-nav__link">
+      <a href="../tax/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Privacy Policy
+    Tax Rules
     
   </span>
   
@@ -1701,12 +2303,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../privacy-retention/" class="md-nav__link">
+      <a href="../fraud/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Data Retention
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
     
   </span>
   
@@ -1747,58 +2372,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../dashboard/" class="md-nav__link">
+      <a href="../privacy-retention/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Dashboard
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../analytics/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Analytics
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../audit-log/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Audit Log
+    Data Retention
     
   </span>
   
@@ -1812,28 +2391,6 @@
           </ul>
         </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Changelog
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1878,6 +2435,15 @@
   <a href="#1-submit-kyc" class="md-nav__link">
     <span class="md-ellipsis">
       1. Submit KYC
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-verify-reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Verify / reject
     </span>
   </a>
   
@@ -2137,61 +2703,61 @@
 </thead>
 <tbody>
 <tr>
-<td><code>GET</code></td>
+<td><span class="method-badge get">GET</span></td>
 <td><code>/api/v1/seller/kyc</code></td>
 <td>Current KYC state</td>
 <td>Yes (Seller)</td>
 </tr>
 <tr>
-<td><code>POST</code></td>
+<td><span class="method-badge post">POST</span></td>
 <td><code>/api/v1/seller/kyc</code></td>
 <td>Submit business/bank details and optional document URL</td>
 <td>Yes (Seller)</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
+<td><span class="method-badge get">GET</span></td>
 <td><code>/api/v1/admin/sellers?status=PENDING</code></td>
 <td>Admin KYC queue (optional status filter)</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
-<td><code>PUT</code></td>
+<td><span class="method-badge put">PUT</span></td>
 <td><code>/api/v1/admin/sellers/{sellerId}/verify</code></td>
 <td>Verify KYC</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
-<td><code>PUT</code></td>
+<td><span class="method-badge put">PUT</span></td>
 <td><code>/api/v1/admin/sellers/{sellerId}/reject</code></td>
 <td>Reject KYC with a reason</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
-<td><code>POST</code></td>
+<td><span class="method-badge post">POST</span></td>
 <td><code>/api/v1/admin/sellers/bulk/reject</code></td>
 <td>Admin: bulk reject KYC</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td><code>POST</code></td>
+<td><span class="method-badge post">POST</span></td>
 <td><code>/api/v1/admin/sellers/bulk/verify</code></td>
 <td>Admin: bulk verify KYC</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
+<td><span class="method-badge get">GET</span></td>
 <td><code>/api/v1/admin/sellers/export</code></td>
 <td>Admin: export KYC submissions CSV</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
+<td><span class="method-badge get">GET</span></td>
 <td><code>/api/v1/admin/sellers/{sellerId}/history</code></td>
 <td>Admin: KYC decision history</td>
 <td>Yes</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
+<td><span class="method-badge get">GET</span></td>
 <td><code>/api/v1/seller/kyc/history</code></td>
 <td>Get my KYC submission history</td>
 <td>Yes</td>
@@ -2200,226 +2766,262 @@
 </table>
 <p>States: <code>NOT_SUBMITTED → PENDING → VERIFIED</code> or <code>PENDING → REJECTED</code>.</p>
 <h3 id="1-submit-kyc">1. Submit KYC</h3>
-<p><strong><code>POST /api/v1/seller/kyc</code></strong>
-{
-  "businessName": "ACME Ltd",
-  "businessRegistrationNumber": "REG-12345",
-  "taxId": "TAX-9988",
-  "bankAccountNumber": "0123456789",
-  "bankName": "Example Bank",
-  "bankRoutingNumber": "110000",
-  "documentUrl": "/uploads/kyc/acme.pdf"
-}</p>
-<pre><code>
-All fields are optional; submitting sets the status to `PENDING`. A `documentUrl` must point to an
-already-uploaded document.
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/kyc</span>
+</div>
 
-### 2. Verify / reject
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"businessName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACME Ltd"</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"businessRegistrationNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"REG-12345"</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">"taxId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"TAX-9988"</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">"bankAccountNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0123456789"</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">"bankName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Example Bank"</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">"bankRoutingNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"110000"</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">"documentUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/uploads/kyc/acme.pdf"</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>All fields are optional; submitting sets the status to <code>PENDING</code>. A <code>documentUrl</code> must point to an
+already-uploaded document.</p>
+<h3 id="2-verify-reject">2. Verify / reject</h3>
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/verify</span>
+</div>
 
-**`PUT /api/v1/admin/sellers/{sellerId}/verify`**
-
-```json
-{
-  &quot;reason&quot;: &quot;Business registration expired&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Business registration expired"</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>Marks the seller <code>REJECTED</code> and stores <code>rejectionReason</code>, which is returned by
 <code>GET /api/v1/seller/kyc</code>.</p>
-<pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/sellers/seller-1/reject' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{&quot;reason&quot;:&quot;Business registration expired&quot;}'
-</code></pre>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'PUT'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/seller-1/reject'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"reason":"Business registration expired"}'</span>
+</span></code></pre></div>
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="3-get-my-kyc-status">3. Get my KYC status</h3>
-<p><strong><code>GET /api/v1/seller/kyc</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/kyc' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;seller_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/kyc</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/seller/kyc'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;seller_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response">Response</h4>
-<pre><code class="language-json">{
-  &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;email&quot;: &quot;jane@example.com&quot;,
-  &quot;businessName&quot;: &quot;string&quot;,
-  &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
-  &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;bankName&quot;: &quot;string&quot;,
-  &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
-  &quot;documentUrl&quot;: &quot;string&quot;,
-  &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
-  &quot;shopStatus&quot;: &quot;ACTIVE&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"sellerId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane@example.com"</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">"businessName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">"businessRegistrationNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">"taxId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">"bankName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">"kycStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NOT_SUBMITTED"</span><span class="p">,</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">"documentUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nt">"submittedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nt">"verifiedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">  </span><span class="nt">"rejectionReason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Policy violation"</span><span class="p">,</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="nt">"shopStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="4-admin-list-kyc-submissions">4. Admin: list KYC submissions</h3>
-<p><strong><code>GET /api/v1/admin/sellers</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/sellers?page=1&amp;perPage=20&amp;status=PENDING' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers?page=1&amp;perPage=20&amp;status=PENDING'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_1">Response</h4>
-<pre><code class="language-json">{
-  &quot;data&quot;: [
-    {
-      &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;email&quot;: &quot;jane@example.com&quot;,
-      &quot;businessName&quot;: &quot;string&quot;,
-      &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
-      &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;bankName&quot;: &quot;string&quot;,
-      &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
-      &quot;documentUrl&quot;: &quot;string&quot;,
-      &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
-      &quot;shopStatus&quot;: &quot;ACTIVE&quot;
-    }
-  ],
-  &quot;metadata&quot;: {
-    &quot;totalCount&quot;: 1,
-    &quot;limit&quot;: 20,
-    &quot;offset&quot;: 0,
-    &quot;page&quot;: 1,
-    &quot;perPage&quot;: 20,
-    &quot;totalPages&quot;: 1,
-    &quot;hasNext&quot;: false,
-    &quot;hasPrev&quot;: false
-  }
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">"sellerId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">      </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane@example.com"</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">      </span><span class="nt">"businessName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span><span class="nt">"businessRegistrationNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">      </span><span class="nt">"taxId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">"bankName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span><span class="nt">"kycStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NOT_SUBMITTED"</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">      </span><span class="nt">"documentUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">      </span><span class="nt">"submittedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">      </span><span class="nt">"verifiedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">      </span><span class="nt">"rejectionReason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Policy violation"</span><span class="p">,</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">      </span><span class="nt">"shopStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">    </span><span class="nt">"totalCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">    </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">    </span><span class="nt">"offset"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">    </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">    </span><span class="nt">"perPage"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="nt">"totalPages"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">    </span><span class="nt">"hasNext"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">    </span><span class="nt">"hasPrev"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="5-admin-bulk-reject-kyc">5. Admin: bulk reject KYC</h3>
-<p><strong><code>POST /api/v1/admin/sellers/bulk/reject</code></strong></p>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/sellers/bulk/reject' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;ids&quot;: [
-    &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
-  ],
-  &quot;reason&quot;: &quot;Policy violation&quot;
-}'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/bulk/reject</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/bulk/reject'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="s1">  "ids": [</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="s1">    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="s1">  ],</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="s1">  "reason": "Policy violation"</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_2">Response</h4>
-<pre><code class="language-json">{
-  &quot;requested&quot;: 1,
-  &quot;succeeded&quot;: 1,
-  &quot;failed&quot;: []
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">"requested"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">"succeeded"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">"failed"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="6-admin-bulk-verify-kyc">6. Admin: bulk verify KYC</h3>
-<p><strong><code>POST /api/v1/admin/sellers/bulk/verify</code></strong></p>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/sellers/bulk/verify' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;ids&quot;: [
-    &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
-  ],
-  &quot;reason&quot;: &quot;Policy violation&quot;
-}'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/bulk/verify</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/bulk/verify'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="s1">  "ids": [</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="s1">    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="s1">  ],</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="s1">  "reason": "Policy violation"</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_3">Response</h4>
-<pre><code class="language-json">{
-  &quot;requested&quot;: 1,
-  &quot;succeeded&quot;: 1,
-  &quot;failed&quot;: []
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">"requested"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">"succeeded"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">"failed"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="7-admin-export-kyc-submissions-csv">7. Admin: export KYC submissions CSV</h3>
-<p><strong><code>GET /api/v1/admin/sellers/export</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/sellers/export?status=PENDING' \
-  -H 'accept: text/csv' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/export</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/export?status=PENDING'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: text/csv'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_4">Response</h4>
-<pre><code class="language-csv">id,status,amount,currency,createdAt
-example-id,PAID,250.00,USD,2024-05-06T12:00:00
-</code></pre>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>id,status,amount,currency,createdAt
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>example-id,PAID,250.00,USD,2024-05-06T12:00:00
+</span></code></pre></div>
 <hr />
 <h3 id="8-admin-kyc-decision-history">8. Admin: KYC decision history</h3>
-<p><strong><code>GET /api/v1/admin/sellers/{sellerId}/history</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/history' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/history</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/history'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_5">Response</h4>
-<pre><code class="language-json">[
-  {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;reason&quot;: &quot;Policy violation&quot;,
-    &quot;actorId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-  }
-]
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">[</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Policy violation"</span><span class="p">,</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span><span class="nt">"actorId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="p">]</span>
+</span></code></pre></div>
 <hr />
 <h3 id="9-get-my-kyc-submission-history">9. Get my KYC submission history</h3>
-<p><strong><code>GET /api/v1/seller/kyc/history</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/kyc/history' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;seller_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/kyc/history</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/seller/kyc/history'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;seller_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_6">Response</h4>
-<pre><code class="language-json">[
-  {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;reason&quot;: &quot;Policy violation&quot;,
-    &quot;actorId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-  }
-]
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">[</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="p">{</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Policy violation"</span><span class="p">,</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="nt">"actorId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="p">]</span>
+</span></code></pre></div>
 <hr />
 <h3 id="10-admin-reject-kyc">10. Admin: reject KYC</h3>
-<p><strong><code>PUT /api/v1/admin/sellers/{sellerId}/reject</code></strong></p>
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/reject</span>
+</div>
+
 <p>Admin: reject KYC</p>
 <h4 id="request">Request</h4>
-<pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;reason&quot;: &quot;Policy violation&quot;
-}'
-</code></pre>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'PUT'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="s1">  "reason": "Policy violation"</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_7">Response</h4>
-<pre><code class="language-json">{
-  &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;email&quot;: &quot;jane@example.com&quot;,
-  &quot;businessName&quot;: &quot;string&quot;,
-  &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
-  &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;bankName&quot;: &quot;string&quot;,
-  &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
-  &quot;documentUrl&quot;: &quot;string&quot;,
-  &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
-  &quot;shopStatus&quot;: &quot;ACTIVE&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">{</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">"sellerId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane@example.com"</span><span class="p">,</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span><span class="nt">"businessName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">  </span><span class="nt">"businessRegistrationNumber"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">  </span><span class="nt">"taxId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">  </span><span class="nt">"bankName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">  </span><span class="nt">"kycStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NOT_SUBMITTED"</span><span class="p">,</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">  </span><span class="nt">"documentUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">  </span><span class="nt">"submittedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">  </span><span class="nt">"verifiedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="w">  </span><span class="nt">"rejectionReason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Policy violation"</span><span class="p">,</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="w">  </span><span class="nt">"shopStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 
 
@@ -2438,8 +3040,16 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
@@ -2466,10 +3076,12 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.tracking", "navigation.instant", "navigation.instant.progress", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>

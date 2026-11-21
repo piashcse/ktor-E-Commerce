@@ -6,17 +6,17 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.">
+        <meta name="description" content="High-performance e-commerce backend solution built with Kotlin and Ktor.">
       
       
       
         <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/support/">
       
       
-        <link rel="prev" href="../cms/">
+        <link rel="prev" href="../rma/">
       
       
-        <link rel="next" href="../fx/">
+        <link rel="next" href="../seller-kyc/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -90,12 +90,14 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="Ktor-E-Commerce" class="md-header__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.06 3c-.43 0-.84.14-1.22.42s-.6.64-.7 1.08L2.11 8.91c-.25 1.09-.05 2.04.61 2.86l.28.28V19c0 .5.2 1 .61 1.39S4.5 21 5 21h14c.5 0 1-.2 1.39-.61S21 19.5 21 19v-6.95l.28-.28c.66-.82.86-1.77.61-2.86L20.86 4.5c-.13-.44-.36-.8-.73-1.08A1.88 1.88 0 0 0 18.94 3zm13.83 1.97 1.08 4.41c.09.43 0 .82-.28 1.17-.25.31-.56.45-.94.45-.31 0-.58-.1-.8-.34-.22-.23-.34-.5-.37-.82L16.97 5zM5.06 5h1.97l-.61 4.84C6.3 10.63 5.91 11 5.25 11c-.41 0-.72-.14-.94-.45-.28-.35-.37-.74-.28-1.17zm3.99 0H11v4.7c0 .35-.11.65-.36.92-.25.26-.56.38-.94.38-.34 0-.63-.12-.86-.41S8.5 10 8.5 9.66V9.5zM13 5h1.95l.55 4.5c.08.42 0 .77-.29 1.07-.26.3-.6.43-1.01.43-.31 0-.59-.12-.84-.38A1.3 1.3 0 0 1 13 9.7zm-5.55 7.05c.63.62 1.41.95 2.35.95.84 0 1.58-.33 2.2-.95.69.62 1.45.95 2.3.95.87 0 1.62-.33 2.25-.95.56.62 1.31.95 2.25.95h.23v6H5v-6h.25c.91 0 1.64-.33 2.2-.95"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -135,20 +137,20 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
       </label>
     
   
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
     
       <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
       </label>
     
   
@@ -179,11 +181,18 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -205,7 +214,7 @@
         <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -215,14 +224,8 @@
     
   </nav>
   
-</header>
     
-    <div class="md-container" data-md-component="container">
       
-      
-        
-          
-            
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
@@ -232,17 +235,98 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  Overview
+
+        </a>
+      </li>
+    
+  
+
+      
         
   
   
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../auth/" class="md-tabs__link">
+          
+  
+  
+  Identity & Access
+
+        </a>
+      </li>
     
   
-  Home
 
-      </a>
-    </li>
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../shop-category/" class="md-tabs__link">
+          
+  
+  
+  Store & Catalog
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../wishlist/" class="md-tabs__link">
+          
+  
+  
+  Cart & Checkout
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../order/" class="md-tabs__link">
+          
+  
+  
+  Orders & Logistics
+
+        </a>
+      </li>
+    
   
 
       
@@ -256,11 +340,11 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../auth/" class="md-tabs__link">
+        <a href="../refund-request/" class="md-tabs__link">
           
   
   
-  API Reference
+  Returns & Support
 
         </a>
       </li>
@@ -273,24 +357,51 @@
   
   
   
-    <li class="md-tabs__item">
-      <a href="../changelog/" class="md-tabs__link">
+    
+    
+      <li class="md-tabs__item">
+        <a href="../seller-kyc/" class="md-tabs__link">
+          
+  
+  
+  Seller Portal
+
+        </a>
+      </li>
+    
+  
+
+      
         
   
   
-    
   
-  Changelog
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dashboard/" class="md-tabs__link">
+          
+  
+  
+  Platform & Operations
 
-      </a>
-    </li>
+        </a>
+      </li>
+    
   
 
       
     </ul>
   </div>
 </nav>
-          
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
         
       
       <main class="md-main" data-md-component="main">
@@ -312,7 +423,7 @@
     <a href=".." title="Ktor-E-Commerce" class="md-nav__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.06 3c-.43 0-.84.14-1.22.42s-.6.64-.7 1.08L2.11 8.91c-.25 1.09-.05 2.04.61 2.86l.28.28V19c0 .5.2 1 .61 1.39S4.5 21 5 21h14c.5 0 1-.2 1.39-.61S21 19.5 21 19v-6.95l.28-.28c.66-.82.86-1.77.61-2.86L20.86 4.5c-.13-.44-.36-.8-.73-1.08A1.88 1.88 0 0 0 18.94 3zm13.83 1.97 1.08 4.41c.09.43 0 .82-.28 1.17-.25.31-.56.45-.94.45-.31 0-.58-.1-.8-.34-.22-.23-.34-.5-.37-.82L16.97 5zM5.06 5h1.97l-.61 4.84C6.3 10.63 5.91 11 5.25 11c-.41 0-.72-.14-.94-.45-.28-.35-.37-.74-.28-1.17zm3.99 0H11v4.7c0 .35-.11.65-.36.92-.25.26-.56.38-.94.38-.34 0-.63-.12-.86-.41S8.5 10 8.5 9.66V9.5zM13 5h1.95l.55 4.5c.08.42 0 .77-.29 1.07-.26.3-.6.43-1.01.43-.31 0-.59-.12-.84-.38A1.3 1.3 0 0 1 13 9.7zm-5.55 7.05c.63.62 1.41.95 2.35.95.84 0 1.58-.33 2.2-.95.69.62 1.45.95 2.3.95.87 0 1.62-.33 2.25-.95.56.62 1.31.95 2.25.95h.23v6H5v-6h.25c.91 0 1.64-.33 2.2-.95"/></svg>
 
     </a>
     Ktor-E-Commerce
@@ -322,7 +433,7 @@
       <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     GitHub
@@ -338,13 +449,58 @@
   
   
   
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Overview
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Home
+    Overview
     
   </span>
   
@@ -353,39 +509,138 @@
     </li>
   
 
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Storefront Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../health/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Health Checks & Monitoring
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Error Handling & Status Codes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
   
   
-    
   
   
-  
     
     
     
     
+      
       
         
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
-    API Reference
+    Identity & Access
     
   </span>
   
@@ -393,10 +648,10 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            API Reference
+            Identity & Access
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -412,7 +667,7 @@
   
   
   <span class="md-ellipsis">
-    Auth
+    Authentication
     
   </span>
   
@@ -476,6 +731,81 @@
   
   
     <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Store & Catalog
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Store & Catalog
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../shop-category/" class="md-nav__link">
         
   
@@ -504,7 +834,7 @@
   
   
   <span class="md-ellipsis">
-    Shop
+    Shop Management
     
   </span>
   
@@ -550,7 +880,7 @@
   
   
   <span class="md-ellipsis">
-    Brand
+    Brands
     
   </span>
   
@@ -619,7 +949,7 @@
   
   
   <span class="md-ellipsis">
-    Product
+    Products
     
   </span>
   
@@ -688,7 +1018,7 @@
   
   
   <span class="md-ellipsis">
-    Review Rating
+    Reviews & Ratings
     
   </span>
   
@@ -698,6 +1028,58 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Cart & Checkout
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Cart & Checkout
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -711,7 +1093,7 @@
   
   
   <span class="md-ellipsis">
-    WishList
+    Wishlist
     
   </span>
   
@@ -775,12 +1157,110 @@
   
   
     <li class="md-nav__item">
+      <a href="../coupon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coupons & Discounts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX & Currencies
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Orders & Logistics
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Orders & Logistics
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Order
+    Orders
     
   </span>
   
@@ -803,30 +1283,7 @@
   
   
   <span class="md-ellipsis">
-    Payment
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../coupon/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Coupon
+    Payments
     
   </span>
   
@@ -872,7 +1329,7 @@
   
   
   <span class="md-ellipsis">
-    Shipping Method
+    Shipping Methods
     
   </span>
   
@@ -895,7 +1352,7 @@
   
   
   <span class="md-ellipsis">
-    Shipments
+    Shipments & Tracking
     
   </span>
   
@@ -918,7 +1375,7 @@
   
   
   <span class="md-ellipsis">
-    Inventory
+    Inventory Control
     
   </span>
   
@@ -952,6 +1409,61 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Returns & Support
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Returns & Support
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
               
                 
   
@@ -964,7 +1476,7 @@
   
   
   <span class="md-ellipsis">
-    Refund Request
+    Refund Requests
     
   </span>
   
@@ -987,283 +1499,7 @@
   
   
   <span class="md-ellipsis">
-    RMA / Returns
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../notification/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Notifications
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../seller-kyc/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Seller KYC
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../seller-tools/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Seller Reviews & Commission
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../payout/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Payouts & Statements
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../tax/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Tax Rules
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fraud/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Fraud & Chargebacks
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../loyalty/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Loyalty & Wallet
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../localization/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Localization
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../subscriptions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Subscriptions
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../b2b/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    B2B Quotes & POs
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../omnichannel/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    BOPIS, POS & Stores
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    CMS, SEO & Sitemap
+    RMA / Returns & Exchanges
     
   </span>
   
@@ -1340,6 +1576,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#admin-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Admin queue
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ticket-response" class="md-nav__link">
     <span class="md-ellipsis">
       Ticket response
@@ -1365,7 +1610,31 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Satisfaction (CSAT)">
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3-list-my-support-tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. List my support tickets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. List my support tickets">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1663,6 +1932,58 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Seller Portal
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Seller Portal
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
               
                 
   
@@ -1670,12 +1991,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../fx/" class="md-nav__link">
+      <a href="../seller-kyc/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    FX Rates
+    Seller KYC
     
   </span>
   
@@ -1693,12 +2014,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-keys/" class="md-nav__link">
+      <a href="../seller-tools/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    API Keys
+    Seller Reviews & Commission
     
   </span>
   
@@ -1716,12 +2037,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../feature-flags/" class="md-nav__link">
+      <a href="../payout/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Feature Flags
+    Payouts & Statements
     
   </span>
   
@@ -1732,97 +2053,57 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../outbox/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Outbox & DLQ
-    
-  </span>
-  
-
-      </a>
+          </ul>
+        </nav>
+      
     </li>
   
 
-              
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../privacy-policy/" class="md-nav__link">
-        
   
   
   <span class="md-ellipsis">
-    Privacy Policy
+    Platform & Operations
     
   </span>
   
 
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../privacy-retention/" class="md-nav__link">
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
-  
-  
-  <span class="md-ellipsis">
-    Data Retention
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../privacy-policy-consent/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Privacy Policy Consent
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Platform & Operations
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -1893,31 +2174,331 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
+              
+                
   
   
   
   
     <li class="md-nav__item">
-      <a href="../changelog/" class="md-nav__link">
+      <a href="../notification/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Changelog
+    Notifications
     
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy-consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy Consent
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1958,6 +2539,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#admin-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      Admin queue
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#ticket-response" class="md-nav__link">
     <span class="md-ellipsis">
       Ticket response
@@ -1983,7 +2573,31 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Satisfaction (CSAT)">
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3-list-my-support-tickets" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. List my support tickets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. List my support tickets">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2294,60 +2908,125 @@
 <h1 id="support-tickets">Support Tickets</h1>
 <p>Support tickets with replies, attachments, SLAs and CSAT.</p>
 <h3 id="1-customer-flow">1. Customer flow</h3>
-<p><strong><code>POST /api/v1/support/tickets</code></strong>
-{
-  "subject": "Missing item",
-  "body": "One item was missing from the parcel",
-  "category": "ORDER",
-  "priority": "NORMAL",
-  "orderId": "order-uuid"
-}</p>
-<pre><code>
-- `orderId` is optional; when supplied it must belong to the caller and is linked to the ticket.
-- The first message is recorded as a `CUSTOMER` message.
-- New tickets start `OPEN`.
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets</span>
+</div>
 
-Categories: `ORDER`, `PAYMENT`, `ACCOUNT`, `PRODUCT`, `OTHER`.
-
-Other customer endpoints:
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/v1/support/tickets` | My tickets |
-| `GET` | `/api/v1/support/tickets/{id}` | Ticket + public replies |
-| `POST` | `/api/v1/support/tickets/{id}/messages` | Reply |
-| `POST` | `/api/v1/support/tickets/{id}/close` | Close |
-| `POST` | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket |
-| `POST` | `/api/v1/support/tickets/{id}/attachments` | Upload an image attachment |
-| `GET` | `/api/v1/support/tickets/{id}/attachments/{attachmentId}` | Download an attachment |
-
-- Customers never see `isInternal` messages.
-- Replying reopens `PENDING` / `RESOLVED` tickets.
-- Closed tickets cannot receive customer replies.
-
-## Admin queue
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/v1/admin/support/tickets?status=&amp;priority=&amp;assignedTo=` | Filtered list |
-| `GET` | `/api/v1/admin/support/tickets/{id}` | Full thread incl. internal notes |
-| `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Reply or internal note |
-| `PUT` | `/api/v1/admin/support/tickets/{id}` | Status/priority/category/assignment |
-| `GET` | `/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}` | Admin: download a support attachment |
-
-Reply body:
-
-```json
-{ &quot;body&quot;: &quot;Checking with the carrier&quot;, &quot;isInternal&quot;: true }
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Missing item"</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"One item was missing from the parcel"</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NORMAL"</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order-uuid"</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<ul>
+<li><code>orderId</code> is optional; when supplied it must belong to the caller and is linked to the ticket.</li>
+<li>The first message is recorded as a <code>CUSTOMER</code> message.</li>
+<li>New tickets start <code>OPEN</code>.</li>
+</ul>
+<p>Categories: <code>ORDER</code>, <code>PAYMENT</code>, <code>ACCOUNT</code>, <code>PRODUCT</code>, <code>OTHER</code>.</p>
+<p>Other customer endpoints:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/support/tickets</code></td>
+<td>My tickets</td>
+</tr>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/support/tickets/{id}</code></td>
+<td>Ticket + public replies</td>
+</tr>
+<tr>
+<td><span class="method-badge post">POST</span></td>
+<td><code>/api/v1/support/tickets/{id}/messages</code></td>
+<td>Reply</td>
+</tr>
+<tr>
+<td><span class="method-badge post">POST</span></td>
+<td><code>/api/v1/support/tickets/{id}/close</code></td>
+<td>Close</td>
+</tr>
+<tr>
+<td><span class="method-badge post">POST</span></td>
+<td><code>/api/v1/support/tickets/{id}/satisfaction</code></td>
+<td>Rate a resolved/closed ticket</td>
+</tr>
+<tr>
+<td><span class="method-badge post">POST</span></td>
+<td><code>/api/v1/support/tickets/{id}/attachments</code></td>
+<td>Upload an image attachment</td>
+</tr>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/support/tickets/{id}/attachments/{attachmentId}</code></td>
+<td>Download an attachment</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Customers never see <code>isInternal</code> messages.</li>
+<li>Replying reopens <code>PENDING</code> / <code>RESOLVED</code> tickets.</li>
+<li>Closed tickets cannot receive customer replies.</li>
+</ul>
+<h2 id="admin-queue">Admin queue</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/admin/support/tickets?status=&amp;priority=&amp;assignedTo=</code></td>
+<td>Filtered list</td>
+</tr>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/admin/support/tickets/{id}</code></td>
+<td>Full thread incl. internal notes</td>
+</tr>
+<tr>
+<td><span class="method-badge post">POST</span></td>
+<td><code>/api/v1/admin/support/tickets/{id}/messages</code></td>
+<td>Reply or internal note</td>
+</tr>
+<tr>
+<td><span class="method-badge put">PUT</span></td>
+<td><code>/api/v1/admin/support/tickets/{id}</code></td>
+<td>Status/priority/category/assignment</td>
+</tr>
+<tr>
+<td><span class="method-badge get">GET</span></td>
+<td><code>/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}</code></td>
+<td>Admin: download a support attachment</td>
+</tr>
+</tbody>
+</table>
+<p>Reply body:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Checking with the carrier"</span><span class="p">,</span><span class="w"> </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
 <p>Update body:</p>
-<pre><code class="language-json">{
-  &quot;status&quot;: &quot;RESOLVED&quot;,
-  &quot;priority&quot;: &quot;HIGH&quot;,
-  &quot;category&quot;: &quot;ORDER&quot;,
-  &quot;assignedTo&quot;: &quot;admin-uuid&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"RESOLVED"</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"HIGH"</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"admin-uuid"</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>Send a blank <code>assignedTo</code> to unassign.</p>
 <p>Statuses: <code>OPEN</code>, <code>PENDING</code>, <code>RESOLVED</code>, <code>CLOSED</code>.</p>
 <p>SLA targets by priority:</p>
@@ -2390,41 +3069,41 @@ The first admin reply records <code>firstResponseAt</code>.</p>
 <li>Every reply updates <code>lastMessageAt</code>, which drives the queue ordering.</li>
 </ul>
 <h2 id="ticket-response">Ticket response</h2>
-<pre><code class="language-json">{
-  &quot;ticket&quot;: {
-    &quot;id&quot;: &quot;ticket-uuid&quot;,
-    &quot;userId&quot;: &quot;user-uuid&quot;,
-    &quot;orderId&quot;: &quot;order-uuid&quot;,
-    &quot;shopId&quot;: &quot;shop-uuid&quot;,
-    &quot;subject&quot;: &quot;Missing item&quot;,
-    &quot;category&quot;: &quot;ORDER&quot;,
-    &quot;priority&quot;: &quot;NORMAL&quot;,
-    &quot;status&quot;: &quot;OPEN&quot;,
-    &quot;assignedTo&quot;: null,
-    &quot;lastMessageAt&quot;: &quot;2026-05-01T10:00:00Z&quot;,
-    &quot;resolvedAt&quot;: null,
-    &quot;createdAt&quot;: &quot;2026-05-01T10:00:00Z&quot;,
-    &quot;firstResponseAt&quot;: null,
-    &quot;responseDueAt&quot;: &quot;2026-05-02T10:00:00Z&quot;,
-    &quot;resolutionDueAt&quot;: &quot;2026-05-04T10:00:00Z&quot;,
-    &quot;slaBreached&quot;: false,
-    &quot;csatScore&quot;: null,
-    &quot;csatComment&quot;: null,
-    &quot;csatRatedAt&quot;: null
-  },
-  &quot;messages&quot;: [
-    {
-      &quot;id&quot;: &quot;message-uuid&quot;,
-      &quot;ticketId&quot;: &quot;ticket-uuid&quot;,
-      &quot;senderId&quot;: &quot;user-uuid&quot;,
-      &quot;senderRole&quot;: &quot;CUSTOMER&quot;,
-      &quot;body&quot;: &quot;One item was missing from the parcel&quot;,
-      &quot;isInternal&quot;: false,
-      &quot;createdAt&quot;: &quot;2026-05-01T10:00:00Z&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">"ticket"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ticket-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shop-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Missing item"</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NORMAL"</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OPEN"</span><span class="p">,</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-01T10:00:00Z"</span><span class="p">,</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-01T10:00:00Z"</span><span class="p">,</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-02T10:00:00Z"</span><span class="p">,</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-04T10:00:00Z"</span><span class="p">,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"message-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ticket-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">      </span><span class="nt">"senderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user-uuid"</span><span class="p">,</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">      </span><span class="nt">"senderRole"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">      </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"One item was missing from the parcel"</span><span class="p">,</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="w">      </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-01T10:00:00Z"</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>This is polling-based chat: clients fetch the ticket thread and post replies. No WebSocket channel is
 required.</p>
 <h2 id="attachments">Attachments</h2>
@@ -2433,222 +3112,244 @@ owner. Send one file part (<code>image/jpeg</code>, <code>image/png</code> or <c
 name is not enforced; the examples use <code>file</code>. <code>GET /api/v1/support/tickets/{id}/attachments/{attachmentId}</code>
 and the admin counterpart serve the file privately with <code>Cache-Control: private, no-store</code>.</p>
 <p>Attachments appear in ticket responses:</p>
-<pre><code class="language-json">{
-  &quot;attachments&quot;: [
-    {
-      &quot;id&quot;: &quot;attachment-uuid&quot;,
-      &quot;ticketId&quot;: &quot;ticket-uuid&quot;,
-      &quot;fileName&quot;: &quot;proof.png&quot;,
-      &quot;contentType&quot;: &quot;image/png&quot;,
-      &quot;sizeBytes&quot;: 12345,
-      &quot;createdAt&quot;: &quot;2026-05-01T10:00:00Z&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"attachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"attachment-uuid"</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ticket-uuid"</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">      </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proof.png"</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"image/png"</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-05-01T10:00:00Z"</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+</span></code></pre></div>
 <h3 id="2-satisfaction-csat">2. Satisfaction (CSAT)</h3>
-<p><strong><code>POST /api/v1/support/tickets/{id}/satisfaction</code></strong>
-{ "score": 5, "comment": "Fast resolution" }</p>
-<pre><code>
-- Score must be between 1 and 5.
-- Only the ticket owner can rate, and only after the ticket is `RESOLVED` or `CLOSED`.
-- Re-rating replaces the previous score/comment.
-## Endpoint Details
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/satisfaction</span>
+</div>
 
-### 3. List my support tickets
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span><span class="w"> </span><span class="nt">"score"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"comment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fast resolution"</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div>
+<ul>
+<li>Score must be between 1 and 5.</li>
+<li>Only the ticket owner can rate, and only after the ticket is <code>RESOLVED</code> or <code>CLOSED</code>.</li>
+<li>Re-rating replaces the previous score/comment.</li>
+</ul>
+<h2 id="endpoint-details">Endpoint Details</h2>
+<h3 id="3-list-my-support-tickets">3. List my support tickets</h3>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets</span>
+</div>
 
-**`GET /api/v1/support/tickets`**
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/support/tickets?page=1&amp;perPage=20' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;access_token&gt;'
-</code></pre>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets?page=1&amp;perPage=20'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response">Response</h4>
-<pre><code class="language-json">{
-  &quot;data&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;subject&quot;: &quot;Looks good&quot;,
-      &quot;category&quot;: &quot;ORDER&quot;,
-      &quot;priority&quot;: &quot;LOW&quot;,
-      &quot;status&quot;: &quot;PENDING&quot;,
-      &quot;assignedTo&quot;: &quot;string&quot;,
-      &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;slaBreached&quot;: true,
-      &quot;csatScore&quot;: 1,
-      &quot;csatComment&quot;: &quot;string&quot;,
-      &quot;csatRatedAt&quot;: &quot;250.00&quot;
-    }
-  ],
-  &quot;metadata&quot;: {
-    &quot;totalCount&quot;: 1,
-    &quot;limit&quot;: 20,
-    &quot;offset&quot;: 0,
-    &quot;page&quot;: 1,
-    &quot;perPage&quot;: 20,
-    &quot;totalPages&quot;: 1,
-    &quot;hasNext&quot;: false,
-    &quot;hasPrev&quot;: false
-  }
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">      </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">      </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">      </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">      </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">      </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">      </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">      </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">      </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">      </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">      </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">      </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">      </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">      </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">      </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">      </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">      </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">    </span><span class="nt">"totalCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">    </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">    </span><span class="nt">"offset"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-7-29"><a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">    </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-30"><a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">    </span><span class="nt">"perPage"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-7-31"><a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">    </span><span class="nt">"totalPages"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-32"><a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">    </span><span class="nt">"hasNext"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-7-33"><a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">    </span><span class="nt">"hasPrev"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-7-34"><a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-7-35"><a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="4-get-a-support-ticket-and-public-replies">4. Get a support ticket and public replies</h3>
-<p><strong><code>GET /api/v1/support/tickets/{id}</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;access_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_1">Response</h4>
-<pre><code class="language-json">{
-  &quot;ticket&quot;: {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;subject&quot;: &quot;Looks good&quot;,
-    &quot;category&quot;: &quot;ORDER&quot;,
-    &quot;priority&quot;: &quot;LOW&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;assignedTo&quot;: &quot;string&quot;,
-    &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;slaBreached&quot;: true,
-    &quot;csatScore&quot;: 1,
-    &quot;csatComment&quot;: &quot;string&quot;,
-    &quot;csatRatedAt&quot;: &quot;250.00&quot;
-  },
-  &quot;messages&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderRole&quot;: &quot;CUSTOMER&quot;,
-      &quot;body&quot;: &quot;Looks good&quot;,
-      &quot;isInternal&quot;: true,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ],
-  &quot;attachments&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;fileName&quot;: &quot;string&quot;,
-      &quot;contentType&quot;: &quot;CUSTOMER&quot;,
-      &quot;sizeBytes&quot;: 1,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">"ticket"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">    </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">    </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">    </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">    </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">    </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">    </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">    </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="w">      </span><span class="nt">"senderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a><span class="w">      </span><span class="nt">"senderRole"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span class="w">      </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a><span class="w">      </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a><span class="w">  </span><span class="nt">"attachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-37"><a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-9-38"><a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a><span class="w">      </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-9-39"><a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a><span class="w">      </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-9-40"><a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a><span class="w">      </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-9-41"><a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-9-42"><a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-43"><a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-9-44"><a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="5-reply-to-a-support-ticket">5. Reply to a support ticket</h3>
-<p><strong><code>POST /api/v1/support/tickets/{id}/messages</code></strong></p>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;access_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;body&quot;: &quot;Looks good&quot;,
-  &quot;isInternal&quot;: true
-}'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/messages</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="s1">  "body": "Looks good",</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="s1">  "isInternal": true</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_2">Response</h4>
-<pre><code class="language-json">{
-  &quot;ticket&quot;: {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;subject&quot;: &quot;Looks good&quot;,
-    &quot;category&quot;: &quot;ORDER&quot;,
-    &quot;priority&quot;: &quot;LOW&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;assignedTo&quot;: &quot;string&quot;,
-    &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;slaBreached&quot;: true,
-    &quot;csatScore&quot;: 1,
-    &quot;csatComment&quot;: &quot;string&quot;,
-    &quot;csatRatedAt&quot;: &quot;250.00&quot;
-  },
-  &quot;messages&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderRole&quot;: &quot;CUSTOMER&quot;,
-      &quot;body&quot;: &quot;Looks good&quot;,
-      &quot;isInternal&quot;: true,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ],
-  &quot;attachments&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;fileName&quot;: &quot;string&quot;,
-      &quot;contentType&quot;: &quot;CUSTOMER&quot;,
-      &quot;sizeBytes&quot;: 1,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">"ticket"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">    </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">    </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">    </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">    </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">    </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="w">      </span><span class="nt">"senderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="w">      </span><span class="nt">"senderRole"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span class="w">      </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="w">      </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="w">  </span><span class="nt">"attachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-37"><a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-11-38"><a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="w">      </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-11-39"><a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span class="w">      </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-11-40"><a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span class="w">      </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-11-41"><a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-11-42"><a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-11-43"><a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-11-44"><a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="6-close-my-support-ticket">6. Close my support ticket</h3>
-<p><strong><code>POST /api/v1/support/tickets/{id}/close</code></strong></p>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/close' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;access_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/close</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/close'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_3">Response</h4>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;subject&quot;: &quot;Looks good&quot;,
-  &quot;category&quot;: &quot;ORDER&quot;,
-  &quot;priority&quot;: &quot;LOW&quot;,
-  &quot;status&quot;: &quot;PENDING&quot;,
-  &quot;assignedTo&quot;: &quot;string&quot;,
-  &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;slaBreached&quot;: true,
-  &quot;csatScore&quot;: 1,
-  &quot;csatComment&quot;: &quot;string&quot;,
-  &quot;csatRatedAt&quot;: &quot;250.00&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">  </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">  </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">  </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">  </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">  </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">  </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">  </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">  </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">  </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">  </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">  </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="w">  </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="w">  </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="7-attach-an-image-to-my-support-ticket">7. Attach an image to my support ticket</h3>
-<p><strong><code>POST /api/v1/support/tickets/{id}/attachments</code></strong></p>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/attachments</span>
+</div>
+
 <h4 id="multipart-form-data">Multipart Form Data</h4>
 <table>
 <thead>
@@ -2691,240 +3392,264 @@ curl -X 'GET' \
 </tbody>
 </table>
 <h4 id="request">Request</h4>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/support/tickets/{id}/attachments' \
-  -H 'Authorization: Bearer &lt;access_token&gt;' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'file=@attachment.png;type=image/png'
-</code></pre>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets/{id}/attachments'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: multipart/form-data'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span>-F<span class="w"> </span><span class="s1">'file=@attachment.png;type=image/png'</span>
+</span></code></pre></div>
 <h4 id="response_4">Response</h4>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;fileName&quot;: &quot;string&quot;,
-  &quot;contentType&quot;: &quot;CUSTOMER&quot;,
-  &quot;sizeBytes&quot;: 1,
-  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="8-download-my-support-attachment">8. Download my support attachment</h3>
-<p><strong><code>GET /api/v1/support/tickets/{id}/attachments/{attachmentId}</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer &lt;access_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/attachments/{attachmentId}</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: */*'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;access_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_5">Response</h4>
-<pre><code class="language-text">&lt;binary attachment content&gt;
-</code></pre>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>&lt;binary attachment content&gt;
+</span></code></pre></div>
 <hr />
 <h3 id="9-admin-list-support-tickets">9. Admin: list support tickets</h3>
-<p><strong><code>GET /api/v1/admin/support/tickets</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/support/tickets?page=1&amp;perPage=20&amp;status=PENDING' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/support/tickets?page=1&amp;perPage=20&amp;status=PENDING'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_6">Response</h4>
-<pre><code class="language-json">{
-  &quot;data&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;subject&quot;: &quot;Looks good&quot;,
-      &quot;category&quot;: &quot;ORDER&quot;,
-      &quot;priority&quot;: &quot;LOW&quot;,
-      &quot;status&quot;: &quot;PENDING&quot;,
-      &quot;assignedTo&quot;: &quot;string&quot;,
-      &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-      &quot;slaBreached&quot;: true,
-      &quot;csatScore&quot;: 1,
-      &quot;csatComment&quot;: &quot;string&quot;,
-      &quot;csatRatedAt&quot;: &quot;250.00&quot;
-    }
-  ],
-  &quot;metadata&quot;: {
-    &quot;totalCount&quot;: 1,
-    &quot;limit&quot;: 20,
-    &quot;offset&quot;: 0,
-    &quot;page&quot;: 1,
-    &quot;perPage&quot;: 20,
-    &quot;totalPages&quot;: 1,
-    &quot;hasNext&quot;: false,
-    &quot;hasPrev&quot;: false
-  }
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="p">{</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">      </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">      </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">      </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">      </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">      </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">      </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">      </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">      </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">      </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">      </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="w">      </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span class="w">      </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span class="w">      </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span class="w">      </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-19-20"><a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a><span class="w">      </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-19-21"><a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span class="w">      </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-19-22"><a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span class="w">      </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-19-23"><a id="__codelineno-19-23" name="__codelineno-19-23" href="#__codelineno-19-23"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-19-24"><a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-19-25"><a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a><span class="w">  </span><span class="nt">"metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-19-26"><a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a><span class="w">    </span><span class="nt">"totalCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a><span class="w">    </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-19-28"><a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a><span class="w">    </span><span class="nt">"offset"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-19-29"><a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a><span class="w">    </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-19-30"><a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a><span class="w">    </span><span class="nt">"perPage"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span>
+</span><span id="__span-19-31"><a id="__codelineno-19-31" name="__codelineno-19-31" href="#__codelineno-19-31"></a><span class="w">    </span><span class="nt">"totalPages"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-19-32"><a id="__codelineno-19-32" name="__codelineno-19-32" href="#__codelineno-19-32"></a><span class="w">    </span><span class="nt">"hasNext"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-19-33"><a id="__codelineno-19-33" name="__codelineno-19-33" href="#__codelineno-19-33"></a><span class="w">    </span><span class="nt">"hasPrev"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-19-34"><a id="__codelineno-19-34" name="__codelineno-19-34" href="#__codelineno-19-34"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-19-35"><a id="__codelineno-19-35" name="__codelineno-19-35" href="#__codelineno-19-35"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="10-admin-get-a-ticket-with-internal-notes">10. Admin: get a ticket with internal notes</h3>
-<p><strong><code>GET /api/v1/admin/support/tickets/{id}</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_7">Response</h4>
-<pre><code class="language-json">{
-  &quot;ticket&quot;: {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;subject&quot;: &quot;Looks good&quot;,
-    &quot;category&quot;: &quot;ORDER&quot;,
-    &quot;priority&quot;: &quot;LOW&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;assignedTo&quot;: &quot;string&quot;,
-    &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;slaBreached&quot;: true,
-    &quot;csatScore&quot;: 1,
-    &quot;csatComment&quot;: &quot;string&quot;,
-    &quot;csatRatedAt&quot;: &quot;250.00&quot;
-  },
-  &quot;messages&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderRole&quot;: &quot;CUSTOMER&quot;,
-      &quot;body&quot;: &quot;Looks good&quot;,
-      &quot;isInternal&quot;: true,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ],
-  &quot;attachments&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;fileName&quot;: &quot;string&quot;,
-      &quot;contentType&quot;: &quot;CUSTOMER&quot;,
-      &quot;sizeBytes&quot;: 1,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p">{</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nt">"ticket"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">    </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">    </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">    </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="w">    </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="w">    </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="w">    </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-21-18"><a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="w">    </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-21-19"><a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="w">    </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-21-20"><a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a><span class="w">    </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-21-21"><a id="__codelineno-21-21" name="__codelineno-21-21" href="#__codelineno-21-21"></a><span class="w">    </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-21-22"><a id="__codelineno-21-22" name="__codelineno-21-22" href="#__codelineno-21-22"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-21-23"><a id="__codelineno-21-23" name="__codelineno-21-23" href="#__codelineno-21-23"></a><span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-21-24"><a id="__codelineno-21-24" name="__codelineno-21-24" href="#__codelineno-21-24"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-21-25"><a id="__codelineno-21-25" name="__codelineno-21-25" href="#__codelineno-21-25"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-26"><a id="__codelineno-21-26" name="__codelineno-21-26" href="#__codelineno-21-26"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-27"><a id="__codelineno-21-27" name="__codelineno-21-27" href="#__codelineno-21-27"></a><span class="w">      </span><span class="nt">"senderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-28"><a id="__codelineno-21-28" name="__codelineno-21-28" href="#__codelineno-21-28"></a><span class="w">      </span><span class="nt">"senderRole"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-21-29"><a id="__codelineno-21-29" name="__codelineno-21-29" href="#__codelineno-21-29"></a><span class="w">      </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-21-30"><a id="__codelineno-21-30" name="__codelineno-21-30" href="#__codelineno-21-30"></a><span class="w">      </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-21-31"><a id="__codelineno-21-31" name="__codelineno-21-31" href="#__codelineno-21-31"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-21-32"><a id="__codelineno-21-32" name="__codelineno-21-32" href="#__codelineno-21-32"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-21-33"><a id="__codelineno-21-33" name="__codelineno-21-33" href="#__codelineno-21-33"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-21-34"><a id="__codelineno-21-34" name="__codelineno-21-34" href="#__codelineno-21-34"></a><span class="w">  </span><span class="nt">"attachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-21-35"><a id="__codelineno-21-35" name="__codelineno-21-35" href="#__codelineno-21-35"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-21-36"><a id="__codelineno-21-36" name="__codelineno-21-36" href="#__codelineno-21-36"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-37"><a id="__codelineno-21-37" name="__codelineno-21-37" href="#__codelineno-21-37"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-21-38"><a id="__codelineno-21-38" name="__codelineno-21-38" href="#__codelineno-21-38"></a><span class="w">      </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-21-39"><a id="__codelineno-21-39" name="__codelineno-21-39" href="#__codelineno-21-39"></a><span class="w">      </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-21-40"><a id="__codelineno-21-40" name="__codelineno-21-40" href="#__codelineno-21-40"></a><span class="w">      </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-21-41"><a id="__codelineno-21-41" name="__codelineno-21-41" href="#__codelineno-21-41"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-21-42"><a id="__codelineno-21-42" name="__codelineno-21-42" href="#__codelineno-21-42"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-21-43"><a id="__codelineno-21-43" name="__codelineno-21-43" href="#__codelineno-21-43"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-21-44"><a id="__codelineno-21-44" name="__codelineno-21-44" href="#__codelineno-21-44"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="11-admin-reply-or-add-an-internal-note">11. Admin: reply or add an internal note</h3>
-<p><strong><code>POST /api/v1/admin/support/tickets/{id}/messages</code></strong></p>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;body&quot;: &quot;Looks good&quot;,
-  &quot;isInternal&quot;: true
-}'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}/messages</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'POST'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="s1">  "body": "Looks good",</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="s1">  "isInternal": true</span>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_8">Response</h4>
-<pre><code class="language-json">{
-  &quot;ticket&quot;: {
-    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-    &quot;subject&quot;: &quot;Looks good&quot;,
-    &quot;category&quot;: &quot;ORDER&quot;,
-    &quot;priority&quot;: &quot;LOW&quot;,
-    &quot;status&quot;: &quot;PENDING&quot;,
-    &quot;assignedTo&quot;: &quot;string&quot;,
-    &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-    &quot;slaBreached&quot;: true,
-    &quot;csatScore&quot;: 1,
-    &quot;csatComment&quot;: &quot;string&quot;,
-    &quot;csatRatedAt&quot;: &quot;250.00&quot;
-  },
-  &quot;messages&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;senderRole&quot;: &quot;CUSTOMER&quot;,
-      &quot;body&quot;: &quot;Looks good&quot;,
-      &quot;isInternal&quot;: true,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ],
-  &quot;attachments&quot;: [
-    {
-      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;ticketId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-      &quot;fileName&quot;: &quot;string&quot;,
-      &quot;contentType&quot;: &quot;CUSTOMER&quot;,
-      &quot;sizeBytes&quot;: 1,
-      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="p">{</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">  </span><span class="nt">"ticket"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">    </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="w">    </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">    </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">    </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="w">    </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="w">    </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="w">    </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-17"><a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a><span class="w">    </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-23-18"><a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="w">    </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-23-19"><a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="w">    </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-23-20"><a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="w">    </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-23-21"><a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="w">    </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-23-22"><a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-23-23"><a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a><span class="w">  </span><span class="nt">"messages"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-23-24"><a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-23-25"><a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-26"><a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-27"><a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="w">      </span><span class="nt">"senderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-28"><a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="w">      </span><span class="nt">"senderRole"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-23-29"><a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a><span class="w">      </span><span class="nt">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-23-30"><a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a><span class="w">      </span><span class="nt">"isInternal"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-23-31"><a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-23-32"><a id="__codelineno-23-32" name="__codelineno-23-32" href="#__codelineno-23-32"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-23-33"><a id="__codelineno-23-33" name="__codelineno-23-33" href="#__codelineno-23-33"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-23-34"><a id="__codelineno-23-34" name="__codelineno-23-34" href="#__codelineno-23-34"></a><span class="w">  </span><span class="nt">"attachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-23-35"><a id="__codelineno-23-35" name="__codelineno-23-35" href="#__codelineno-23-35"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-23-36"><a id="__codelineno-23-36" name="__codelineno-23-36" href="#__codelineno-23-36"></a><span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-37"><a id="__codelineno-23-37" name="__codelineno-23-37" href="#__codelineno-23-37"></a><span class="w">      </span><span class="nt">"ticketId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-23-38"><a id="__codelineno-23-38" name="__codelineno-23-38" href="#__codelineno-23-38"></a><span class="w">      </span><span class="nt">"fileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-23-39"><a id="__codelineno-23-39" name="__codelineno-23-39" href="#__codelineno-23-39"></a><span class="w">      </span><span class="nt">"contentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CUSTOMER"</span><span class="p">,</span>
+</span><span id="__span-23-40"><a id="__codelineno-23-40" name="__codelineno-23-40" href="#__codelineno-23-40"></a><span class="w">      </span><span class="nt">"sizeBytes"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-23-41"><a id="__codelineno-23-41" name="__codelineno-23-41" href="#__codelineno-23-41"></a><span class="w">      </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span>
+</span><span id="__span-23-42"><a id="__codelineno-23-42" name="__codelineno-23-42" href="#__codelineno-23-42"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-23-43"><a id="__codelineno-23-43" name="__codelineno-23-43" href="#__codelineno-23-43"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-23-44"><a id="__codelineno-23-44" name="__codelineno-23-44" href="#__codelineno-23-44"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="12-admin-update-ticket-statuspriorityassignment">12. Admin: update ticket status/priority/assignment</h3>
-<p><strong><code>PUT /api/v1/admin/support/tickets/{id}</code></strong></p>
-<pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;status&quot;: &quot;PENDING&quot;,
-  &quot;priority&quot;: &quot;LOW&quot;,
-  &quot;category&quot;: &quot;ORDER&quot;,
-  &quot;assignedTo&quot;: &quot;string&quot;
-}'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'PUT'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="s1">  "status": "PENDING",</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="s1">  "priority": "LOW",</span>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="s1">  "category": "ORDER",</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="s1">  "assignedTo": "string"</span>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="s1">}'</span>
+</span></code></pre></div>
 <h4 id="response_9">Response</h4>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;orderId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
-  &quot;subject&quot;: &quot;Looks good&quot;,
-  &quot;category&quot;: &quot;ORDER&quot;,
-  &quot;priority&quot;: &quot;LOW&quot;,
-  &quot;status&quot;: &quot;PENDING&quot;,
-  &quot;assignedTo&quot;: &quot;string&quot;,
-  &quot;lastMessageAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;resolvedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;firstResponseAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;responseDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;resolutionDueAt&quot;: &quot;2024-05-06T12:00:00&quot;,
-  &quot;slaBreached&quot;: true,
-  &quot;csatScore&quot;: 1,
-  &quot;csatComment&quot;: &quot;string&quot;,
-  &quot;csatRatedAt&quot;: &quot;250.00&quot;
-}
-</code></pre>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="p">{</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">  </span><span class="nt">"orderId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">  </span><span class="nt">"shopId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6c5078d3-f8e3-4c88-9afe-48b5423c664f"</span><span class="p">,</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">  </span><span class="nt">"subject"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Looks good"</span><span class="p">,</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">  </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ORDER"</span><span class="p">,</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="w">  </span><span class="nt">"priority"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LOW"</span><span class="p">,</span>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PENDING"</span><span class="p">,</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">  </span><span class="nt">"assignedTo"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">  </span><span class="nt">"lastMessageAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="w">  </span><span class="nt">"resolvedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="w">  </span><span class="nt">"createdAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-14"><a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a><span class="w">  </span><span class="nt">"firstResponseAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-15"><a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="w">  </span><span class="nt">"responseDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-16"><a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a><span class="w">  </span><span class="nt">"resolutionDueAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-05-06T12:00:00"</span><span class="p">,</span>
+</span><span id="__span-25-17"><a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="w">  </span><span class="nt">"slaBreached"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-25-18"><a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a><span class="w">  </span><span class="nt">"csatScore"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-25-19"><a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a><span class="w">  </span><span class="nt">"csatComment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="p">,</span>
+</span><span id="__span-25-20"><a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a><span class="w">  </span><span class="nt">"csatRatedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"250.00"</span>
+</span><span id="__span-25-21"><a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a><span class="p">}</span>
+</span></code></pre></div>
 <hr />
 <h3 id="13-admin-download-a-support-attachment">13. Admin: download a support attachment</h3>
-<p><strong><code>GET /api/v1/admin/support/tickets/{id}/attachments/{attachmentId}</code></strong></p>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
-  -H 'accept: */*' \
-  -H 'Authorization: Bearer &lt;admin_token&gt;'
-</code></pre>
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}</span>
+</div>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>curl<span class="w"> </span>-X<span class="w"> </span><span class="s1">'GET'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span><span class="s1">'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'accept: */*'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Authorization: Bearer &lt;admin_token&gt;'</span>
+</span></code></pre></div>
 <h4 id="response_10">Response</h4>
-<pre><code class="language-text">&lt;binary attachment content&gt;
-</code></pre>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>&lt;binary attachment content&gt;
+</span></code></pre></div>
 <hr />
 
 
@@ -2943,8 +3668,16 @@ curl -X 'GET' \
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
@@ -2971,10 +3704,12 @@ curl -X 'GET' \
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.tracking", "navigation.instant", "navigation.instant.progress", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
