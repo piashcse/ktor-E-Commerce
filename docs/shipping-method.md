@@ -39,7 +39,7 @@ Authorization: Bearer <admin_access_token>
 
 Retrieve all available shipping methods.
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -77,7 +77,7 @@ Create a new shipping method.
 | `price` | double | Yes | Cost of shipping |
 | `deliveryTime` | string | No | Estimated delivery time |
 
-#### Example Request
+#### Request
 
 ```json
 {

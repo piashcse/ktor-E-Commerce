@@ -42,7 +42,7 @@ by the provider callback (or an admin confirmation); COD payments follow the ord
 | `paymentMethod` | string | Yes | Payment method (e.g., "CREDIT_CARD", "BANK_TRANSFER", "PAYPAL", "COD") |
 | `transactionId` | string | No | Provider transaction id / idempotency reference |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -57,7 +57,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -89,7 +89,7 @@ Retrieve details of a specific payment by its ID.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -98,7 +98,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -130,7 +130,7 @@ Retrieve all payments associated with a specific order. This is useful for track
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -139,7 +139,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 

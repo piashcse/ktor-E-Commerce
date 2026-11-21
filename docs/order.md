@@ -48,7 +48,7 @@ All Order endpoints require Bearer token authentication.
 
 Retrieve all orders placed by the authenticated customer.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -66,7 +66,7 @@ Update the status of an order. The allowed statuses depend on the user role.
 - **Customer**: `CANCELED`, `RECEIVED`
 - **Seller**: `CONFIRMED`, `SHIPPED`, `DELIVERED`
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PATCH' \
@@ -88,7 +88,7 @@ Cancel an order and provide a reason. This will restore stock for all items in t
 |-------|------|----------|-------------|
 | `reason` | string | Yes | Reason for cancellation |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \

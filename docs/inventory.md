@@ -27,7 +27,7 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 Update the stock quantity for a specific product using atomic operations (`add`, `subtract`, `set`).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -35,7 +35,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <seller_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -53,7 +53,7 @@ curl -X 'PUT' \
 
 Retrieve inventory records that have fallen below the minimum stock level.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \

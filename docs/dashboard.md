@@ -30,7 +30,7 @@ All Dashboard endpoints require `ADMIN` role.
 
 Returns aggregate statistics for the main dashboard view including revenue, orders, users, products, and shops.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -38,7 +38,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -65,7 +65,7 @@ Returns revenue data with daily breakdown and average order value for a date ran
 | `startDate` | string | No | Start date (YYYY-MM-DD) |
 | `endDate` | string | No | End date (YYYY-MM-DD) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -73,7 +73,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -102,7 +102,7 @@ Returns order status distribution and recent orders.
 |-----------|------|----------|-------------|
 | `status` | string | No | Filter by order status (e.g., `PENDING`, `PAID`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -110,7 +110,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -143,7 +143,7 @@ Returns user registration trends over a specified period.
 |-----------|------|----------|-------------|
 | `days` | int | No | Number of days to look back (default: 30) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -151,7 +151,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -180,7 +180,7 @@ Returns best-selling products ranked by total sales.
 |-----------|------|----------|-------------|
 | `limit` | int | No | Number of top products to return (default: 10) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -188,7 +188,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -219,7 +219,7 @@ Returns a combined feed of recent orders and user registrations.
 |-----------|------|----------|-------------|
 | `limit` | int | No | Number of activities to return (default: 20) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -227,7 +227,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [

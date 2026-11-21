@@ -74,7 +74,7 @@ Authenticate a user and receive access + refresh tokens for subsequent API calls
 | `userType` | string | Yes | Type of user (`customer`, `seller`, `admin`) |
 | `mfaCode` | string | Conditional | 6-digit TOTP code. Required when MFA is enabled for the account |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -88,7 +88,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -145,7 +145,7 @@ Register a new user account. Users can register with the same email for differen
 | `password` | string | Yes | User's password (min 8 chars, uppercase, lowercase, digit, special char) |
 | `userType` | string | Yes | Type of user (`customer`, `seller`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -159,7 +159,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 201 Created**
 
@@ -187,7 +187,7 @@ Verify the OTP (One-Time Password) sent to user's email during registration.
 | `userId` | string | Yes | User ID received during registration |
 | `otp` | string | Yes | OTP code sent to user's email |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -200,7 +200,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -225,7 +225,7 @@ Request a password reset verification code. The code will be sent to the user's 
 | `email` | string | Yes | User's email address |
 | `userType` | string | Yes | Specify user type (`customer`, `seller`, `admin`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -238,7 +238,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -267,7 +267,7 @@ Reset user password using the verification code sent via email.
 | `newPassword` | string | Yes | New password (min 8 chars, uppercase, lowercase, digit, special char) |
 | `userType` | string | Yes | Specify user type if multiple accounts exist |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -282,7 +282,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -306,7 +306,7 @@ Refresh an expired access token using a valid refresh token. Returns a new acces
 |-----------|------|----------|-------------|
 | `refreshToken` | string | Yes | Refresh token received during login |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -318,7 +318,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -360,7 +360,7 @@ Logout the authenticated user and revoke the refresh token to prevent further to
 |-----------|------|----------|-------------|
 | `refreshToken` | string | No | Specific refresh token to revoke (if empty, all user tokens revoked) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -373,7 +373,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -405,7 +405,7 @@ Change password for an authenticated user. Requires valid access token.
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -419,7 +419,7 @@ curl -X 'PUT' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -456,7 +456,7 @@ must be allowed to grant that role.
 | `accept` | `application/json` | Yes |
 | `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -465,7 +465,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -494,7 +494,7 @@ Deactivate a user account, preventing the user from logging in or accessing the 
 | `accept` | `application/json` | Yes |
 | `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -503,7 +503,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 "User deactivated successfully"
@@ -530,7 +530,7 @@ Activate a previously deactivated user account, allowing the user to log in and 
 | `accept` | `application/json` | Yes |
 | `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -539,7 +539,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 "User activated successfully"
@@ -561,7 +561,7 @@ succeeds.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -569,7 +569,7 @@ curl -X 'POST' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -594,7 +594,7 @@ Verify a 6-digit code from the authenticator app and enable MFA for the account.
 |-----------|------|----------|-------------|
 | `code` | string | Yes | 6-digit TOTP code from the authenticator app |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -604,7 +604,7 @@ curl -X 'POST' \
   -d '{ "code": "123456" }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -626,7 +626,7 @@ Verify a current authenticator code and disable MFA. The stored secret is remove
 |-----------|------|----------|-------------|
 | `code` | string | Yes | 6-digit TOTP code from the authenticator app |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -636,7 +636,7 @@ curl -X 'POST' \
   -d '{ "code": "123456" }'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 

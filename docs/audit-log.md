@@ -35,7 +35,7 @@ Returns paginated audit log entries with optional filters.
 | `limit` | int | No | Max results (default: 20, max: 100) |
 | `offset` | int | No | Pagination offset |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -43,7 +43,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -86,7 +86,7 @@ Returns a single audit log entry.
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the audit log entry |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -94,7 +94,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

@@ -37,7 +37,7 @@ Retrieve a list of all policies including Privacy Policies and Terms & Condition
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -45,7 +45,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -95,7 +95,7 @@ Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -103,7 +103,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -146,7 +146,7 @@ Create a new policy with specified type, title, content, version, and effective 
 | `version` | string | Yes | Version number of the policy |
 | `effectiveDate` | string | Yes | ISO 8601 date when policy becomes effective |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -163,7 +163,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -199,7 +199,7 @@ Get policy version history
 | `accept` | `application/json` | Yes |
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -208,7 +208,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -254,7 +254,7 @@ Create a new consent record when a user agrees to a privacy policy. This endpoin
 |-------|------|----------|-------------|
 | `policyId` | string | Yes | UUID of the policy being consented to |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -267,7 +267,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

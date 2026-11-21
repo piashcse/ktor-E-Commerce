@@ -73,7 +73,7 @@ Create a new shop with a specified name and category. The shop will be associate
 | `name` | string | Yes | Name of the shop |
 | `categoryId` | string | Yes | UUID of the shop category |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -87,7 +87,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -105,7 +105,7 @@ curl -X 'POST' \
 `multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
 The response is the updated shop with its new `logo` URL.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -114,7 +114,7 @@ curl -X 'POST' \
   -F 'file=@shop-logo.png'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -141,7 +141,7 @@ Retrieve a list of public shops with optional status and category filters.
 | `limit` | number | No | Maximum number of shops to return |
 | `offset` | number | No | Number of shops to skip |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -149,7 +149,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -176,7 +176,7 @@ curl -X 'GET' \
 
 Approve a pending shop application (Admin only).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -184,7 +184,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

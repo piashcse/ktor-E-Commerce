@@ -49,7 +49,7 @@ curl -X 'GET' \
 
 Update the status of a refund request (APPROVED, REJECTED, etc.).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \

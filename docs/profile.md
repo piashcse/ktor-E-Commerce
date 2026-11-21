@@ -34,7 +34,7 @@ Retrieve the profile information for the authenticated user.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -43,7 +43,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -87,7 +87,7 @@ Update profile information for the authenticated user.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -96,7 +96,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -139,7 +139,7 @@ Upload a profile image for the authenticated user. The image will be processed a
 - PNG (.png)
 - GIF (.gif)
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -150,7 +150,7 @@ curl -X 'POST' \
   -F 'image=@profile.jpg;type=image/jpeg'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 "/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"

@@ -44,7 +44,7 @@ Create a new product sub category with a specified name and associated product c
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -58,7 +58,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -89,7 +89,7 @@ Retrieve a list of product sub categories with optional filtering and pagination
 
 No authentication required (public).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -97,7 +97,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -136,7 +136,7 @@ Update an existing product sub category by its ID. You can modify the sub catego
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -145,7 +145,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -176,7 +176,7 @@ Delete a product sub category by its ID. This operation permanently removes the 
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -185,7 +185,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

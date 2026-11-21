@@ -46,7 +46,7 @@ REQUESTED --approve--> APPROVED --pay--> PAID
 - `pay` is the only transition that records the external transfer; it requires `APPROVED` status.
 - Suspended sellers and shops without `APPROVED` status cannot request payouts.
 
-## Example: request a payout
+## Request a payout
 
 ```bash
 curl -X 'POST' \
@@ -57,7 +57,7 @@ curl -X 'POST' \
   -d '{"amount": "250.00"}'
 ```
 
-## Example: admin marks a payout paid
+## Admin marks a payout paid
 
 ```bash
 curl -X 'POST' \

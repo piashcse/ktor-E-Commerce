@@ -41,7 +41,7 @@ Create a new brand with a specified name.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -51,7 +51,7 @@ curl -X 'POST' \
   -d ''
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -80,7 +80,7 @@ Retrieve a list of brands with optional pagination support.
 
 No authentication required (public).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -88,7 +88,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -136,7 +136,7 @@ Update an existing brand by its ID. You can modify the brand name.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -145,7 +145,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -165,7 +165,7 @@ Upload a logo for an existing brand. The request must be `multipart/form-data` w
 image part (`jpg`, `jpeg`, `png`, `gif` or `webp`; max 5 MB). The returned response is the updated
 brand with its new `logo` URL.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -174,7 +174,7 @@ curl -X 'POST' \
   -F 'file=@logo.png'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -204,7 +204,7 @@ Delete a brand by its ID. This operation permanently removes the brand from the 
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -213,7 +213,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

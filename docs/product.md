@@ -59,7 +59,7 @@ Authorization: Bearer <your_access_token>
 
 Create a new product as a seller. The product will be automatically associated with your shop.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -79,7 +79,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -111,7 +111,7 @@ Search for products using various filters. This is a public endpoint.
 | `limit` | number | No | Default: 20 |
 | `offset` | number | No | Default: 0 |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -127,7 +127,7 @@ curl -X 'GET' \
 
 Retrieve all products belonging to the authenticated seller.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -143,7 +143,7 @@ curl -X 'GET' \
 
 Upload an image for a specific product.
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \

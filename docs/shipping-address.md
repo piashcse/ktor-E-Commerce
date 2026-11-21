@@ -32,7 +32,7 @@ Authorization: Bearer <your_access_token>
 
 Retrieve all shipping addresses associated with the authenticated user.
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -76,7 +76,7 @@ Add a new shipping address for the authenticated user.
 | `zipCode` | string | Yes | Zip or postal code |
 | `isDefault` | boolean | No | Whether this is the default address (default: false) |
 
-#### Example Request
+#### Request
 
 ```json
 {

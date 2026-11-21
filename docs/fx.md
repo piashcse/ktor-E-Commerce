@@ -31,7 +31,7 @@ is rejected for new checkout calculations.
 |---|---|---|---|
 | `rate` | number/string | Yes | Units of the target currency per 1 USD; must be positive |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -41,7 +41,7 @@ curl -X 'PUT' \
   -d '{"rate": "0.92"}'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

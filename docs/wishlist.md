@@ -44,7 +44,7 @@ Add a product to the authenticated user's wishlist.
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -57,7 +57,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -92,7 +92,7 @@ Retrieve all products in the authenticated user's wishlist with pagination.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -101,7 +101,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -134,7 +134,7 @@ Check if a specific product exists in the user's wishlist.
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to check |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -143,7 +143,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 true
@@ -165,7 +165,7 @@ the wishlist.
 | `productId` | string | Yes | UUID of the wishlist product to move |
 | `quantity` | number | No | Quantity to add (default: 1) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -195,7 +195,7 @@ Remove a specific product from the authenticated user's wishlist.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -204,7 +204,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
