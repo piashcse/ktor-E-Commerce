@@ -12,9 +12,8 @@ scalable, and efficient service for handling your e-commerce needs.
 
 Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery for frontend developers and testers.
 
-For a plain-text, always-current list of every operation (method, path, description and access
-level), see the [Complete API Endpoint Index](endpoints.md). It is generated from the same OpenAPI
-document as Swagger UI.
+Every module has its own API page under **API Reference**, with methods, paths, access rules and
+request/response examples. Swagger UI remains the live contract generated from the route tree.
 
 <p align="center">
   <img width="100%" height="40%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/swagger.gif" />
@@ -232,7 +231,6 @@ Connection tab:
   <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/ktor-postgres.png" />
 </p>
 
-
 ## 📧 SMTP Email Setup
 
 This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). The email configuration is managed through environment variables in your `.env` file.
@@ -275,8 +273,6 @@ For comprehensive API documentation, please refer to the following resources:
 - [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
 - [Dashboard API](dashboard.md) - Admin dashboard analytics
 - [Audit Log API](audit-log.md) - Admin audit log tracking
-
-
 
 ## 👨 Developed By
 

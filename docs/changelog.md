@@ -4,228 +4,32 @@ hide:
 ---
 # Changelog
 
-## [Unreleased]
+## [3.5.1] - 11 Jul 2026
 
-### Fixed
+### What's Changed
 
-- Full-codebase audit fixes: per-order reservation cleanup, direct PAID status
-  rejection, canceled-parcel delivery handling, duplicate label/order
-  idempotency, inStock filtering, variant inventory buckets, coupon line-level
-  tax, wallet/gift tax exclusion, failed-payment confirmation, duplicate live
-  payment intents, refund-webhook reconciliation ordering, subscription
-  amount/currency and grace handling, loyalty clawback, gift-card locking,
-  COD ORIGINAL-refund guard, exact-role API keys, admin role mutation guard,
-  refresh-token reuse invalidation, refund evidence upload, durable audit/review
-  outbox events, notification retry propagation, promotion end-of-day, tax-zone
-  specificity, sitemap SQL limits, support first-response, POS shop status,
-  warehouse allocation restore and payment charge leases.
-- Performance/conciseness pass: product funnel batch-loads orders/items/products
-  and reports conversion from distinct purchase orders; cart stock preview uses
-  active warehouses; variant listing batch-loads stock; coupon/promotion tax
-  allocation is persisted once per eligible line.
-- Test suite restored to green: 654 tests, including the five stale integration
-  expectations (fraud velocity fixture, admin-only refund completion, review
-  self-vote, subscription activation and KYC document requirements).
-- `V57` now uses PostgreSQL-14-compatible partial unique indexes instead of
-  `NULLS NOT DISTINCT`; the documented minimum is PostgreSQL 14. Databases that
-  already applied the previous V57 checksum should run Flyway repair once.
-- Late payment webhooks for auto-canceled orders are refunded instead of
-  resurrecting the order; unmatched webhooks stay retryable instead of being
-  acknowledged as ignored.
-- Refund money authority is checked before the provider refund call; refund
-  ledger keys are per refund request; refund evidence files must belong to the
-  authorized refund; provider `REFUND_UPDATED` webhooks now reconcile local
-  stock/payout/payment effects idempotently.
-- Payment creation is serialized per order with an in-process lock plus a
-  database-backed `payment_charge_lock` lease (`V69`), closing the double-charge
-  window across application instances; wallet and promotion rows are locked
-  before balance/usage checks.
-- Seller payout rows are created in the payment-completion transaction; payout
-  approve/reject/mark-paid transitions are row-locked; the payout idempotency
-  event is published after the transaction (fixes `No transaction in context`).
-- Payout balances/statements are currency-scoped (`currency` query parameter or
-  the primary currency) instead of summing across currencies.
-- RMA-created refunds enforce the cumulative remaining quantity across refunds.
-- Order lines record warehouse-level stock allocations (`V68`); cancellations and
-  refunds restore each warehouse that actually shipped the stock.
-- Carrier webhooks accept HMAC-SHA256 signatures only; API keys cannot mint or
-  revoke API keys; OTP verification is body-only.
-- TOTP and digital-download keys are derived subkeys instead of reusing
-  `JWT_SECRET`; unauthenticated metrics are disabled when proxy headers are
-  trusted; query values are sanitized before request logging.
-- Coverage gates pass at 59.43 % instruction / 31.60 % branch, including the
-  previously failing coupon, refund, review, dashboard and payout packages.
+- Update auth code structure by [@piashcse](https://github.com/piashcse) in [#119](https://github.com/piashcse/ktor-E-Commerce/pull/119)
+- Update ktor 3.5.1 by [@piashcse](https://github.com/piashcse) in [#120](https://github.com/piashcse/ktor-E-Commerce/pull/120)
+- Fixing issues by [@piashcse](https://github.com/piashcse) in [#121](https://github.com/piashcse/ktor-E-Commerce/pull/121)
+- refactor: rename skip to offset in pagination, update models, and stabilize tests by [@piashcse](https://github.com/piashcse) in [#122](https://github.com/piashcse/ktor-E-Commerce/pull/122)
+- refactor: migrate to /api/v1 prefix across all endpoints and standardize responses by [@piashcse](https://github.com/piashcse) in [#123](https://github.com/piashcse/ktor-E-Commerce/pull/123)
+- refactor: optimize codebase, fix bugs, and resolve build errors by [@piashcse](https://github.com/piashcse) in [#124](https://github.com/piashcse/ktor-E-Commerce/pull/124)
+- fix: enforce order transitions, secure change-password, fix concurrency issues by [@piashcse](https://github.com/piashcse) in [#125](https://github.com/piashcse/ktor-E-Commerce/pull/125)
+- Admin apis and audit trail by [@piashcse](https://github.com/piashcse) in [#126](https://github.com/piashcse/ktor-E-Commerce/pull/126)
+- Update docs by [@piashcse](https://github.com/piashcse) in [#127](https://github.com/piashcse/ktor-E-Commerce/pull/127)
+- docs: add API documentation for Dashboard and Audit Log endpoints by [@piashcse](https://github.com/piashcse) in [#128](https://github.com/piashcse/ktor-E-Commerce/pull/128)
+- refactor: optimize queries, add indexes, and improve caching by [@piashcse](https://github.com/piashcse) in [#129](https://github.com/piashcse/ktor-E-Commerce/pull/129)
+- Architecture improvements and code refactoring by [@piashcse](https://github.com/piashcse) in [#130](https://github.com/piashcse/ktor-E-Commerce/pull/130)
+- refactor: optimize imports and remove unused entities/extensions by [@piashcse](https://github.com/piashcse) in [#131](https://github.com/piashcse/ktor-E-Commerce/pull/131)
+- feat: enhance product search with fuzzy matching, faceted aggregation and suggestions by [@piashcse](https://github.com/piashcse) in [#133](https://github.com/piashcse/ktor-E-Commerce/pull/133)
+- Improve rate limiting by [@piashcse](https://github.com/piashcse) in [#132](https://github.com/piashcse/ktor-E-Commerce/pull/132)
+- Concurrency async processing by [@piashcse](https://github.com/piashcse) in [#134](https://github.com/piashcse/ktor-E-Commerce/pull/134)
+- refactor: align schema types, remove stock_quantity column, and enforce constraints by [@piashcse](https://github.com/piashcse) in [#135](https://github.com/piashcse/ktor-E-Commerce/pull/135)
+- feat: add email rate limiting and storage quota enforcement by [@piashcse](https://github.com/piashcse) in [#136](https://github.com/piashcse/ktor-E-Commerce/pull/136)
+- feat: improve resilience with request tracing, retry logic, and dead-letter handling by [@piashcse](https://github.com/piashcse) in [#137](https://github.com/piashcse/ktor-E-Commerce/pull/137)
+- Code optimization refactor by [@piashcse](https://github.com/piashcse) in [#138](https://github.com/piashcse/ktor-E-Commerce/pull/138)
 
-- B2B purchase-order fulfillment now creates the buyer order, decrements stock and links the PO to
-  the generated order.
-- Digital downloads return short-lived signed URLs; raw asset URLs are no longer exposed in JSON.
-- Added a documented data-retention and DSAR/erasure policy.
-- BOPIS checkout no longer requires a shipping address/method and now checks/decrements stock at the
-  pickup warehouse.
-- POS supports product variants and warehouse-scoped variant stock.
-- `REVIEW` payments now hold order finalization until an admin releases the risk review.
-- Added metrics for subscriptions, digital downloads, support tickets, B2B quotes and webhooks.
-- Cancellation/full-refund now reverses order lifecycle effects: earned points are removed, redeemed
-  points and store credit are restored, gift-card redemptions are refunded to the card, and
-  order-based digital entitlements are revoked. Reversals are idempotent per order.
-- Loyalty points are earned from the USD-normalized order total, not the native-currency total.
-- Wallet/points/store-credit redemptions are capped before debit, so unused balances are no longer
-  burned when the requested amount exceeds the order total.
-- Tax is recalculated on the post-coupon/post-promotion taxable amount; inclusive-tax lines no longer
-  double-tax under automatic promotions.
-- Refund tax is capped per item, cumulative tax refunds are tracked, and tax-inclusive items cannot
-  receive a separate tax refund.
-- Payment webhooks now propagate processing failures so providers retry instead of receiving 200.
-- Subscription renewal now creates `PENDING` invoices and `PAST_DUE` subscriptions; admin activation
-  records payment, advances the period and refreshes entitlement expiry. Canceled/expired
-  subscriptions no longer expose active downloads.
-- POS sales now use warehouse-scoped stock, apply tax rules, support retry idempotency, award loyalty
-  points and emit `PaymentCompletedEvent` for payouts/commission/notifications.
-- BOPIS readiness/completion requires a paid, non-canceled order.
-- B2B quote responses reject non-positive quantities and acceptance locks the account row before the
-  credit check.
-- Passkeys validate RP-ID hash, user presence and signature counters; challenges are purged.
-- Social and passkey login enforce MFA when enabled; email matching is normalized.
-- Shipping label purchase accepts an idempotency key.
-- Commission is calculated pre-tax and payout snapshots the applied rate for refunds.
-- Store locator and sitemap exclude non-approved shops.
-- CMS bodies strip script/style/iframe and inline event handlers; page SEO falls back to CMS fields.
-- GDPR export covers wallet, subscriptions, support, passkeys, digital entitlements, B2B and seller
-  data; erasure removes/anonymizes those records and clears order contact PII.
-- Analytics funnel purchase stages are session-attributed and product views/carts count distinct
-  sessions.
-- Support write routes are rate-limited. Tests assert per-test identifiers instead of global counts.
-- Docs corrected stale registration/payment examples.
-
-### Added
-
-- Unified RBAC (`V66`, `V67`): database-backed permissions and roles, platform role assignment,
-  effective-permission resolution with `authz_version` caching, shop memberships and
-  invitations, `/me/permissions`, and admin role CRUD. Admin route groups, mixed
-  customer/seller/admin routes, notifications, invoices, shipments and B2B admin routes now
-  enforce explicit permissions. See [Users, Roles & Permissions](rbac.md).
-- Endpoint index and README now document 383 operations, including the RBAC and seller membership APIs.
-- Subscription recurring billing (`V50`): stored provider customer/payment-method references,
-  off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
-  automatic expiry with entitlement revocation, and webhook-driven invoice activation.
-- Integration assertions now scope admin account/ticket checks to the test's unique identifiers
-  instead of relying on global row counts.
-- Passkey registration/deletion now requires recent password or MFA step-up; login options can
-  require authenticator user verification via `WEBAUTHN_REQUIRE_UV`.
-- Support tickets accept private image attachments with authenticated customer/admin downloads
-  (`V55`).
-- POS receipts and printable session/Z reports are available to the selling shop.
-- Support tickets now expose first-response/resolution SLA deadlines with breach detection, and
-  customers can submit CSAT scores/comments after resolution (`V54`).
-- Added admin webhook inbox inspection and replay for payment/carrier events, with audit logging.
-- POS cash-drawer sessions (`V53`): open/close a drawer per shop, link sales to a session,
-  accumulate cash/card totals and reconcile expected cash against the counted amount.
-- Audit logging now covers B2B account/invoice actions, subscription plan/billing actions and
-  support ticket assignment/replies, using a shared actor-resolution helper.
-- WebAuthn challenges are now stored in the database, making registration/login ceremonies
-  single-use and safe across multiple nodes (`V52`); expired challenges are purged daily.
-- Analytics ingestion now honors an explicit consent flag and filters bot/crawler user agents.
-- Daily retention enforcement now purges old webhook inbox rows, analytics events, expired digital
-  entitlements, idle carts and closed support tickets, with a purged-row metric.
-- B2B net-terms invoices (`V51`): invoice generation on PO fulfillment, buyer/seller/admin invoice
-  lists, overdue reminders and admin settlement that completes the linked order payment.
-- Identity hardening (`V46`): Google ID-token social login with automatic verified customer
-  creation/account linking, plus WebAuthn passkey registration, passwordless login and credential
-  management (`GOOGLE_CLIENT_ID`, `WEBAUTHN_RP_ID/RP_NAME/ORIGIN`).
-- Support tickets (`V45`): customer ticket creation with optional order linkage, threaded
-  replies, admin internal notes, assignment, priorities and resolution/close lifecycle.
-- CMS/SEO (`V44`): published/draft CMS pages with slugs and SEO fields, per-entity locale-aware
-  SEO metadata (`HOME`, `PAGE`, `PRODUCT`, `CATEGORY`, `SHOP`), generated `sitemap.xml`
-  (products/categories/pages) and `robots.txt` using `PUBLIC_BASE_URL`.
-- Omnichannel (`V43`): store locator with distance search, BOPIS pickup checkout with
-  pickup codes/status and seller verification, plus in-store POS sales that create completed
-  orders, decrement stock and record payments. Warehouses now carry coordinates, hours,
-  pickup/POS flags.
-- B2B wholesaling (`V42`): business accounts with approval/credit limits/payment terms,
-  quote requests and seller pricing, quote acceptance into purchase orders, and PO fulfillment.
-  Credit limits are enforced against open purchase orders; PO due dates follow net terms.
-- Subscriptions and digital goods (`V41`): monthly/yearly plans tied to digital products,
-  subscribe/cancel flows, paid invoice records, manual renewal billing, zero-shipping digital
-  checkout, and download entitlements granted on payment or subscription.
-- Seller tools (`V40`): post-delivery seller reviews with shop rating aggregation, buyer/seller
-  disputes with an admin resolution lifecycle, and scope-aware commission rules
-  (seller > shop > category > seller default). Payouts and refund commission reversals now use the
-  resolved rule per line.
-- Funnel/attribution analytics (`V39`): anonymous storefront event ingestion, distinct-session
-  conversion funnels, UTM/referrer order attribution, and per-product view→cart→purchase reports.
-  Checkout accepts first-touch attribution and orders expose source/medium/campaign.
-- Internationalization (`V38`): `Accept-Language`/`X-Locale`/`?lang=` negotiation, translated API
-  message catalogs for `en`/`es`/`fr`/`bn`/`hi`, localized product content, order/checkout locale
-  persistence, and currency-aware formatted totals in checkout/order responses.
-- Loyalty wallet (`V37`): points earned on paid orders, point/store-credit/gift-card redemption
-  at checkout, referral codes with one-time rewards, and admin gift-card issuance plus
-  store-credit adjustments. Orders expose `walletDiscount`, `giftCardDiscount` and
-  `giftCardCode`; checkout summaries preview wallet discounts and balances.
-- Fraud/risk controls (`V36`): velocity rules (`ORDER_COUNT`, `ORDER_AMOUNT`,
-  `PAYMENT_ATTEMPTS`), user/email/IP blocklists, `REQUIRE_3DS` enforcement, AVS/CVV capture,
-  immutable `payment_risk` history, and a chargeback/dispute lifecycle. Payments return
-  `403 FRAUD_BLOCKED` when a rule blocks them; review payments appear in the high-risk feed.
-- Tax engine (`V35`): tax zones/nexus, product tax classes, inclusive vs exclusive pricing,
-  customer/business exemptions, and per-line tax snapshots/breakdowns. Checkout accepts
-  `businessTaxId`; order items expose `taxRate`, `taxInclusive` and `taxClassId`.
-- Shipping carrier integration (`SHIPPING_PROVIDER=shippo`): rate quotes, label purchase,
-  per-line partial fulfillment, shipment/parcel history, and signed tracking webhooks
-  (`V34` adds `shipment`, `shipment_item` and `carrier_webhook_event`). Orders move to
-  `SHIPPED` when every unit is allocated and to `DELIVERED` when every parcel is delivered.
-- Payment provider adapter (`PAYMENT_PROVIDER=stripe`): PaymentIntent creation with
-  `clientSecret`/`nextActionUrl`, 3DS/SCA status propagation, signed webhooks deduplicated by
-  `(provider, event_id)`, and provider-side refunds for `refundMethod=ORIGINAL`
-  (`V33` adds provider/SCA columns, a webhook inbox and refund references).
-- TOTP multi-factor authentication (`V32`): users can start setup, enable MFA with a verified
-  6-digit code, and disable it the same way. Login now accepts an optional `mfaCode`; accounts with
-  MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
-  is wrong. Bad codes count toward the existing lockout policy.
-- Endpoint index and README now document the MFA and payment-webhook operations
-  (366 operations total at the time).
-
-### Fixed
-
-- Docker image build used a lowercase distribution name while Gradle emitted `ktor-ECommerce`; the
-  application distribution is now explicitly `ktor-ecom` (matches `Dockerfile` and `bin/ktor-ecom`).
-- Brand create/rename/delete errors no longer say `BrandResponse ...`; they use the user-facing
-  resource label.
-- Missing `id` path parameters now return `400 MISSING_PARAMETER` instead of `401 UNAUTHORIZED`
-  (RMA, notification, payout).
-- 5xx exceptions (`DatabaseException`, `EmailException`) now carry `DATABASE_ERROR` / `EMAIL_ERROR`
-  instead of masquerading as `BAD_REQUEST`.
-- OTP generation no longer uses `Double.pow` (removed an off-by-one and overflow risk).
-- HSTS is only emitted when `FORCE_HTTPS=true`; pretty JSON is opt-in with `JSON_PRETTY_PRINT=true`.
-- Email logs mask recipient addresses (PII).
-
-### Changed
-
-- Added reusable `receiveSingleImage` helper; all five image-upload endpoints use it.
-- Added `respondDeleted` and standardized delete acknowledgements across catalog/cart/address/
-  review/warehouse/API-key routes.
-- Consolidated `BrandRequest` / `ProductCategoryRequest` / `ShopCategoryRequest` into `NameRequest`.
-- Extracted `OrderStatusPolicy` so order status authorization is no longer embedded in the route.
-- `TaxService`, `FxService` and `FeatureFlags` are injectable classes instead of global objects.
-- OpenAPI: standardized error responses on auth/order/product/checkout routes; license corrected to
-  Apache-2.0; added `LICENSE`.
-- Docs: added a generated **Complete API Endpoint Index** (`docs/endpoints.md`, 206 operations at the time),
-  refreshed per-module tables (FX, inventory, payment, payouts, KYC, policies/consent, products,
-  variants, refunds, reviews, dashboard, shops, wishlist), and corrected stale paths/request fields.
-- README: every operation now has the same `<details>` block format (Description, Curl,
-  Request URL, Response); missing operations were generated from OpenAPI and the complete set is
-  also published as `docs/endpoints.md`.
-- Testing: added Postgres-backed service/commerce/order/after-sales integration suites, pure
-  unit tests for serializers/enums/validators/pagination/date-time/JDBC binding, and split JaCoCo
-  gates (local unit baseline + CI integration target). Current baseline: 421 tests, 54.2%
-  instruction / 26.0% branch coverage.
-- Fixed a payment bug where `createPayment` validated the order outside a transaction.
-- Added `orderItem.id` to order responses so clients can create refunds/RMAs.
-- Validation: standardized on Valiktor for request shape, added field-level
-  `FieldValidationException`/`errors[]`, removed `require(...)` from request DTOs, and stopped
-  mapping programming `IllegalArgumentException`s to 400.
-- Exception handling: SQLSTATE-based constraint mapping (unique/FK/not-null/check/data),
-  field errors for missing/invalid parameters, and 413/415 responses.
-- CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
-  image, and refuses to silently skip PostgreSQL integration tests.
+**Full Changelog**: [3.5.0...3.5.1](https://github.com/piashcse/ktor-E-Commerce/compare/3.5.0...3.5.1)
 
 ## [3.5.0] - 27 May 2026
 

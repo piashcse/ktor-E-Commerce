@@ -1,8 +1,6 @@
-# Payment API
+# Payment
 
-This documentation provides comprehensive details for the Payment API endpoints. The API supports creating and retrieving payments within the platform. Payments are associated with specific orders and support various payment methods for transaction management.
-
-**Base URL:** `http://localhost:8080`
+Payment intents, provider webhooks, risk review and refunds.
 
 ## Authentication
 
@@ -18,6 +16,10 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
 | `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
 | `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
+| `GET` | `/api/v1/admin/payments` | Admin - List payments | Yes |
+| `POST` | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results for a payment | Yes |
+| `POST` | `/api/v1/admin/webhooks/bulk/replay` | Admin: bulk replay webhooks | Yes |
+| `GET` | `/api/v1/admin/webhooks/{id}` | Admin: inspect a webhook payload | Yes |
 
 ---
 
@@ -27,12 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/payments`**
 
-Create a new payment intent for an existing order. **The status is owned by the server**:
-clients cannot mark a payment `COMPLETED`. Non-COD payments start `PENDING` and are completed
-by the provider callback (or an admin confirmation); COD payments follow the order lifecycle.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `amount` | number | Yes | Payment amount; must match the order total |
@@ -40,7 +36,7 @@ by the provider callback (or an admin confirmation); COD payments follow the ord
 | `paymentMethod` | string | Yes | Payment method (e.g., "CREDIT_CARD", "BANK_TRANSFER", "PAYPAL", "COD") |
 | `transactionId` | string | No | Provider transaction id / idempotency reference |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -55,7 +51,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -67,25 +63,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the payment |
-| `orderId` | string | UUID of the associated order |
-| `amount` | number | Payment amount |
-| `status` | string | Current payment status |
-| `paymentMethod` | string | Payment method used |
-
 ---
 
-### 3. Get Payment by ID
+### 2. Get Payment by ID
 
 **`GET /api/v1/payments/{id}`**
-
-Retrieve details of a specific payment by its ID.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -97,7 +79,7 @@ Retrieve details of a specific payment by its ID.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -106,7 +88,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -118,25 +100,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the payment |
-| `orderId` | string | UUID of the associated order |
-| `amount` | number | Payment amount |
-| `status` | string | Current payment status |
-| `paymentMethod` | string | Payment method used |
-
 ---
 
-### 4. Get Payments by Order
+### 3. Get Payments by Order
 
 **`GET /api/v1/payments/order/{orderId}`**
-
-Retrieve all payments associated with a specific order. This is useful for tracking payment history and partial payments.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -148,7 +116,7 @@ Retrieve all payments associated with a specific order. This is useful for track
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -157,7 +125,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -174,23 +142,150 @@ curl -X 'GET' \
 ]
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of payment objects |
-| `data[].id` | string | Unique identifier for the payment |
-| `data[].orderId` | string | UUID of the associated order |
-| `data[].amount` | number | Payment amount |
-| `data[].status` | string | Current payment status |
-| `data[].paymentMethod` | string | Payment method used |
-| `data[].transactionId` | string | Transaction reference ID (nullable) |
-
 #### Notes
 
 - Payments are returned in descending order by creation date (newest first)
 - This endpoint validates that the authenticated user owns the order
 - Payment amount is validated against order total during creation
+
+---
+
+### 4. Admin - List payments
+
+**`GET /api/v1/admin/payments`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payments?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 5. Record AVS/CVV results for a payment
+
+**`POST /api/v1/admin/payments/{id}/risk`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/risk' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "avsStatus": "MATCH",
+  "cvvStatus": "MATCH"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 6. Admin: bulk replay webhooks
+
+**`POST /api/v1/admin/webhooks/bulk/replay`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/webhooks/bulk/replay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "source": "PAYMENT",
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 7. Admin: inspect a webhook payload
+
+**`GET /api/v1/admin/webhooks/{id}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/webhooks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "source": "PAYMENT",
+  "provider": "stripe",
+  "eventId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "eventType": "CUSTOMER",
+  "status": "RECEIVED",
+  "error": "None",
+  "payload": "{}",
+  "receivedAt": "2024-05-06T12:00:00",
+  "processedAt": "2024-05-06T12:00:00"
+}
+```
 
 ---
 
@@ -203,7 +298,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json
@@ -238,13 +333,10 @@ All error messages are centralized and consistent across all endpoints.
 
 ---
 
-## 4. Confirm Payment (Admin)
+### 8. Confirm Payment (Admin)
 
 **`POST /api/v1/admin/payments/{id}/confirm`**
 
-Confirms a `PENDING` payment as `COMPLETED`. This is the server-side/manual confirmation path
-used when no provider webhook is configured (for example bank transfers or COD reconciliation).
-Repeating the call is idempotent for an already-completed payment.
 
 ```bash
 curl -X 'POST' \
@@ -254,14 +346,9 @@ curl -X 'POST' \
 
 ---
 
-## 5. Provider Webhook
+### 9. Provider Webhook
 
 **`POST /api/v1/payments/webhook/{provider}`**
-
-Public endpoint called by the payment processor. The raw request body and the provider
-signature header are verified before anything is written:
-
-- Stripe sends `Stripe-Signature` (`t=<timestamp>,v1=<hmac-sha256>`); the default tolerance is
   300 seconds and can be tuned with `STRIPE_WEBHOOK_TOLERANCE_SECONDS`.
 - Other adapters can use `X-Webhook-Signature`.
 - Deliveries are deduplicated by `(provider, event_id)`, so retries are safe.
@@ -302,33 +389,15 @@ provider payment, the API issues the refund through the processor and stores
 
 ---
 
-## 6. Release a risk review
+### 10. Release a risk review
 
 **`POST /api/v1/admin/payments/{id}/risk/approve`**
 
-Sets a `REVIEW` payment decision to `ALLOW` and finalizes the order if the payment was already
-captured. `BLOCK` payments cannot be released.
-
----
-
-## Webhook inspection and replay
+### 11. Webhook inspection and replay
 
 **`GET /api/v1/admin/webhooks?source=PAYMENT&status=FAILED`**
 
-Lists stored payment and carrier webhook events. Filters: `source` (`PAYMENT`/`CARRIER`), `status`
-(`RECEIVED`/`PROCESSED`/`IGNORED`/`FAILED`), `limit`, `offset`.
-
-**`POST /api/v1/admin/webhooks/payments/{id}/replay`**
-
-Replays a stored payment payload. Because the payload was signature-verified on receipt, replay
-applies it directly, updates the inbox status/error and writes an audit entry. Use this for provider
-outages or ignored events after the original delivery.
-
 **`POST /api/v1/admin/webhooks/carriers/{id}/replay`**
-
-Same flow for carrier tracking payloads.
-
----
 
 ## Payment Status Values
 

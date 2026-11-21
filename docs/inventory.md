@@ -1,8 +1,6 @@
-# Inventory API
+# Inventory
 
-This documentation provides comprehensive details for the Inventory API endpoints. The API supports managing inventory records for products.
-
-**Base URL:** `http://localhost:8080`
+Per-shop and per-warehouse stock, low-stock alerts and adjustments.
 
 ## Authentication
 
@@ -27,17 +25,13 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 **`PUT /api/v1/seller/inventories/stock/{productId}`**
 
-Update the stock quantity for a specific product using atomic operations (`add`, `subtract`, `set`).
-
-#### Example Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/inventories/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
   -H 'Authorization: Bearer <seller_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -53,27 +47,154 @@ curl -X 'PUT' \
 
 **`GET /api/v1/seller/inventories/low-stock`**
 
-Retrieve inventory records that have fallen below the minimum stock level.
-
-#### Example Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/inventories/low-stock' \
   -H 'Authorization: Bearer <seller_token>'
 ```
 
-## Admin inventory
+### 3. Admin inventory
 
 **`GET /api/v1/admin/inventories`**
 
-Admins can list inventory across every shop with the standard `page`/`perPage` or
-`limit`/`offset` pagination parameters.
 
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/inventories?page=1&perPage=20' \
   -H 'Authorization: Bearer <admin_token>'
+```
+
+---
+
+### 4. Create or update inventory
+
+**`POST /api/v1/seller/inventories`**
+
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/inventories' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "variantId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "warehouseId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "stockQuantity": 1,
+  "reservedQuantity": 1,
+  "minimumStockLevel": 1,
+  "maximumStockLevel": 1
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productName": "Wireless Headphones",
+  "sku": "SKU-12345",
+  "variantId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "warehouseId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "stockQuantity": 1,
+  "reservedQuantity": 1,
+  "minimumStockLevel": 1,
+  "maximumStockLevel": 1,
+  "status": "IN_STOCK",
+  "lastRestocked": "string",
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 5. Get product inventory
+
+**`GET /api/v1/seller/inventories/product/{productId}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/inventories/product/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productName": "Wireless Headphones",
+  "sku": "SKU-12345",
+  "variantId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "warehouseId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "stockQuantity": 1,
+  "reservedQuantity": 1,
+  "minimumStockLevel": 1,
+  "maximumStockLevel": 1,
+  "status": "IN_STOCK",
+  "lastRestocked": "string",
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 6. List shop inventory
+
+**`GET /api/v1/seller/inventories/shop/{shopId}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/inventories/shop/6c5078d3-f8e3-4c88-9afe-48b5423c664f?page=1&perPage=20&q=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "productName": "Wireless Headphones",
+      "sku": "SKU-12345",
+      "variantId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "warehouseId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "stockQuantity": 1,
+      "reservedQuantity": 1,
+      "minimumStockLevel": 1,
+      "maximumStockLevel": 1,
+      "status": "IN_STOCK",
+      "lastRestocked": "string",
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
 ```
 
 ---

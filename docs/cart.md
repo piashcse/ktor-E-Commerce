@@ -1,8 +1,6 @@
-# Cart API
+# Cart
 
-This documentation provides comprehensive details for the Cart API endpoints. The API supports adding products to cart, retrieving cart items, updating quantities, and removing items from the shopping cart. All cart operations are user-specific and require authentication to ensure cart data privacy and security.
-
-**Base URL:** `http://localhost:8080`
+Manage the authenticated customer's cart, quantities and totals.
 
 ## Authentication
 
@@ -31,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/carts`**
 
-Add a product to the user's shopping cart with specified quantity. If the product already exists in the cart, this will add to the existing quantity.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to add to cart |
@@ -47,7 +41,7 @@ Add a product to the user's shopping cart with specified quantity. If the produc
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -57,7 +51,7 @@ curl -X 'POST' \
   -d ''
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -66,22 +60,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `productId` | string | UUID of the product added to cart |
-| `quantity` | number | Total quantity of this product now in cart |
-
 ---
 
 ### 2. Get Cart Items
 
 **`GET /api/v1/carts`**
-
-Retrieve all items in the user's shopping cart with detailed product information and pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -93,7 +76,7 @@ Retrieve all items in the user's shopping cart with detailed product information
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -102,7 +85,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -135,29 +118,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of cart item objects |
-| `data[].productId` | string | UUID of the product in cart |
-| `data[].quantity` | number | Quantity of this product in cart |
-| `data[].product` | object | Complete product information object |
-| `data[].product.id` | string | Product UUID |
-| `data[].product.productName` | string | Name of the product |
-| `data[].product.price` | number | Regular price of the product |
-| `data[].product.discountPrice` | number | Discounted price (if applicable) |
-| `data[].product.productDetail` | string | Detailed description of the product |
-
 ---
 
 ### 3. Update Cart Item Quantity
 
 **`PUT /api/v1/carts/update`**
-
-Update the quantity of a specific product in the user's cart. This operation sets the absolute quantity rather than adding to existing quantity.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -170,7 +135,7 @@ Update the quantity of a specific product in the user's cart. This operation set
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -179,7 +144,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -203,23 +168,11 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `productId` | string | UUID of the updated product |
-| `quantity` | number | Updated quantity in cart |
-| `product` | object | Complete product information object |
-
 ---
 
 ### 4. Remove Product from Cart
 
 **`DELETE /api/v1/carts/remove`**
-
-Remove a specific product from the user's cart completely, regardless of quantity.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -232,7 +185,7 @@ Remove a specific product from the user's cart completely, regardless of quantit
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -241,7 +194,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -268,27 +221,17 @@ curl -X 'DELETE' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | object | Complete information of the removed product |
-
 ---
 
 ### 5. Clear Cart
 
 **`DELETE /api/v1/carts/all`**
 
-Remove all items from the user's cart, effectively clearing the entire shopping cart.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -297,7 +240,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -307,27 +250,17 @@ curl -X 'DELETE' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
-
 ---
 
 ### 6. Get Cart Summary
 
 **`GET /api/v1/carts/summary`**
 
-Retrieve a summary of the user's cart including all items with product details, subtotal, estimated tax, and item count. This endpoint provides enriched data for checkout pages.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -336,7 +269,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 **Status: 200 OK**
 
@@ -360,25 +293,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `items` | array | Array of cart item objects with product details |
-| `items[].productId` | string | UUID of the product |
-| `items[].productName` | string | Name of the product |
-| `items[].price` | number | Effective price (discount price if available, otherwise regular price) |
-| `items[].quantity` | number | Quantity of this product in cart |
-| `items[].image` | string | Primary product image URL |
-| `items[].stockQuantity` | number | Current effective stock quantity |
-| `items[].shopId` | string | Shop UUID (nullable) |
-| `items[].shopName` | string | Shop name (nullable) |
-| `items[].variantId` | string | Variant UUID (nullable) |
-| `items[].variantName` | string | Variant label (nullable) |
-| `subtotal` | number | Total price of all items before tax |
-| `estimatedTax` | number | Estimated tax amount (10% of subtotal) |
-| `itemCount` | number | Number of unique products in cart |
-
 ---
 
 ## Error Handling
@@ -390,7 +304,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

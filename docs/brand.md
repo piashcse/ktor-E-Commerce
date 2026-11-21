@@ -1,8 +1,6 @@
-# Brand API
+# Brand
 
-This documentation provides comprehensive details for the Brand API endpoints. The API supports creating, retrieving, updating, and deleting brands within the platform. Brands are independent entities that can be associated with products and managed by administrators or authorized users.
-
-**Base URL:** `http://localhost:8080`
+Create, update, list and remove product brands; upload brand logos.
 
 ## Authentication
 
@@ -29,10 +27,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/brands`**
 
-Create a new brand with a specified name.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Name of the brand |
@@ -43,7 +37,7 @@ Create a new brand with a specified name.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -53,7 +47,7 @@ curl -X 'POST' \
   -d ''
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -63,22 +57,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created brand |
-| `name` | string | Name of the brand |
-
 ---
 
 ### 2. Get Brands
 
 **`GET /api/v1/brands`**
-
-Retrieve a list of brands with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -89,7 +72,7 @@ Retrieve a list of brands with optional pagination support.
 
 No authentication required (public).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -97,7 +80,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -119,23 +102,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of brand objects |
-| `data[].id` | string | Unique identifier for the brand |
-| `data[].name` | string | Name of the brand |
-
 ---
 
 ### 3. Update Brand
 
 **`PUT /api/v1/admin/brands/{id}`**
-
-Update an existing brand by its ID. You can modify the brand name.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -153,7 +124,7 @@ Update an existing brand by its ID. You can modify the brand name.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -162,7 +133,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -172,33 +143,36 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated brand |
-| `name` | string | Updated name of the brand |
-
 ---
 
 ### 4. Upload Brand Logo
 
 **`POST /api/v1/admin/brands/{id}/image`**
 
-Upload a logo for an existing brand. The request must be `multipart/form-data` with a single
-image part (`jpg`, `jpeg`, `png`, `gif` or `webp`; max 5 MB). The returned response is the updated
-brand with its new `logo` URL.
+#### Multipart Form Data
 
-#### Example Request
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <admin_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
+
+#### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/brands/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  'http://localhost:8080/api/v1/admin/brands/{id}/image' \
   -H 'Authorization: Bearer <admin_token>' \
-  -F 'file=@logo.png'
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@logo.png;type=image/png'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -214,10 +188,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/brands/{id}`**
 
-Delete a brand by its ID. This operation permanently removes the brand from the system.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the brand to delete |
@@ -228,7 +198,7 @@ Delete a brand by its ID. This operation permanently removes the brand from the 
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -237,19 +207,13 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
   "message": "Brand deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 
@@ -262,7 +226,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

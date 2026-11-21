@@ -1,8 +1,6 @@
 # Subscriptions & Digital Goods
 
-Recurring plans, invoices and download entitlements for digital products.
-
-**Base URL:** `http://localhost:8080`
+Recurring plans, invoices and digital download entitlements.
 
 ## Plans
 
@@ -30,11 +28,21 @@ Admin CRUD:
 - `PUT /api/v1/admin/subscription-plans/{id}`
 - `DELETE /api/v1/admin/subscription-plans/{id}` — deactivates
 
-## Subscribing
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/api/v1/subscriptions` | Subscribe to a plan | Yes |
+| `POST` | `/api/v1/admin/subscriptions/run-billing` | Create renewal invoices for due subscriptions | Yes (Admin) |
+| `POST` | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark a pending subscription invoice paid and activate | Yes (Admin) |
+| `GET` | `/api/v1/library` | List my digital purchases | Yes |
+| `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Yes |
+
+## Endpoint Details
+
+### 1. Subscribing
 
 **`POST /api/v1/subscriptions`**
-
-```json
 {
   "planId": "plan-uuid",
   "paymentReference": "pay_123",
@@ -57,14 +65,9 @@ Other endpoints:
 - `GET /api/v1/subscriptions/{id}/invoices`
 - `POST /api/v1/subscriptions/{id}/cancel` — marks `cancelAtPeriodEnd`
 
-## Renewal billing
+### 2. Renewal billing
 
 **`POST /api/v1/admin/subscriptions/run-billing`**
-
-Processes every `ACTIVE` subscription whose period has ended and every `PAST_DUE` subscription
-that is due for a retry:
-
-- `cancelAtPeriodEnd = true` → status becomes `CANCELED`, entitlement revoked
 - with a stored payment method and `PAYMENT_PROVIDER=stripe` → charges the saved payment method
   off-session. A successful charge extends the period, records a `PAID` invoice, resets dunning and
   refreshes the entitlement. A `requires_action`/`processing` charge stays pending.
@@ -87,8 +90,6 @@ invoice paid and activates the subscription.
 Confirm a renewal payment manually and reactivate:
 
 **`POST /api/v1/admin/subscriptions/{id}/activate`**
-
-```json
 { "paymentReference": "pay_renewal" }
 ```
 
@@ -110,11 +111,9 @@ Products can be marked digital:
 Digital-only orders have **zero shipping cost** and the order shipping method is stored as
 `DIGITAL`. When payment completes, an entitlement is created for each digital product in the order.
 
-### Library
+### 3. Library
 
 **`GET /api/v1/library`**
-
-```json
 [
   {
     "entitlementId": "ent-uuid",
@@ -134,8 +133,6 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 ```
 
 **`GET /api/v1/library/{token}/download`**
-
-- Requires ownership of the entitlement.
 - Rejects expired/exhausted downloads.
 - Increments the download count and returns a short-lived signed
   `/api/v1/library/asset?...` URL plus its expiry and remaining count.
@@ -147,3 +144,7 @@ paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active dow
 entitlements are removed on cancellation/expiry; one-off
 order entitlements allow 5 downloads and expire after one year. Order cancellation/full refund
 revokes order-based entitlements immediately.
+
+Other operations:
+
+- `GET /api/v1/admin/subscriptions` — List all subscriptions

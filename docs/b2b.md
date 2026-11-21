@@ -1,14 +1,21 @@
 # B2B Quotes, Purchase Orders & Net Terms
 
-Wholesale accounts, negotiated quotes, purchase orders with credit limits and payment terms.
+Wholesale accounts, quotes, purchase orders, credit limits and net-term invoices.
 
-**Base URL:** `http://localhost:8080`
+## Endpoints
 
-## Accounts
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/api/v1/b2b/account` | Apply for or update a B2B account | Yes |
+| `POST` | `/api/v1/b2b/quotes` | Request a B2B quote | Yes |
+| `PUT` | `/api/v1/seller/b2b/quotes/{id}` | Seller: price and send/reject a quote | Yes (Seller) |
+| `POST` | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a purchase order | Yes |
+
+## Endpoint Details
+
+### 1. Accounts
 
 **`POST /api/v1/b2b/account`**
-
-```json
 {
   "companyName": "Acme Wholesale",
   "taxId": "TAX-123",
@@ -31,11 +38,9 @@ Admin approval:
 }
 ```
 
-## Quotes
+### 2. Quotes
 
 **`POST /api/v1/b2b/quotes`**
-
-```json
 {
   "items": [
     { "productId": "product-a", "quantity": 10 },
@@ -53,8 +58,6 @@ Admin approval:
 Seller response:
 
 **`PUT /api/v1/seller/b2b/quotes/{id}`**
-
-```json
 {
   "status": "SENT",
   "items": [
@@ -73,11 +76,9 @@ Other endpoints:
 - `GET /api/v1/b2b/quotes/{id}`
 - `GET /api/v1/seller/b2b/quotes`
 
-## Purchase orders and net terms
+### 3. Purchase orders and net terms
 
 **`POST /api/v1/b2b/quotes/{id}/accept`**
-
-- Only a `SENT`, unexpired quote can be accepted.
 - Available credit = `creditLimit - open purchase orders`.
 - Creates an `OPEN` purchase order with a unique PO number.
 - Sets `dueDate = now + paymentTermsDays`.
@@ -132,3 +133,8 @@ flows.
 - Credit limit cannot be negative; terms must be positive.
 - The platform tracks net-terms invoices and reminders but does not auto-charge bank transfers;
   settlement remains an accounting/ERP integration.
+
+Other operations:
+
+- `POST /api/v1/admin/b2b/invoices/{id}/void` — Admin: void an unpaid B2B invoice
+- `POST /api/v1/seller/b2b/purchase-orders/{id}/cancel` — Seller: cancel an open purchase order

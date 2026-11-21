@@ -1,8 +1,6 @@
-# Wishlist API
+# Wishlist
 
-This documentation provides comprehensive details for the Wishlist API endpoints. The API supports adding products to wishlist, retrieving user's wishlist items, checking product status, and removing products from wishlist. Wishlist functionality is user-specific and requires authentication to access personal wishlist data.
-
-**Base URL:** `http://localhost:8080`
+Save products, check membership and move items to the cart.
 
 ## Authentication
 
@@ -21,6 +19,7 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
 | `POST` | `/api/v1/wishlists/move-to-cart` | Move a wishlist product into the cart | Yes |
 | `DELETE` | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
+| `GET` | `/api/v1/wishlists/ids` | List wishlisted product IDs | Yes |
 
 ---
 
@@ -29,10 +28,6 @@ Authorization: Bearer <your_access_token>
 ### 1. Add Product to Wishlist
 
 **`POST /api/v1/wishlists`**
-
-Add a product to the authenticated user's wishlist.
-
-#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -45,7 +40,7 @@ Add a product to the authenticated user's wishlist.
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -58,7 +53,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -78,10 +73,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/wishlists`**
 
-Retrieve all products in the authenticated user's wishlist with pagination.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `limit` | number | No | Maximum number of items to return (default: 20) |
@@ -93,7 +84,7 @@ Retrieve all products in the authenticated user's wishlist with pagination.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -102,7 +93,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -127,15 +118,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/wishlists/check`**
 
-Check if a specific product exists in the user's wishlist.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to check |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -144,7 +131,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 true
@@ -156,17 +143,12 @@ true
 
 **`POST /api/v1/wishlists/move-to-cart`**
 
-Adds the product to the cart (merging with an existing cart row if present) and removes it from
-the wishlist.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the wishlist product to move |
 | `quantity` | number | No | Quantity to add (default: 1) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -182,10 +164,6 @@ Returns the updated cart summary (`201 Created`).
 
 **`DELETE /api/v1/wishlists/remove`**
 
-Remove a specific product from the authenticated user's wishlist.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to remove from wishlist |
@@ -196,7 +174,7 @@ Remove a specific product from the authenticated user's wishlist.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -205,7 +183,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -214,6 +192,27 @@ curl -X 'DELETE' \
       // ... product details
   }
 }
+```
+
+---
+
+### 6. List wishlisted product IDs
+
+**`GET /api/v1/wishlists/ids`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wishlists/ids' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+]
 ```
 
 ---
@@ -227,7 +226,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

@@ -1,8 +1,6 @@
-# Product Category API
+# Product Category
 
-This documentation provides comprehensive details for the Product Category API endpoints. The API supports creating, retrieving, updating, and deleting product categories within the platform. Product categories can have sub-categories and are managed by administrators or authorized users.
-
-**Base URL:** `http://localhost:8080`
+Create, update, list and remove top-level product categories.
 
 ## Authentication
 
@@ -31,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/product-categories`**
 
-Create a new product category with a specified name. The category will be created with an empty sub-categories array.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Name of the product category |
@@ -45,7 +39,7 @@ Create a new product category with a specified name. The category will be create
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -55,7 +49,7 @@ curl -X 'POST' \
   -d ''
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -66,23 +60,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created product category |
-| `name` | string | Name of the product category |
-| `subCategories` | array | Array of sub-categories (empty for new categories) |
-
 ---
 
 ### 2. Get Product Categories
 
 **`GET /api/v1/product-categories`**
-
-Retrieve a list of product categories with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -93,7 +75,7 @@ Retrieve a list of product categories with optional pagination support.
 
 No authentication required (public).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -101,7 +83,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -125,24 +107,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product category objects |
-| `data[].id` | string | Unique identifier for the product category |
-| `data[].name` | string | Name of the product category |
-| `data[].subCategories` | array | Array of sub-categories associated with the category |
-
 ---
 
 ### 3. Update Product Category
 
 **`PUT /api/v1/admin/product-categories/{id}`**
-
-Update an existing product category by its ID. You can modify the category name.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -160,7 +129,7 @@ Update an existing product category by its ID. You can modify the category name.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -169,7 +138,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -180,23 +149,11 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated product category |
-| `name` | string | Updated name of the product category |
-| `subCategories` | array | Array of sub-categories associated with the category |
-
 ---
 
 ### 4. Delete Product Category
 
 **`DELETE /api/v1/admin/product-categories/{id}`**
-
-Delete a product category by its ID. This operation permanently removes the category from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -208,7 +165,7 @@ Delete a product category by its ID. This operation permanently removes the cate
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -217,17 +174,11 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 "75b44e08-2c94-438f-b500-b204c7c90cca"
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | string | ID of the deleted product category |
 
 ---
 
@@ -240,7 +191,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json
@@ -275,18 +226,29 @@ All error messages are centralized and consistent across all endpoints.
 
 ---
 
-## Upload Category Image
+### 5. Upload Category Image
 
 **`POST /api/v1/admin/product-categories/{id}/image`**
 
-`multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
-Returns the updated category with its new `image` URL.
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <admin_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
+
+#### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-categories/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  'http://localhost:8080/api/v1/admin/product-categories/{id}/image' \
   -H 'Authorization: Bearer <admin_token>' \
-  -F 'file=@category.png'
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@category.png;type=image/png'
 ```
-
----

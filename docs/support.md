@@ -1,14 +1,10 @@
 # Support Tickets
 
-Customer support with threaded replies, internal notes, assignment, priorities and resolution.
+Support tickets with replies, attachments, SLAs and CSAT.
 
-**Base URL:** `http://localhost:8080`
-
-## Customer flow
+### 1. Customer flow
 
 **`POST /api/v1/support/tickets`**
-
-```json
 {
   "subject": "Missing item",
   "body": "One item was missing from the parcel",
@@ -48,6 +44,7 @@ Other customer endpoints:
 | `GET` | `/api/v1/admin/support/tickets/{id}` | Full thread incl. internal notes |
 | `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Reply or internal note |
 | `PUT` | `/api/v1/admin/support/tickets/{id}` | Status/priority/category/assignment |
+| `GET` | `/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}` | Admin: download a support attachment |
 
 Reply body:
 
@@ -128,12 +125,12 @@ The first admin reply records `firstResponseAt`.
 This is polling-based chat: clients fetch the ticket thread and post replies. No WebSocket channel is
 required.
 
-
 ## Attachments
 
-`POST /api/v1/support/tickets/{id}/attachments` accepts a multipart image (JPEG/PNG/WebP/GIF, 5 MB)
-from the ticket owner. `GET /api/v1/support/tickets/{id}/attachments/{attachmentId}` and the admin
-counterpart serve the file privately with `Cache-Control: private, no-store`.
+`POST /api/v1/support/tickets/{id}/attachments` accepts a single multipart image from the ticket
+owner. Send one file part (`image/jpeg`, `image/png` or `image/webp`; maximum **5 MB**). The field
+name is not enforced; the examples use `file`. `GET /api/v1/support/tickets/{id}/attachments/{attachmentId}`
+and the admin counterpart serve the file privately with `Cache-Control: private, no-store`.
 
 Attachments appear in ticket responses:
 
@@ -152,14 +149,541 @@ Attachments appear in ticket responses:
 }
 ```
 
-## Satisfaction (CSAT)
+### 2. Satisfaction (CSAT)
 
 **`POST /api/v1/support/tickets/{id}/satisfaction`**
-
-```json
 { "score": 5, "comment": "Fast resolution" }
 ```
 
 - Score must be between 1 and 5.
 - Only the ticket owner can rate, and only after the ticket is `RESOLVED` or `CLOSED`.
 - Re-rating replaces the previous score/comment.
+## Endpoint Details
+
+### 3. List my support tickets
+
+**`GET /api/v1/support/tickets`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subject": "Looks good",
+      "category": "ORDER",
+      "priority": "LOW",
+      "status": "PENDING",
+      "assignedTo": "string",
+      "lastMessageAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00",
+      "firstResponseAt": "2024-05-06T12:00:00",
+      "responseDueAt": "2024-05-06T12:00:00",
+      "resolutionDueAt": "2024-05-06T12:00:00",
+      "slaBreached": true,
+      "csatScore": 1,
+      "csatComment": "string",
+      "csatRatedAt": "250.00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 4. Get a support ticket and public replies
+
+**`GET /api/v1/support/tickets/{id}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "ticket": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "subject": "Looks good",
+    "category": "ORDER",
+    "priority": "LOW",
+    "status": "PENDING",
+    "assignedTo": "string",
+    "lastMessageAt": "2024-05-06T12:00:00",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00",
+    "firstResponseAt": "2024-05-06T12:00:00",
+    "responseDueAt": "2024-05-06T12:00:00",
+    "resolutionDueAt": "2024-05-06T12:00:00",
+    "slaBreached": true,
+    "csatScore": 1,
+    "csatComment": "string",
+    "csatRatedAt": "250.00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderRole": "CUSTOMER",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "fileName": "string",
+      "contentType": "CUSTOMER",
+      "sizeBytes": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+
+---
+
+### 5. Reply to a support ticket
+
+**`POST /api/v1/support/tickets/{id}/messages`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "body": "Looks good",
+  "isInternal": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "ticket": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "subject": "Looks good",
+    "category": "ORDER",
+    "priority": "LOW",
+    "status": "PENDING",
+    "assignedTo": "string",
+    "lastMessageAt": "2024-05-06T12:00:00",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00",
+    "firstResponseAt": "2024-05-06T12:00:00",
+    "responseDueAt": "2024-05-06T12:00:00",
+    "resolutionDueAt": "2024-05-06T12:00:00",
+    "slaBreached": true,
+    "csatScore": 1,
+    "csatComment": "string",
+    "csatRatedAt": "250.00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderRole": "CUSTOMER",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "fileName": "string",
+      "contentType": "CUSTOMER",
+      "sizeBytes": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+
+---
+
+### 6. Close my support ticket
+
+**`POST /api/v1/support/tickets/{id}/close`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/close' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subject": "Looks good",
+  "category": "ORDER",
+  "priority": "LOW",
+  "status": "PENDING",
+  "assignedTo": "string",
+  "lastMessageAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "firstResponseAt": "2024-05-06T12:00:00",
+  "responseDueAt": "2024-05-06T12:00:00",
+  "resolutionDueAt": "2024-05-06T12:00:00",
+  "slaBreached": true,
+  "csatScore": 1,
+  "csatComment": "string",
+  "csatRatedAt": "250.00"
+}
+```
+
+---
+
+### 7. Attach an image to my support ticket
+
+**`POST /api/v1/support/tickets/{id}/attachments`**
+
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/{id}/attachments' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@attachment.png;type=image/png'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "fileName": "string",
+  "contentType": "CUSTOMER",
+  "sizeBytes": 1,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 8. Download my support attachment
+
+**`GET /api/v1/support/tickets/{id}/attachments/{attachmentId}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```text
+<binary attachment content>
+```
+
+---
+### 9. Admin: list support tickets
+
+**`GET /api/v1/admin/support/tickets`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subject": "Looks good",
+      "category": "ORDER",
+      "priority": "LOW",
+      "status": "PENDING",
+      "assignedTo": "string",
+      "lastMessageAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00",
+      "firstResponseAt": "2024-05-06T12:00:00",
+      "responseDueAt": "2024-05-06T12:00:00",
+      "resolutionDueAt": "2024-05-06T12:00:00",
+      "slaBreached": true,
+      "csatScore": 1,
+      "csatComment": "string",
+      "csatRatedAt": "250.00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 10. Admin: get a ticket with internal notes
+
+**`GET /api/v1/admin/support/tickets/{id}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "ticket": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "subject": "Looks good",
+    "category": "ORDER",
+    "priority": "LOW",
+    "status": "PENDING",
+    "assignedTo": "string",
+    "lastMessageAt": "2024-05-06T12:00:00",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00",
+    "firstResponseAt": "2024-05-06T12:00:00",
+    "responseDueAt": "2024-05-06T12:00:00",
+    "resolutionDueAt": "2024-05-06T12:00:00",
+    "slaBreached": true,
+    "csatScore": 1,
+    "csatComment": "string",
+    "csatRatedAt": "250.00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderRole": "CUSTOMER",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "fileName": "string",
+      "contentType": "CUSTOMER",
+      "sizeBytes": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+
+---
+
+### 11. Admin: reply or add an internal note
+
+**`POST /api/v1/admin/support/tickets/{id}/messages`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "body": "Looks good",
+  "isInternal": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "ticket": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "subject": "Looks good",
+    "category": "ORDER",
+    "priority": "LOW",
+    "status": "PENDING",
+    "assignedTo": "string",
+    "lastMessageAt": "2024-05-06T12:00:00",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00",
+    "firstResponseAt": "2024-05-06T12:00:00",
+    "responseDueAt": "2024-05-06T12:00:00",
+    "resolutionDueAt": "2024-05-06T12:00:00",
+    "slaBreached": true,
+    "csatScore": 1,
+    "csatComment": "string",
+    "csatRatedAt": "250.00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "senderRole": "CUSTOMER",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "attachments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ticketId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "fileName": "string",
+      "contentType": "CUSTOMER",
+      "sizeBytes": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+
+---
+
+### 12. Admin: update ticket status/priority/assignment
+
+**`PUT /api/v1/admin/support/tickets/{id}`**
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "PENDING",
+  "priority": "LOW",
+  "category": "ORDER",
+  "assignedTo": "string"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subject": "Looks good",
+  "category": "ORDER",
+  "priority": "LOW",
+  "status": "PENDING",
+  "assignedTo": "string",
+  "lastMessageAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "firstResponseAt": "2024-05-06T12:00:00",
+  "responseDueAt": "2024-05-06T12:00:00",
+  "resolutionDueAt": "2024-05-06T12:00:00",
+  "slaBreached": true,
+  "csatScore": 1,
+  "csatComment": "string",
+  "csatRatedAt": "250.00"
+}
+```
+
+---
+
+### 13. Admin: download a support attachment
+
+**`GET /api/v1/admin/support/tickets/{id}/attachments/{attachmentId}`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```text
+<binary attachment content>
+```
+
+---

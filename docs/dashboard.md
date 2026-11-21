@@ -1,8 +1,6 @@
-# Dashboard Analytics API
+# Dashboard Analytics
 
-This documentation provides comprehensive details for the Dashboard Analytics API endpoints. The API provides aggregate statistics and insights for platform administrators.
-
-**Base URL:** `http://localhost:8080`
+Admin and seller statistics for revenue, orders, users, products and activity.
 
 ## Authentication
 
@@ -19,6 +17,8 @@ All Dashboard endpoints require `ADMIN` role.
 | `GET` | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
 | `GET` | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
 | `GET` | `/api/v1/seller/dashboard` | Seller-scoped revenue, orders and top products | Yes (Seller) |
+| `GET` | `/api/v1/admin/queues` | Admin work queues | Yes |
+| `GET` | `/api/v1/seller/readiness` | Seller readiness | Yes |
 
 ---
 
@@ -28,17 +28,13 @@ All Dashboard endpoints require `ADMIN` role.
 
 **`GET /api/v1/admin/dashboard`**
 
-Returns aggregate statistics for the main dashboard view including revenue, orders, users, products, and shops.
-
-#### Example Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/dashboard' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -56,16 +52,12 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/revenue`**
 
-Returns revenue data with daily breakdown and average order value for a date range.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `startDate` | string | No | Start date (YYYY-MM-DD) |
 | `endDate` | string | No | End date (YYYY-MM-DD) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -73,7 +65,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -94,15 +86,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/orders`**
 
-Returns order status distribution and recent orders.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `status` | string | No | Filter by order status (e.g., `PENDING`, `PAID`) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -110,7 +98,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -135,15 +123,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/users`**
 
-Returns user registration trends over a specified period.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `days` | int | No | Number of days to look back (default: 30) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -151,7 +135,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -172,15 +156,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/top-products`**
 
-Returns best-selling products ranked by total sales.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `limit` | int | No | Number of top products to return (default: 10) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -188,7 +168,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -211,15 +191,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/activity`**
 
-Returns a combined feed of recent orders and user registrations.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `limit` | int | No | Number of activities to return (default: 20) |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -227,7 +203,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -248,17 +224,80 @@ curl -X 'GET' \
 ]
 ```
 
-## Seller dashboard
+### 7. Seller dashboard
 
 **`GET /api/v1/seller/dashboard`**
 
-Returns the same metric families as the admin dashboard, scoped to the seller's own shop(s):
-paid-only revenue normalized to USD, order counts by status, top products and low-stock counts.
 
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/dashboard' \
   -H 'Authorization: Bearer <seller_token>'
+```
+
+---
+
+### 8. Admin work queues
+
+**`GET /api/v1/admin/queues`**
+
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/queues' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "queues": [
+    {
+      "key": "pending-orders",
+      "label": "Pending orders",
+      "count": 1,
+      "oldestAt": "2024-05-06T12:00:00",
+      "path": "/admin/orders"
+    }
+  ]
+}
+```
+
+---
+
+### 9. Seller readiness
+
+**`GET /api/v1/seller/readiness`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/readiness' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "shopStatus": "ACTIVE",
+  "kycStatus": "VERIFIED",
+  "payoutEligible": true,
+  "payoutBlockedReason": "Policy violation",
+  "availablePayout": "25.00",
+  "currency": "USD",
+  "missingRequirements": [
+    "VERIFIED_EMAIL"
+  ],
+  "nextAction": "CAPTURE",
+  "shopRejectionReason": "Policy violation",
+  "shopSuspendedReason": "Policy violation",
+  "kycRejectionReason": "Policy violation"
+}
 ```
 
 ---

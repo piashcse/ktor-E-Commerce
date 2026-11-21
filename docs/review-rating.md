@@ -1,8 +1,6 @@
-# Review Rating API
+# Review Rating
 
-This documentation provides comprehensive details for the Review Rating API endpoints. The API supports creating, retrieving, updating, and deleting product reviews and ratings within the platform. Reviews are associated with specific products and users, enabling a complete feedback system for e-commerce platforms.
-
-**Base URL:** `http://localhost:8080`
+Product reviews, ratings, helpful votes, images and moderation.
 
 ## Authentication
 
@@ -24,6 +22,9 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
 | `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Yes (Admin) |
 | `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Yes (Admin) |
+| `POST` | `/api/v1/admin/reviews/bulk/status` | Admin: bulk moderate reviews | Yes |
+| `GET` | `/api/v1/admin/reviews/export` | Admin: export reviews CSV | Yes |
+| `GET` | `/api/v1/reviews/summary` | Rating distribution for a product | No |
 
 ---
 
@@ -32,10 +33,6 @@ Authorization: Bearer <your_access_token>
 ### 1. Get Reviews
 
 **`GET /api/v1/reviews`**
-
-Retrieve reviews for a specific product with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -49,7 +46,7 @@ Retrieve reviews for a specific product with optional pagination support.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -58,7 +55,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -79,26 +76,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of review objects |
-| `data[].id` | string | Unique identifier for the review |
-| `data[].userId` | string | UUID of the user who created the review |
-| `data[].productId` | string | UUID of the reviewed product |
-| `data[].reviewText` | string | Text content of the review |
-| `data[].rating` | number | Numerical rating (typically 1-5) |
-
 ---
 
 ### 2. Create Review
 
 **`POST /api/v1/reviews`**
-
-Create a new review and rating for a product. The review will be associated with the authenticated user and specified product.
-
-#### Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -113,7 +95,7 @@ Create a new review and rating for a product. The review will be associated with
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -128,7 +110,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -141,25 +123,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created review |
-| `userId` | string | UUID of the user who created the review |
-| `productId` | string | UUID of the reviewed product |
-| `reviewText` | string | Text content of the review |
-| `rating` | number | Numerical rating for the product |
-
 ---
 
 ### 3. Update Review
 
 **`PUT /api/v1/reviews/{id}`**
-
-Update an existing review by its ID. You can modify both the review text and rating.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -178,7 +146,7 @@ Update an existing review by its ID. You can modify both the review text and rat
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -187,7 +155,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -200,25 +168,11 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated review |
-| `userId` | string | UUID of the user who created the review |
-| `productId` | string | UUID of the reviewed product |
-| `reviewText` | string | Updated review text content |
-| `rating` | number | Updated numerical rating |
-
 ---
 
 ### 4. Delete Review
 
 **`DELETE /api/v1/reviews/{id}`**
-
-Delete a review by its ID. This operation permanently removes the review from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -230,7 +184,7 @@ Delete a review by its ID. This operation permanently removes the review from th
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -239,7 +193,7 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -247,20 +201,12 @@ curl -X 'DELETE' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
-
 ---
 
 ### 5. Vote Review Helpful
 
 **`POST /api/v1/reviews/{id}/helpful`**
 
-Records an idempotent helpful vote for the authenticated user. Pass `?helpful=false` to remove an
-existing vote.
 
 ```bash
 curl -X 'POST' \
@@ -273,10 +219,6 @@ Returns the updated review with its `helpfulCount`.
 ### 6. Replace Review Images
 
 **`PUT /api/v1/reviews/{id}/images`**
-
-Replaces the review gallery. At most **8** image URLs are allowed; each must be non-blank.
-
-```json
 {
   "images": [
     "/uploads/review-images/front.png",
@@ -291,15 +233,138 @@ Only the review owner can replace images.
 
 **`GET /api/v1/admin/reviews?status=FLAGGED`**
 
-Lists reviews, optionally filtered by `ACTIVE`, `HIDDEN` or `FLAGGED`.
-
-**`PUT /api/v1/admin/reviews/{id}/status`**
-
 ```json
 { "status": "HIDDEN" }
 ```
 
 Hiding a review removes it from public product review lists and recalculates the product rating.
+
+---
+
+### 8. Admin: bulk moderate reviews
+
+**`POST /api/v1/admin/reviews/bulk/status`**
+
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/reviews/bulk/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 9. Admin: export reviews CSV
+
+**`GET /api/v1/admin/reviews/export`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/reviews/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+
+---
+
+### 10. Rating distribution for a product
+
+**`GET /api/v1/reviews/summary`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/reviews/summary' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "total": 1,
+  "average": 250.0,
+  "buckets": [
+    {
+      "stars": 1,
+      "count": 1
+    }
+  ]
+}
+```
+
+---
+
+### 11. Admin: moderate a review
+
+**`PUT /api/v1/admin/reviews/{id}/status`**
+
+Admin: moderate a review
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "ACTIVE",
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "reviewText": "Looks good",
+  "rating": 1,
+  "title": "Example",
+  "isVerifiedPurchase": true,
+  "helpfulCount": 1,
+  "notHelpfulCount": 1,
+  "images": [
+    "https://example.com/image.jpg"
+  ],
+  "status": "ACTIVE",
+  "sellerReply": "Looks good",
+  "sellerRepliedAt": "2024-05-06T12:00:00",
+  "moderationReason": "Policy violation",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
 
 ---
 
@@ -312,7 +377,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

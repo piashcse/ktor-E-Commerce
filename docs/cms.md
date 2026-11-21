@@ -1,8 +1,6 @@
 # CMS, SEO & Sitemap
 
-Storefront content pages, per-entity SEO metadata, XML sitemap and robots policy.
-
-**Base URL:** `http://localhost:8080`
+CMS pages, per-entity SEO metadata, sitemap and robots policy.
 
 ## CMS pages
 
@@ -39,19 +37,22 @@ Admin:
 Publishing sets `publishedAt`; unpublishing clears it. Slugs must match
 `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
 
-## SEO metadata
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/api/v1/seo/metadata` | Get SEO metadata for an entity | No |
+| `PUT` | `/api/v1/admin/seo/metadata` | Admin: create/update SEO metadata | Yes (Admin) |
+
+## Endpoint Details
+
+### 1. SEO metadata
 
 **`GET /api/v1/seo/metadata?entityType=PAGE&entityId=about-us&locale=en`**
-
-Entity types: `HOME`, `PAGE`, `PRODUCT`, `CATEGORY`, `SHOP`.
-
-Unknown metadata returns an empty shell with `noIndex = false`.
 
 Admin upsert:
 
 **`PUT /api/v1/admin/seo/metadata`**
-
-```json
 {
   "entityType": "PRODUCT",
   "entityId": "product-uuid",
@@ -79,3 +80,7 @@ Configuration:
 ```bash
 PUBLIC_BASE_URL=https://shop.example
 ```
+
+Other operations:
+
+- `GET /api/v1/config` — Public storefront configuration

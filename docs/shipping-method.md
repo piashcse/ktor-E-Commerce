@@ -1,8 +1,7 @@
-# Shipping Method API
+# Shipping Method
 
-This documentation provides details for the Shipping Method API endpoints. Shipping methods define delivery options, prices, and estimated delivery times.
+Delivery methods, prices and delivery estimates.
 
-**Base URL:** `http://localhost:8080/api/v1/checkout/shipping-method` (Public)
 **Admin URL:** `http://localhost:8080/api/v1/admin/shipping-methods` (Admin)
 
 > [!NOTE]
@@ -25,6 +24,10 @@ Authorization: Bearer <admin_access_token>
 | `POST` | `/api/v1/admin/shipping-methods` | Create a new shipping method | Yes | Admin |
 | `PUT` | `/api/v1/admin/shipping-methods/{id}` | Update an existing shipping method | Yes | Admin |
 | `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Delete a shipping method | Yes | Admin |
+| `GET` | `/api/v1/seller/shipping-methods` | Seller - List my shipping methods | Yes | Seller |
+| `POST` | `/api/v1/seller/shipping-methods` | Seller - Create a shipping method | Yes | Seller |
+| `DELETE` | `/api/v1/seller/shipping-methods/{id}` | Seller - Delete a shipping method | Yes | Seller |
+| `PUT` | `/api/v1/seller/shipping-methods/{id}` | Seller - Update a shipping method | Yes | Seller |
 
 ---
 
@@ -33,10 +36,6 @@ Authorization: Bearer <admin_access_token>
 ### 1. Get All Shipping Methods
 
 **`GET /api/v1/checkout/shipping-method`**
-
-Retrieve all available shipping methods.
-
-#### Example Response
 
 ```json
 [
@@ -63,10 +62,6 @@ Retrieve all available shipping methods.
 
 **`POST /api/v1/admin/shipping-methods`**
 
-Create a new shipping method.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Name of the shipping method |
@@ -74,7 +69,7 @@ Create a new shipping method.
 | `price` | double | Yes | Cost of shipping |
 | `deliveryTime` | string | No | Estimated delivery time |
 
-#### Example Request
+#### Request
 
 ```json
 {
@@ -91,10 +86,6 @@ Create a new shipping method.
 
 **`PUT /api/v1/admin/shipping-methods/{id}`**
 
-Update an existing shipping method.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to update |
@@ -109,10 +100,132 @@ Same as **Create Shipping Method**.
 
 **`DELETE /api/v1/admin/shipping-methods/{id}`**
 
-Delete a shipping method by its ID.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to delete |
+### 5. Seller - List my shipping methods
+
+**`GET /api/v1/seller/shipping-methods`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/shipping-methods?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "type": "CUSTOMER",
+      "price": "250.00",
+      "deliveryTime": "2024-05-06T12:00:00",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 6. Seller - Create a shipping method
+
+**`POST /api/v1/seller/shipping-methods`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shipping-methods' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+
+---
+
+### 7. Seller - Delete a shipping method
+
+**`DELETE /api/v1/seller/shipping-methods/{id}`**
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 8. Seller - Update a shipping method
+
+**`PUT /api/v1/seller/shipping-methods/{id}`**
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+
+---

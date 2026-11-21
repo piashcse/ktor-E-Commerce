@@ -1,8 +1,6 @@
-# Audit Log API
+# Audit Log
 
-This documentation provides comprehensive details for the Audit Log API endpoints. The API provides a centralized, immutable record of all administrative actions for compliance monitoring, security auditing, and operational troubleshooting.
-
-**Base URL:** `http://localhost:8080`
+Immutable audit trail for administrative actions, actors and outcomes.
 
 ## Authentication
 
@@ -23,10 +21,6 @@ All Audit Log endpoints require `ADMIN` role.
 
 **`GET /api/v1/admin/audit-logs`**
 
-Returns paginated audit log entries with optional filters.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `actorId` | string | No | Filter by actor user ID |
@@ -37,7 +31,7 @@ Returns paginated audit log entries with optional filters.
 | `limit` | int | No | Max results (default: 20, max: 100) |
 | `offset` | int | No | Pagination offset |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -45,7 +39,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -80,15 +74,11 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/audit-logs/{id}`**
 
-Returns a single audit log entry.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the audit log entry |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -96,7 +86,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {

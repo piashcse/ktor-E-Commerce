@@ -1,8 +1,6 @@
-# Privacy Policy API
+# Privacy Policy
 
-This documentation provides comprehensive details for the Privacy Policy API endpoints. The API supports creating, retrieving, updating, and managing privacy policies and terms of conditions within the platform. Policies can be versioned, activated/deactivated, and managed by administrators.
-
-**Base URL:** `http://localhost:8080`
+Policy documents, versions, activation and consent-aware retrieval.
 
 ## Authentication
 
@@ -27,19 +25,15 @@ Authorization: Bearer <your_access_token>
 
 ## Endpoint Details
 
-### 1. Get All Policies
+### 1. Get Policy by Type
 
 **`GET /api/v1/policies/{policyType}`**
-
-Retrieve a list of all policies including Privacy Policies and Terms & Conditions.
-
-#### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -47,7 +41,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 [
@@ -77,91 +71,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of policy objects |
-| `data[].id` | string | Unique identifier for the policy |
-| `data[].type` | string | Policy type (PRIVACY_POLICY, TERMS_CONDITIONS) |
-| `data[].title` | string | Title of the policy |
-| `data[].content` | string | Full content of the policy |
-| `data[].version` | string | Version number of the policy |
-| `data[].effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data[].isActive` | boolean | Whether the policy is currently active |
-| `data[].createdAt` | string | ISO 8601 timestamp of creation |
-| `data[].updatedAt` | string | ISO 8601 timestamp of last update |
-
 ---
 
-### 2. Get Policy by Type
-
-**`GET /api/v1/policies/{policyType}`**
-
-Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `type` | string | Yes | Policy type (PRIVACY_POLICY or TERMS_CONDITIONS) |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/policies/PRIVACY_POLICY' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "type": "PRIVACY_POLICY",
-    "title": "Privacy Policy",
-    "content": "This is our privacy policy...",
-    "version": "1.0",
-    "effectiveDate": "2023-01-01T00:00:00Z",
-    "isActive": true,
-    "createdAt": "2023-01-01T00:00:00Z",
-    "updatedAt": "2023-01-01T00:00:00Z"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Full content of the policy |
-| `data.version` | string | Version number of the policy |
-| `data.effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data.isActive` | boolean | Whether the policy is currently active |
-| `data.createdAt` | string | ISO 8601 timestamp of creation |
-| `data.updatedAt` | string | ISO 8601 timestamp of last update |
-
----
-
-
-
-### 4. Create Policy
+### 2. Create Policy
 
 **`POST /api/v1/admin/policies`**
-
-Create a new policy with specified type, title, content, version, and effective date.
-
-#### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -179,7 +93,7 @@ Create a new policy with specified type, title, content, version, and effective 
 | `version` | string | Yes | Version number of the policy |
 | `effectiveDate` | string | Yes | ISO 8601 date when policy becomes effective |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -196,7 +110,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -211,29 +125,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the created policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Full content of the policy |
-| `data.version` | string | Version number of the policy |
-| `data.effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data.isActive` | boolean | Whether the policy is currently active (defaults to true) |
-
 ---
 
-
-
-### 6. Get Policy History
+### 3. Get Policy History
 
 **`GET /api/v1/admin/policies/{type}/history`**
-
-Get policy version history
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -246,7 +142,7 @@ Get policy version history
 | `accept` | `application/json` | Yes |
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -255,7 +151,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -270,18 +166,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the deactivated policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Content of the policy |
-| `data.version` | string | Version number |
-| `data.effectiveDate` | string | Effective date |
-| `data.isActive` | boolean | Whether the policy is active (will be false) |
-
 ---
 
 ## Policy Consent Endpoints
@@ -294,13 +178,9 @@ curl -X 'GET' \
 
 ---
 
-### 7. Create Policy Consent
+### 4. Create Policy Consent
 
 **`POST /api/v1/policy-consents/consent`**
-
-Create a new consent record when a user agrees to a privacy policy. This endpoint captures the policy ID and user information for audit purposes.
-
-#### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -313,7 +193,7 @@ Create a new consent record when a user agrees to a privacy policy. This endpoin
 |-------|------|----------|-------------|
 | `policyId` | string | Yes | UUID of the policy being consented to |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -326,7 +206,7 @@ curl -X 'POST' \
 }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -340,52 +220,312 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created consent record |
-| `userId` | string | UUID of the user who provided consent |
-| `policyId` | string | UUID of the policy that was consented to |
-| `ipAddress` | string | IP address from which consent was given |
-| `userAgent` | string | Browser user agent when consent was provided |
-| `consentedAt` | string | ISO 8601 timestamp when consent was recorded |
-
 ---
 
 ## Additional Admin Endpoints
 
-### Update Policy
+### 5. Admin - Update an existing policy document
 
 **`PUT /api/v1/admin/policies/{id}`**
 
-Updates title/content/version/effective date of an existing policy document. Only one policy per
-type may be active; activating a new version deactivates the previous one.
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/policies/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Example",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true
+}'
+```
 
-### Deactivate Policy
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "title": "Example",
+  "type": "CUSTOMER",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 6. Admin - Deactivate a policy document
 
 **`POST /api/v1/admin/policies/deactivate/{id}`**
 
-Marks a policy inactive so it is no longer returned by `GET /api/v1/policies/{policyType}`.
-Existing consent records are retained for audit.
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/policies/deactivate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
 
-### Get Policy By ID
+#### Response
+
+```json
+true
+```
+
+---
+
+### 7. Admin - Retrieve a policy document by ID
 
 **`GET /api/v1/admin/policies/by-id/{id}`**
 
-Returns the exact version by its identifier (including inactive versions), for editing and audit.
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policies/by-id/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
 
-### Policy Version History
+#### Response
 
-**`GET /api/v1/admin/policies/{policyType}/history`**
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "title": "Example",
+  "type": "CUSTOMER",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
 
-Returns all versions of a policy type, newest first.
+---
+
+### 8. Export all personal data held for the authenticated user
+
+**`GET /api/v1/privacy/export`**
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
-  -H 'Authorization: Bearer <admin_token>'
+  'http://localhost:8080/api/v1/privacy/export' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
 ```
+
+#### Response
+
+```json
+{
+  "user": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "isVerified": true,
+    "userType": "CUSTOMER",
+    "isActive": true,
+    "mfaEnabled": false,
+    "createdAt": "2024-05-06T12:00:00",
+    "updatedAt": "2024-05-06T12:00:00"
+  },
+  "profile": {
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "image": "string",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "mobile": "string",
+    "faxNumber": "string",
+    "streetAddress": "123 Main St",
+    "city": "New York",
+    "state": "PENDING",
+    "country": "US",
+    "identificationType": "CUSTOMER",
+    "identificationNo": "string",
+    "occupation": "string",
+    "postCode": "SAVE10",
+    "gender": "string",
+    "dateOfBirth": "2024-05-06T12:00:00",
+    "bio": "string",
+    "isActive": true,
+    "verified": true
+  },
+  "shippingAddresses": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane@example.com",
+      "phoneNumber": "+15551234567",
+      "streetAddress": "123 Main St",
+      "city": "New York",
+      "state": "PENDING",
+      "country": "US",
+      "zipCode": "SAVE10",
+      "isDefault": true
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subTotal": "250.00",
+      "shippingCost": "25.00",
+      "taxAmount": "250.00",
+      "discountAmount": "250.00",
+      "total": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "nextStatuses": [
+        "SHIPPED"
+      ],
+      "paymentStatus": "PENDING",
+      "couponCode": "SAVE10",
+      "paymentMethod": "CREDIT_CARD",
+      "notes": "Looks good",
+      "contactEmail": "jane@example.com",
+      "shippingAddress": "123 Main St",
+      "billingAddress": "123 Main St"
+    }
+  ],
+  "payments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "refunds": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "customerEmail": "jane@example.com",
+      "productName": "Wireless Headphones",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reason": "Policy violation",
+      "images": "https://example.com/image.jpg",
+      "decisionReason": "Policy violation",
+      "status": "PENDING",
+      "currency": "USD",
+      "quantity": 1,
+      "refundAmount": "250.00",
+      "shippingRefund": "25.00",
+      "taxRefund": "25.00",
+      "refundMethod": "ORIGINAL",
+      "trackingNumber": "1Z999AA10123456784",
+      "allowedActions": [
+        "APPROVE"
+      ]
+    }
+  ],
+  "consents": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "consentDate": "2024-05-06T12:00:00",
+      "ipAddress": "123 Main St",
+      "userAgent": "string",
+      "revokedAt": "2024-05-06T12:00:00",
+      "policyVersion": "string",
+      "policyContentHash": "string"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reviewText": "Looks good",
+      "rating": 1,
+      "title": "Example",
+      "isVerifiedPurchase": true,
+      "helpfulCount": 1,
+      "notHelpfulCount": 1,
+      "images": [
+        "https://example.com/image.jpg"
+      ],
+      "status": "ACTIVE",
+      "sellerReply": "Looks good",
+      "sellerRepliedAt": "2024-05-06T12:00:00",
+      "moderationReason": "Policy violation",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "channel": "EMAIL",
+      "type": "CUSTOMER",
+      "title": "Example",
+      "body": "Looks good",
+      "resourceType": "CUSTOMER",
+      "resourceId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "isRead": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "additionalData": {},
+  "exportedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 9. Erase/anonymize the authenticated account (password required)
+
+**`POST /api/v1/privacy/erase`**
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/privacy/erase' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "password": "string"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
 
 ## Error Handling
 

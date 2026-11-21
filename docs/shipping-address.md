@@ -1,8 +1,6 @@
-# Shipping Address API
+# Shipping Address
 
-This documentation provides details for the Shipping Address API endpoints. The API supports managing multiple saved shipping addresses for authenticated users.
-
-**Base URL:** `http://localhost:8080/api/v1/checkout/shipping-address`
+Saved shipping addresses for authenticated customers.
 
 > [!NOTE]
 > Shipping addresses are nested under the **Checkout** module. There is no standalone `/shipping-address` prefix — all endpoints below live under `/api/v1/checkout/shipping-address` (see `CheckoutRoutes.kt`).
@@ -32,10 +30,6 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/checkout/shipping-address`**
 
-Retrieve all shipping addresses associated with the authenticated user.
-
-#### Example Response
-
 ```json
 [
   {
@@ -61,10 +55,6 @@ Retrieve all shipping addresses associated with the authenticated user.
 
 **`POST /api/v1/checkout/shipping-address`**
 
-Add a new shipping address for the authenticated user.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `firstName` | string | Yes | First name of the recipient |
@@ -78,7 +68,7 @@ Add a new shipping address for the authenticated user.
 | `zipCode` | string | Yes | Zip or postal code |
 | `isDefault` | boolean | No | Whether this is the default address (default: false) |
 
-#### Example Request
+#### Request
 
 ```json
 {
@@ -101,10 +91,6 @@ Add a new shipping address for the authenticated user.
 
 **`PUT /api/v1/checkout/shipping-address/{id}`**
 
-Update an existing shipping address.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping address to update |
@@ -118,10 +104,6 @@ Same as **Add Shipping Address**.
 ### 4. Delete Shipping Address
 
 **`DELETE /api/v1/checkout/shipping-address/{id}`**
-
-Delete a shipping address by its ID.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

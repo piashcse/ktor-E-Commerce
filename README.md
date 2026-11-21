@@ -144,12 +144,6 @@
 # report: build/reports/jacoco/test/html/index.html
 ```
 
-See [Testing & Coverage](docs/testing.md) for the test pyramid, local database setup, thresholds
-and known gaps.
-
-See the [Product Roadmap](docs/roadmap.md) for the prioritised list of remaining
-e-commerce capabilities and the PR-per-feature branch plan.
-
 ## Architecture
 
 <p align="center">
@@ -459,9 +453,9 @@ The API is organized into the following modules:
 - **Audit Log** - Admin audit trail and activity tracking
 - **Health** - Liveness and readiness probes
 
-See the **[complete endpoint index](docs/endpoints.md)** for all **464** operations with
-method, path, description and access level. It mirrors the same OpenAPI document
-that powers Swagger UI.
+Each module has its own page under [`docs/`](docs/index.md) with its **464** operations,
+methods, paths, access levels and request/response examples. Those pages mirror the same
+OpenAPI document that powers Swagger UI.
 
 ### 🌐 Swagger/OpenAPI
 
@@ -469,8 +463,7 @@ Interactive API documentation is available via Swagger UI at `http://localhost:8
 
 > **API contract note:** common operations are documented below as `<details>` blocks with
 > Description, Curl, Request URL and Response. The generated specification currently exposes
-> 464 operations; the [endpoint index](docs/endpoints.md) documents 383 core operations while the
-> remaining admin/RBAC aliases are summarized above.
+> 464 operations; the module pages under [`docs/`](docs/index.md) document the same surface.
 > Success responses return data directly and errors use the `ApiError` shape; some older
 > examples may still show a legacy `data`/`message` wrapper, so use the generated blocks and
 > Swagger as the canonical contract.
@@ -1150,6 +1143,242 @@ http://localhost:8080/api/v1/auth/passkeys/{id}
 ### Response
 ```json
 {"message":"Passkey deleted"}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/users</code></summary>
+
+### Description
+Admin: search users
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users?page=1&perPage=20&userType=CUSTOMER&active=true&query=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users?page={page}&perPage={perPage}&userType={userType}&active={active}&query={query}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "email": "jane@example.com",
+      "userType": "CUSTOMER",
+      "isVerified": true,
+      "isActive": true,
+      "mfaEnabled": false,
+      "isGuest": false,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/users/{id}</code></summary>
+
+### Description
+Admin: user detail
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}
+```
+
+### Response
+```json
+{
+  "user": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "userType": "CUSTOMER",
+    "isVerified": true,
+    "isActive": true,
+    "mfaEnabled": false,
+    "isGuest": false,
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopStatus": "PENDING",
+  "kycStatus": "NOT_SUBMITTED",
+  "orderCount": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/users/{id}/activate</code></summary>
+
+### Description
+Admin: activate a user
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}/activate
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/users/{id}/deactivate</code></summary>
+
+### Description
+Admin: deactivate a user
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}/deactivate
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/users/{id}/login-attempts</code></summary>
+
+### Description
+Admin: inspect login/OTP lockouts
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/login-attempts' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}/login-attempts
+```
+
+### Response
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "userType": "CUSTOMER",
+    "ipAddress": "123 Main St",
+    "attemptCount": 1,
+    "lockedUntil": "2024-05-06T12:00:00",
+    "isLocked": true
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/users/{id}/type</code></summary>
+
+### Description
+Admin: change a user's role
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/type' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "userType": "CUSTOMER"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}/type
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/users/{id}/unlock</code></summary>
+
+### Description
+Admin: clear login and OTP lockouts
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/unlock' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/users/{id}/unlock
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
 ```
 </details>
 
@@ -1879,6 +2108,231 @@ http://localhost:8080/api/v1/seller/shops/{id}/image
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/shops</code></summary>
+
+### Description
+Admin - List all shops
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/shops?page=1&perPage=20&status=PENDING&q=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shops?page={page}&perPage={perPage}&status={status}&q={q}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/shops/bulk/approve</code></summary>
+
+### Description
+Admin - Bulk approve shops
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/approve' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shops/bulk/approve
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/shops/bulk/reject</code></summary>
+
+### Description
+Admin - Bulk reject shops
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shops/bulk/reject
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/shops/bulk/suspend</code></summary>
+
+### Description
+Admin - Bulk suspend shops
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/suspend' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shops/bulk/suspend
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shops/{id}/products</code></summary>
+
+### Description
+List products for a shop
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f/products?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shops/{id}/products?page={page}&perPage={perPage}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subCategoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "brandId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "description": "Looks good",
+      "sku": "SKU-12345",
+      "barcode": "SAVE10",
+      "weight": 250.0,
+      "dimensions": "10x20x30 cm",
+      "minOrderQuantity": 1,
+      "price": "250.00",
+      "discountPrice": "250.00",
+      "discountPercentage": 250.0,
+      "videoLink": "https://example.com/video.mp4",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
 
 ### BRAND
 
@@ -3720,6 +4174,102 @@ http://localhost:8080/api/v1/admin/reviews/{id}/status
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/reviews/bulk/status</code></summary>
+
+### Description
+Admin: bulk moderate reviews
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/reviews/bulk/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/reviews/bulk/status?status={status}
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/reviews/export</code></summary>
+
+### Description
+Admin: export reviews CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/reviews/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/reviews/export?status={status}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/reviews/summary</code></summary>
+
+### Description
+Rating distribution for a product
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/reviews/summary' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/reviews/summary
+```
+
+### Response
+```json
+{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "total": 1,
+  "average": 250.0,
+  "buckets": [
+    {
+      "stars": 1,
+      "count": 1
+    }
+  ]
+}
+```
+</details>
+
 ### CART
 
 <details>
@@ -4164,6 +4714,32 @@ http://localhost:8080/api/v1/wishlists/move-to-cart?productId={productId}&quanti
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/wishlists/ids</code></summary>
+
+### Description
+List wishlisted product IDs
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wishlists/ids' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlists/ids
+```
+
+### Response
+```json
+[
+  "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+]
+```
+</details>
 
 ### CHECKOUT
 
@@ -4515,6 +5091,94 @@ http://localhost:8080/api/v1/checkout/guest
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/checkout/guest/summary</code></summary>
+
+### Description
+Guest checkout quote
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/checkout/guest/summary' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "jane@example.com",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "phoneNumber": "+15551234567",
+  "streetAddress": "123 Main St",
+  "city": "New York",
+  "state": "PENDING",
+  "country": "US",
+  "postCode": "SAVE10",
+  "shippingMethodId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentMethod": "CREDIT_CARD",
+  "couponCode": "SAVE10",
+  "currency": "USD",
+  "notes": "Looks good",
+  "idempotencyKey": "idem-123456",
+  "locale": "en",
+  "attribution": {
+    "sessionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "source": "google",
+    "medium": "cpc",
+    "campaign": "spring-sale",
+    "referrer": "https://google.com"
+  },
+  "consentAccepted": true,
+  "items": [
+    {
+      "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "quantity": 1,
+      "variantId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+    }
+  ]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/guest/summary
+```
+
+### Response
+```json
+{
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "itemCount": 1,
+  "currency": "USD",
+  "taxLines": [
+    {
+      "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "taxClassId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "rate": "250.00",
+      "inclusive": true,
+      "netAmount": "250.00",
+      "taxAmount": "250.00",
+      "grossAmount": "250.00"
+    }
+  ],
+  "walletDiscount": "25.00",
+  "giftCardDiscount": "25.00",
+  "pointsBalance": 1,
+  "storeCreditBalance": "250.00",
+  "couponCode": "SAVE10",
+  "couponValid": true,
+  "couponError": "Coupon expired",
+  "freeShippingThreshold": "25.00",
+  "freeShippingRemaining": "25.00",
+  "locale": "en",
+  "formattedSubTotal": "250.00",
+  "formattedShipping": "25.00"
+}
+```
+</details>
 
 ### ORDER
 
@@ -5090,6 +5754,375 @@ http://localhost:8080/api/v1/orders/{id}/packing-slip
 `text/html` printable packing slip.
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/orders/export</code></summary>
+
+### Description
+Admin: export orders CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/orders/export?status=PENDING&q=phone&startDate=2026-05-01&endDate=2026-05-31' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/orders/export?status={status}&q={q}&startDate={startDate}&endDate={endDate}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/orders/{id}</code></summary>
+
+### Description
+Admin: get order by ID
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/orders/{id}
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "nextStatuses": [
+    "SHIPPED"
+  ],
+  "paymentStatus": "PENDING",
+  "couponCode": "SAVE10",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Looks good",
+  "contactEmail": "jane@example.com",
+  "shippingAddress": "123 Main St",
+  "billingAddress": "123 Main St"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/track/invoice</code></summary>
+
+### Description
+Guest order invoice
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/track/invoice?orderNumber=ORD-20240506-0001-A1B2C3D4&email=jane@example.com' \
+  -H 'accept: text/html'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/track/invoice?orderNumber={orderNumber}&email={email}
+```
+
+### Response
+```html
+<!doctype html><html><body>Printable document</body></html>
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/track/timeline</code></summary>
+
+### Description
+Guest order timeline
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/track/timeline?orderNumber=ORD-20240506-0001-A1B2C3D4&email=jane@example.com' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/track/timeline?orderNumber={orderNumber}&email={email}
+```
+
+### Response
+```json
+{
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "status": "PENDING",
+  "trackingNumber": "1Z999AA10123456784",
+  "milestones": [
+    {
+      "key": "pending-orders",
+      "label": "Pending orders",
+      "occurredAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/{id}</code></summary>
+
+### Description
+Get order by ID
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "nextStatuses": [
+    "SHIPPED"
+  ],
+  "paymentStatus": "PENDING",
+  "couponCode": "SAVE10",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Looks good",
+  "contactEmail": "jane@example.com",
+  "shippingAddress": "123 Main St",
+  "billingAddress": "123 Main St"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/orders/export</code></summary>
+
+### Description
+Seller: export orders CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/orders/export?status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/export?status={status}&q={q}&from={from}&to={to}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/orders/{id}</code></summary>
+
+### Description
+Seller: get order by ID
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/{id}
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "nextStatuses": [
+    "SHIPPED"
+  ],
+  "paymentStatus": "PENDING",
+  "couponCode": "SAVE10",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Looks good",
+  "contactEmail": "jane@example.com",
+  "shippingAddress": "123 Main St",
+  "billingAddress": "123 Main St"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/orders/{id}/cancel</code></summary>
+
+### Description
+Seller: cancel order
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/{id}/cancel
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "nextStatuses": [
+    "SHIPPED"
+  ],
+  "paymentStatus": "PENDING",
+  "couponCode": "SAVE10",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Looks good",
+  "contactEmail": "jane@example.com",
+  "shippingAddress": "123 Main St",
+  "billingAddress": "123 Main St"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/orders/{id}/shipping</code></summary>
+
+### Description
+Seller: mark order shipped
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/shipping' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "1Z999AA10123456784"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/{id}/shipping
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "subTotal": "250.00",
+  "shippingCost": "25.00",
+  "taxAmount": "250.00",
+  "discountAmount": "250.00",
+  "total": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "nextStatuses": [
+    "SHIPPED"
+  ],
+  "paymentStatus": "PENDING",
+  "couponCode": "SAVE10",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Looks good",
+  "contactEmail": "jane@example.com",
+  "shippingAddress": "123 Main St",
+  "billingAddress": "123 Main St"
+}
+```
+</details>
+
 ### PAYMENT
 
 <details>
@@ -5293,6 +6326,137 @@ http://localhost:8080/api/v1/admin/payments/{id}/risk/approve
 ### Response
 ```json
 {"id":"payment-uuid","riskDecision":"ALLOW"}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/payments</code></summary>
+
+### Description
+Admin - List payments
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payments?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payments?page={page}&perPage={perPage}&status={status}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/webhooks/bulk/replay</code></summary>
+
+### Description
+Admin: bulk replay webhooks
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/webhooks/bulk/replay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "source": "PAYMENT",
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/webhooks/bulk/replay
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/webhooks/{id}</code></summary>
+
+### Description
+Admin: inspect a webhook payload
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/webhooks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/webhooks/{id}
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "source": "PAYMENT",
+  "provider": "stripe",
+  "eventId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "eventType": "CUSTOMER",
+  "status": "RECEIVED",
+  "error": "None",
+  "payload": "{}",
+  "receivedAt": "2024-05-06T12:00:00",
+  "processedAt": "2024-05-06T12:00:00"
+}
 ```
 </details>
 
@@ -5647,6 +6811,54 @@ http://localhost:8080/api/v1/admin/policies/by-id/{id}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/policies</code></summary>
+
+### Description
+Admin - List policy documents
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policies?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policies?page={page}&perPage={perPage}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "title": "Example",
+      "type": "CUSTOMER",
+      "content": "string",
+      "version": "1.0.0",
+      "effectiveDate": "2024-05-06T12:00:00",
+      "isActive": true,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
 
 ### PRIVACY POLICY CONSENT
 
@@ -5832,6 +7044,42 @@ http://localhost:8080/api/v1/admin/policy-consents?userId={userId}&policyType={p
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/policy-consents/requirements</code></summary>
+
+### Description
+Policies requiring consent
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/policy-consents/requirements' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy-consents/requirements
+```
+
+### Response
+```json
+{
+  "required": [
+    {
+      "type": "CUSTOMER",
+      "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "title": "Example",
+      "version": "1.0.0",
+      "effectiveDate": "2024-05-06T12:00:00",
+      "hasConsented": true
+    }
+  ],
+  "complete": true
+}
+```
+</details>
 
 ### REFUND REQUEST
 
@@ -6112,6 +7360,239 @@ http://localhost:8080/api/v1/refund-requests/{id}/evidence/{fileName}
 Binary image bytes. The response `Content-Type` is derived from the stored file extension.
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/refund-requests</code></summary>
+
+### Description
+Admin - List refund requests
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/refund-requests?page=1&perPage=20&status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/refund-requests?page={page}&perPage={perPage}&status={status}&q={q}&from={from}&to={to}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "customerEmail": "jane@example.com",
+      "productName": "Wireless Headphones",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reason": "Policy violation",
+      "images": "https://example.com/image.jpg",
+      "decisionReason": "Policy violation",
+      "status": "PENDING",
+      "currency": "USD",
+      "quantity": 1,
+      "refundAmount": "250.00",
+      "shippingRefund": "25.00",
+      "taxRefund": "25.00",
+      "refundMethod": "ORIGINAL",
+      "trackingNumber": "1Z999AA10123456784",
+      "allowedActions": [
+        "APPROVE"
+      ]
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/refund-requests/bulk/status</code></summary>
+
+### Description
+Admin - Bulk update refund status
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/refund-requests/bulk/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/refund-requests/bulk/status?status={status}
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/refund-requests/export</code></summary>
+
+### Description
+Admin - Export refunds CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/refund-requests/export?status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/refund-requests/export?status={status}&q={q}&from={from}&to={to}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/refund-requests/{id}/evidence</code></summary>
+
+### Description
+Upload private evidence for a refund request
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/evidence' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/{id}/evidence
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "customerEmail": "jane@example.com",
+  "productName": "Wireless Headphones",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "reason": "Policy violation",
+  "images": "https://example.com/image.jpg",
+  "decisionReason": "Policy violation",
+  "status": "PENDING",
+  "currency": "USD",
+  "quantity": 1,
+  "refundAmount": "250.00",
+  "shippingRefund": "25.00",
+  "taxRefund": "25.00",
+  "refundMethod": "ORIGINAL",
+  "trackingNumber": "1Z999AA10123456784",
+  "allowedActions": [
+    "APPROVE"
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/refund-requests</code></summary>
+
+### Description
+Seller - List refund requests
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/refund-requests?page=1&perPage=20&status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/refund-requests?page={page}&perPage={perPage}&status={status}&q={q}&from={from}&to={to}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "customerEmail": "jane@example.com",
+      "productName": "Wireless Headphones",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reason": "Policy violation",
+      "images": "https://example.com/image.jpg",
+      "decisionReason": "Policy violation",
+      "status": "PENDING",
+      "currency": "USD",
+      "quantity": 1,
+      "refundAmount": "250.00",
+      "shippingRefund": "25.00",
+      "taxRefund": "25.00",
+      "refundMethod": "ORIGINAL",
+      "trackingNumber": "1Z999AA10123456784",
+      "allowedActions": [
+        "APPROVE"
+      ]
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
 
 ### COUPON
 
@@ -6391,6 +7872,386 @@ http://localhost:8080/api/v1/admin/promotions/{id}
 ### Response
 ```json
 { "message": "Promotion deactivated" }
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/coupons</code></summary>
+
+### Description
+Seller - List my shop coupons
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/coupons?page=1&perPage=20&active=true' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/coupons?page={page}&perPage={perPage}&active={active}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "code": "SAVE10",
+      "discountType": "FIXED",
+      "discountValue": "250.00",
+      "minOrderAmount": "250.00",
+      "maxDiscountAmount": "250.00",
+      "startDate": "2024-05-06T12:00:00",
+      "endDate": "2024-05-06T12:00:00",
+      "usageLimit": 1,
+      "usageCount": 1,
+      "perUserLimit": 1,
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "isActive": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/coupons</code></summary>
+
+### Description
+Seller - Create a shop coupon
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/coupons' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "code": "SAVE10",
+  "discountType": "FIXED",
+  "discountValue": "250.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startDate": "2024-05-06T12:00:00",
+  "endDate": "2024-05-06T12:00:00",
+  "usageLimit": 1,
+  "perUserLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "isActive": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/coupons
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "code": "SAVE10",
+  "discountType": "FIXED",
+  "discountValue": "250.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startDate": "2024-05-06T12:00:00",
+  "endDate": "2024-05-06T12:00:00",
+  "usageLimit": 1,
+  "usageCount": 1,
+  "perUserLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "isActive": true
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/coupons/{id}</code></summary>
+
+### Description
+Seller - Delete a shop coupon
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/coupons/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/coupons/{id}
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/coupons/{id}</code></summary>
+
+### Description
+Seller - Update a shop coupon
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/coupons/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "code": "SAVE10",
+  "discountType": "FIXED",
+  "discountValue": "250.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startDate": "2024-05-06T12:00:00",
+  "endDate": "2024-05-06T12:00:00",
+  "usageLimit": 1,
+  "perUserLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "isActive": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/coupons/{id}
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "code": "SAVE10",
+  "discountType": "FIXED",
+  "discountValue": "250.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startDate": "2024-05-06T12:00:00",
+  "endDate": "2024-05-06T12:00:00",
+  "usageLimit": 1,
+  "usageCount": 1,
+  "perUserLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "isActive": true
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/promotions</code></summary>
+
+### Description
+Seller: list my promotions
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/promotions?page=1&perPage=20&active=true' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/promotions?page={page}&perPage={perPage}&active={active}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "type": "PERCENTAGE",
+      "value": "10.00",
+      "minOrderAmount": "250.00",
+      "maxDiscountAmount": "250.00",
+      "startsAt": "2024-05-06T12:00:00",
+      "endsAt": "2024-05-06T12:00:00",
+      "isActive": true,
+      "priority": 1,
+      "usageLimit": 1,
+      "usageCount": 1,
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/promotions</code></summary>
+
+### Description
+Seller: create a promotion
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/promotions' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "PERCENTAGE",
+  "value": "10.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startsAt": "2024-05-06T12:00:00",
+  "endsAt": "2024-05-06T12:00:00",
+  "isActive": true,
+  "priority": 1,
+  "usageLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/promotions
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "PERCENTAGE",
+  "value": "10.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startsAt": "2024-05-06T12:00:00",
+  "endsAt": "2024-05-06T12:00:00",
+  "isActive": true,
+  "priority": 1,
+  "usageLimit": 1,
+  "usageCount": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/promotions/{id}</code></summary>
+
+### Description
+Seller: deactivate a promotion
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/promotions/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/promotions/{id}
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/promotions/{id}</code></summary>
+
+### Description
+Seller: update a promotion
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/promotions/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "PERCENTAGE",
+  "value": "10.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startsAt": "2024-05-06T12:00:00",
+  "endsAt": "2024-05-06T12:00:00",
+  "isActive": true,
+  "priority": 1,
+  "usageLimit": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/promotions/{id}
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "PERCENTAGE",
+  "value": "10.00",
+  "minOrderAmount": "250.00",
+  "maxDiscountAmount": "250.00",
+  "startsAt": "2024-05-06T12:00:00",
+  "endsAt": "2024-05-06T12:00:00",
+  "isActive": true,
+  "priority": 1,
+  "usageLimit": 1,
+  "usageCount": 1,
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "createdAt": "2024-05-06T12:00:00"
+}
 ```
 </details>
 
@@ -6778,6 +8639,156 @@ http://localhost:8080/api/v1/admin/shipping-methods?limit={limit}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/shipping-methods</code></summary>
+
+### Description
+Seller - List my shipping methods
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/shipping-methods?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shipping-methods?page={page}&perPage={perPage}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "type": "CUSTOMER",
+      "price": "250.00",
+      "deliveryTime": "2024-05-06T12:00:00",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/shipping-methods</code></summary>
+
+### Description
+Seller - Create a shipping method
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shipping-methods' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shipping-methods
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/shipping-methods/{id}</code></summary>
+
+### Description
+Seller - Delete a shipping method
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shipping-methods/{id}
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/shipping-methods/{id}</code></summary>
+
+### Description
+Seller - Update a shipping method
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shipping-methods/{id}
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+</details>
 
 ### DASHBOARD
 
@@ -7081,6 +9092,79 @@ http://localhost:8080/api/v1/seller/dashboard
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/queues</code></summary>
+
+### Description
+Admin work queues
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/queues' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/queues
+```
+
+### Response
+```json
+{
+  "queues": [
+    {
+      "key": "pending-orders",
+      "label": "Pending orders",
+      "count": 1,
+      "oldestAt": "2024-05-06T12:00:00",
+      "path": "/admin/orders"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/readiness</code></summary>
+
+### Description
+Seller readiness
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/readiness' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/readiness
+```
+
+### Response
+```json
+{
+  "shopStatus": "ACTIVE",
+  "kycStatus": "VERIFIED",
+  "payoutEligible": true,
+  "payoutBlockedReason": "Policy violation",
+  "availablePayout": "25.00",
+  "currency": "USD",
+  "missingRequirements": [
+    "VERIFIED_EMAIL"
+  ],
+  "nextAction": "CAPTURE",
+  "shopRejectionReason": "Policy violation",
+  "shopSuspendedReason": "Policy violation",
+  "kycRejectionReason": "Policy violation"
+}
+```
+</details>
 
 ### AUDIT LOG
 
@@ -7883,6 +9967,67 @@ http://localhost:8080/api/v1/admin/rma-requests/{id}/status
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/rma-requests/bulk/status</code></summary>
+
+### Description
+Admin: bulk update RMA status
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/rma-requests/bulk/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/rma-requests/bulk/status?status={status}
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/rma-requests/export</code></summary>
+
+### Description
+Admin: export RMAs CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/rma-requests/export?status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/rma-requests/export?status={status}&q={q}&from={from}&to={to}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
 
 ### NOTIFICATIONS
 
@@ -8229,6 +10374,48 @@ http://localhost:8080/api/v1/notifications/preferences/{eventType}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/notifications/send</code></summary>
+
+### Description
+Seller: notify one of my customers
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/notifications/send' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "title": "Example",
+  "body": "Looks good",
+  "channel": "EMAIL",
+  "type": "CUSTOMER"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/notifications/send
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "channel": "EMAIL",
+  "type": "CUSTOMER",
+  "title": "Example",
+  "body": "Looks good",
+  "resourceType": "CUSTOMER",
+  "resourceId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "isRead": true,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
 
 ### SELLER KYC
 
@@ -8455,6 +10642,169 @@ http://localhost:8080/api/v1/admin/sellers/{sellerId}/reject
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/sellers/bulk/reject</code></summary>
+
+### Description
+Admin: bulk reject KYC
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/sellers/bulk/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/bulk/reject
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/sellers/bulk/verify</code></summary>
+
+### Description
+Admin: bulk verify KYC
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/sellers/bulk/verify' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/bulk/verify
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/sellers/export</code></summary>
+
+### Description
+Admin: export KYC submissions CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/export?status={status}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/sellers/{sellerId}/history</code></summary>
+
+### Description
+Admin: KYC decision history
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/history' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/{sellerId}/history
+```
+
+### Response
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "status": "PENDING",
+    "reason": "Policy violation",
+    "actorId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/kyc/history</code></summary>
+
+### Description
+Get my KYC submission history
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/kyc/history' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/kyc/history
+```
+
+### Response
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "status": "PENDING",
+    "reason": "Policy violation",
+    "actorId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
 
 ### PAYOUTS
 
@@ -8862,6 +11212,463 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/payouts/requests</code></summary>
+
+### Description
+Admin: list payout requests
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payouts/requests?page=1&perPage=20&status=PENDING&seller=6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests?page={page}&perPage={perPage}&status={status}&seller={seller}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerEmail": "jane@example.com",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "rowCount": 1,
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/bulk/approve</code></summary>
+
+### Description
+Admin: bulk approve payout requests
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/bulk/approve' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/bulk/approve
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/bulk/pay</code></summary>
+
+### Description
+Admin: bulk mark payout requests paid
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/bulk/pay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/bulk/pay
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/bulk/reject</code></summary>
+
+### Description
+Admin: bulk reject payout requests
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/bulk/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/bulk/reject
+```
+
+### Response
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/payouts/requests/{id}</code></summary>
+
+### Description
+Admin: payout request detail
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/{id}
+```
+
+### Response
+```json
+{
+  "request": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerEmail": "jane@example.com",
+    "amount": "250.00",
+    "currency": "USD",
+    "status": "PENDING",
+    "rejectionReason": "Policy violation",
+    "rowCount": 1,
+    "allowedActions": [
+      "APPROVE"
+    ],
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "rows": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subTotal": "250.00",
+      "commissionAmount": "250.00",
+      "payoutAmount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "payoutRequestId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "rejectionReason": "Policy violation",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "sellerEmail": "jane@example.com",
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "requestedAt": "2024-05-06T12:00:00",
+      "approvedAt": "2024-05-06T12:00:00",
+      "rejectedAt": "2024-05-06T12:00:00",
+      "paidAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/{id}/approve</code></summary>
+
+### Description
+Admin: approve a payout request
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/approve' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/{id}/approve
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerEmail": "jane@example.com",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "rowCount": 1,
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/{id}/pay</code></summary>
+
+### Description
+Admin: mark a payout request paid
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/{id}/pay
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerEmail": "jane@example.com",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "rowCount": 1,
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/requests/{id}/reject</code></summary>
+
+### Description
+Admin: reject a payout request
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Policy violation"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/requests/{id}/reject
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerEmail": "jane@example.com",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "rowCount": 1,
+  "allowedActions": [
+    "APPROVE"
+  ],
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts/requests</code></summary>
+
+### Description
+Seller: list payout requests
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts/requests?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/requests?page={page}&perPage={perPage}&status={status}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerEmail": "jane@example.com",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "rowCount": 1,
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts/requests/{id}</code></summary>
+
+### Description
+Seller: payout request detail
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/requests/{id}
+```
+
+### Response
+```json
+{
+  "request": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerEmail": "jane@example.com",
+    "amount": "250.00",
+    "currency": "USD",
+    "status": "PENDING",
+    "rejectionReason": "Policy violation",
+    "rowCount": 1,
+    "allowedActions": [
+      "APPROVE"
+    ],
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "rows": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subTotal": "250.00",
+      "commissionAmount": "250.00",
+      "payoutAmount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "payoutRequestId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "rejectionReason": "Policy violation",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "sellerEmail": "jane@example.com",
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "requestedAt": "2024-05-06T12:00:00",
+      "approvedAt": "2024-05-06T12:00:00",
+      "rejectedAt": "2024-05-06T12:00:00",
+      "paidAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
 
 ### TAX CLASSES / ZONES / EXEMPTIONS
 
@@ -9162,6 +11969,7 @@ http://localhost:8080/api/v1/admin/products/{id}/tax-class
 {"message":"Product tax class updated"}
 ```
 </details>
+
 ### FRAUD / RISK
 
 <details>
@@ -9488,6 +12296,77 @@ http://localhost:8080/api/v1/admin/chargebacks/{id}
 {"message":"ok"}
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/chargebacks/export</code></summary>
+
+### Description
+Export chargebacks CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks/export?status={status}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/chargebacks/{id}/evidence</code></summary>
+
+### Description
+Attach evidence to a chargeback
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/chargebacks/6c5078d3-f8e3-4c88-9afe-48b5423c664f/evidence' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "evidenceUrl": "https://example.com/evidence.pdf"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks/{id}/evidence
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "OPEN",
+  "reason": "Policy violation",
+  "outcome": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00",
+  "evidenceUrl": "https://example.com/evidence.pdf",
+  "openedAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
 ### LOYALTY / WALLET
 
 <details>
@@ -9712,6 +12591,7 @@ http://localhost:8080/api/v1/admin/wallets/{userId}/credit
 {"creditBalance":"25.00","pointsBalance":0,"referralCode":"REF12345"}
 ```
 </details>
+
 ### LOCALIZATION
 
 <details>
@@ -9831,6 +12711,7 @@ http://localhost:8080/api/v1/admin/products/{id}/translations/{locale}
 {"message":"ok"}
 ```
 </details>
+
 ### ANALYTICS
 
 <details>
@@ -9927,6 +12808,7 @@ http://localhost:8080/api/v1/admin/analytics/products?startDate=2026-05-01&endDa
 {"products":[{"productId":"p-1","views":100,"purchases":5}]}
 ```
 </details>
+
 ### SELLER TOOLS
 
 <details>
@@ -10263,6 +13145,336 @@ http://localhost:8080/api/v1/seller/commission
 {"rate":"3.00","source":"rule"}
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/disputes/{id}</code></summary>
+
+### Description
+Get a dispute with its message thread
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/disputes/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/disputes/{id}
+```
+
+### Response
+```json
+{
+  "dispute": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "type": "ORDER_ISSUE",
+    "subject": "Looks good",
+    "description": "Looks good",
+    "status": "OPEN",
+    "resolution": "Policy violation",
+    "resolvedBy": "admin@example.com",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "authorId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/disputes/{id}/messages</code></summary>
+
+### Description
+Add a message or evidence to a dispute
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/disputes/6c5078d3-f8e3-4c88-9afe-48b5423c664f/messages' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "body": "Looks good",
+  "isInternal": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/disputes/{id}/messages
+```
+
+### Response
+```json
+{
+  "dispute": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "type": "ORDER_ISSUE",
+    "subject": "Looks good",
+    "description": "Looks good",
+    "status": "OPEN",
+    "resolution": "Policy violation",
+    "resolvedBy": "admin@example.com",
+    "resolvedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "messages": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "authorId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "body": "Looks good",
+      "isInternal": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller-reviews</code></summary>
+
+### Description
+List active seller reviews for a shop
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller-reviews?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller-reviews?page={page}&perPage={perPage}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "rating": 1,
+      "comment": "Looks good",
+      "status": "ACTIVE",
+      "sellerReply": "Looks good",
+      "sellerRepliedAt": "2024-05-06T12:00:00",
+      "moderationReason": "Policy violation",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller-reviews/mine</code></summary>
+
+### Description
+List my seller reviews
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller-reviews/mine?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller-reviews/mine?page={page}&perPage={perPage}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "rating": 1,
+      "comment": "Looks good",
+      "status": "ACTIVE",
+      "sellerReply": "Looks good",
+      "sellerRepliedAt": "2024-05-06T12:00:00",
+      "moderationReason": "Policy violation",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/commission/orders/{orderId}</code></summary>
+
+### Description
+Seller: per-order commission and payout preview
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/commission/orders/ORD-20240506-0001-A1B2C3D4' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/commission/orders/{orderId}
+```
+
+### Response
+```json
+{
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+  "subTotal": "250.00",
+  "discountAmount": "250.00",
+  "commissionAmount": "250.00",
+  "payoutAmount": "250.00",
+  "commissionRate": "250.00",
+  "currency": "USD"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/reviews/products/{id}/reply</code></summary>
+
+### Description
+Seller: reply to a product review
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/reviews/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reply' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reply": "Looks good"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/reviews/products/{id}/reply
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "reviewText": "Looks good",
+  "rating": 1,
+  "title": "Example",
+  "isVerifiedPurchase": true,
+  "helpfulCount": 1,
+  "notHelpfulCount": 1,
+  "images": [
+    "https://example.com/image.jpg"
+  ],
+  "status": "ACTIVE",
+  "sellerReply": "Looks good",
+  "sellerRepliedAt": "2024-05-06T12:00:00",
+  "moderationReason": "Policy violation",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/reviews/{id}/reply</code></summary>
+
+### Description
+Seller: reply to a seller review
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reply' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reply": "Looks good"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/reviews/{id}/reply
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "rating": 1,
+  "comment": "Looks good",
+  "status": "ACTIVE",
+  "sellerReply": "Looks good",
+  "sellerRepliedAt": "2024-05-06T12:00:00",
+  "moderationReason": "Policy violation",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
 ### SUBSCRIPTIONS / DIGITAL
 
 <details>
@@ -10570,6 +13782,31 @@ http://localhost:8080/api/v1/library/{token}/download
 {"downloadUrl":"https://downloads.example/pack.zip","remainingDownloads":4}
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/library/asset</code></summary>
+
+### Description
+Resolve a short-lived digital download link
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/library/asset' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/library/asset
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+
 ### B2B QUOTES / PO / NET TERMS
 
 <details>
@@ -11040,6 +14277,90 @@ http://localhost:8080/api/v1/admin/b2b/purchase-orders
 {"data":[{"id":"po-1"}]}
 ```
 </details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/b2b/invoices/{id}/void</code></summary>
+
+### Description
+Admin: void an unpaid B2B invoice
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/b2b/invoices/6c5078d3-f8e3-4c88-9afe-48b5423c664f/void' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/invoices/{id}/void
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "purchaseOrderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "invoiceNumber": "INV-2024-0001",
+  "buyerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "status": "PENDING",
+  "currency": "USD",
+  "amount": "250.00",
+  "dueDate": "2024-05-06T12:00:00",
+  "paidAt": "2024-05-06T12:00:00",
+  "providerReference": "pi_123456789",
+  "reminderCount": 1,
+  "lastReminderAt": "2024-05-06T12:00:00",
+  "nextReminderAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/b2b/purchase-orders/{id}/cancel</code></summary>
+
+### Description
+Seller: cancel an open purchase order
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/b2b/purchase-orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/purchase-orders/{id}/cancel
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "quoteId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "buyerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "poNumber": "PO-2024-0001",
+  "status": "OPEN",
+  "currency": "USD",
+  "total": "250.00",
+  "netTermsDays": 1,
+  "dueDate": "2024-05-06T12:00:00",
+  "fulfilledAt": "2024-05-06T12:00:00",
+  "canceledAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "invoiceId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+</details>
+
 ### OMNICHANNEL / BOPIS / POS
 
 <details>
@@ -11303,6 +14624,7 @@ http://localhost:8080/api/v1/seller/pos/sales
 {"orderId":"order-uuid","fulfillmentType":"POS","total":"20.00"}
 ```
 </details>
+
 ### CMS / SEO / SITEMAP
 
 <details>
@@ -11541,6 +14863,44 @@ http://localhost:8080/robots.txt
 User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/config</code></summary>
+
+### Description
+Public storefront configuration
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/config' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/config
+```
+
+### Response
+```json
+{
+  "guestCheckout": true,
+  "requirePolicyConsent": true,
+  "supportedCurrencies": [
+    "USD"
+  ],
+  "baseCurrency": "USD",
+  "paymentMethods": [
+    "CREDIT_CARD"
+  ],
+  "paymentProvider": "stripe",
+  "freeShippingThreshold": "25.00",
+  "returnWindowDays": 30
+}
+```
+</details>
+
 ### SUPPORT TICKETS
 
 <details>
@@ -11834,6 +15194,56 @@ http://localhost:8080/api/v1/admin/subscriptions/{id}/activate
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}</code></summary>
+
+### Description
+Admin: download a support attachment
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}
+```
+
+### Response
+```text
+<binary attachment content>
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/support/tickets/{id}/attachments/{attachmentId}</code></summary>
+
+### Description
+Download my support attachment
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: */*' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}/attachments/{attachmentId}
+```
+
+### Response
+```text
+<binary attachment content>
+```
+</details>
+
 ### TAX RULES
 
 <details>
@@ -12039,6 +15449,35 @@ http://localhost:8080/api/v1/admin/fx-rates/{targetCurrency}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/fx-rates</code></summary>
+
+### Description
+List FX rates
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/fx-rates' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/fx-rates
+```
+
+### Response
+```json
+[
+  {
+    "targetCurrency": "USD",
+    "rate": "250.00",
+    "effectiveAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
 
 ### API KEYS
 
@@ -12325,6 +15764,72 @@ http://localhost:8080/api/v1/admin/outbox/dead-letters?limit={limit}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/outbox/dead-letters/requeue</code></summary>
+
+### Description
+Bulk requeue dead letters
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/requeue' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/outbox/dead-letters/requeue
+```
+
+### Response
+```json
+{
+  "message": "Operation completed"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/outbox/dead-letters/{id}</code></summary>
+
+### Description
+Inspect a dead letter
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/outbox/dead-letters/{id}
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "eventType": "CUSTOMER",
+  "aggregateType": "CUSTOMER",
+  "aggregateId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "payload": "{}",
+  "error": "None",
+  "attempts": 1,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
 
 ### PRIVACY / GDPR
 

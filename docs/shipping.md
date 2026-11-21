@@ -1,8 +1,6 @@
-# Shipping & Carrier API
+# Shipping & Carrier
 
-Carrier rate quotes, label purchase, per-line fulfillment, and tracking webhooks.
-
-**Base URL:** `http://localhost:8080`
+Carrier quotes, label purchase, fulfillment and tracking webhooks.
 
 All endpoints except the tracking webhook require Bearer authentication. A customer may read
 their own order's shipments; sellers may quote and purchase labels for their shop; admins may do
@@ -20,13 +18,9 @@ both for any order.
 
 ---
 
-## 1. Rate quote
+### 1. Rate quote
 
 **`POST /api/v1/orders/{id}/shipping-quotes`**
-
-Returns rates from the configured carrier for the supplied origin/destination and parcels.
-
-```json
 {
   "origin": {
     "name": "Dhaka Warehouse",
@@ -65,15 +59,9 @@ Response:
 
 ---
 
-## 2. Purchase a label
+### 2. Purchase a label
 
 **`POST /api/v1/orders/{id}/shipments`**
-
-Buys the selected rate and records the parcel. `items` is optional; when omitted every remaining
-unit on the order ships in this parcel. Partial fulfillment is supported by supplying only some
-lines/quantities.
-
-```json
 {
   "rateId": "rate_123",
   "items": [
@@ -113,11 +101,9 @@ Rules:
 
 ---
 
-## 3. List / retrieve shipments
+### 3. List / retrieve shipments
 
-**`GET /api/v1/orders/{id}/shipments`** returns all parcels for an order.
-
-**`GET /api/v1/shipments/{id}`** returns one shipment, including its allocated lines.
+**`GET /api/v1/orders/{id}/shipments`**
 
 ---
 
@@ -129,14 +115,9 @@ Rules:
 Stored carrier payloads can be re-applied after fixing a mapping/outage. Replay updates the inbox
 row and writes an audit entry; it does not require the original signature.
 
-## 4. Tracking webhook
+### 4. Tracking webhook
 
 **`POST /api/v1/shipments/webhook/{provider}`**
-
-Public endpoint called by the carrier. The raw body is verified with
-`X-Carrier-Signature` (`X-Webhook-Signature` is also accepted) before any update:
-
-- HMAC-SHA256 hex of the raw payload using `CARRIER_WEBHOOK_SECRET`, or the shared secret itself.
 - Deliveries are deduplicated by `(provider, event_id)`; the event ID is the SHA-256 of the payload,
   so retries are safe.
 - `TRANSIT`/`OUT_FOR_DELIVERY` → `IN_TRANSIT`
@@ -149,6 +130,50 @@ curl -X 'POST' \
   -H 'X-Carrier-Signature: <hmac-or-shared-secret>' \
   -H 'Content-Type: application/json' \
   -d '{"event":"track_updated","data":{"tracking_number":"9400111","tracking_status":{"status":"DELIVERED"}}}'
+```
+
+---
+
+## Endpoint Details
+
+### 5. Retrieve a shipment
+
+**`GET /api/v1/shipments/{id}`**
+
+Retrieve a shipment
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shipments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "carrier": "string",
+  "service": "string",
+  "trackingNumber": "1Z999AA10123456784",
+  "labelUrl": "string",
+  "rateAmount": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "shippedAt": "2024-05-06T12:00:00",
+  "deliveredAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "items": [
+    {
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "quantity": 1
+    }
+  ]
+}
 ```
 
 ---

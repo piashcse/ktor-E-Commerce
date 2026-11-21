@@ -1,8 +1,6 @@
-# Shop Category API
+# Shop Category
 
-This documentation provides comprehensive details for the Shop Category API endpoints. The API supports creating, retrieving, updating, and deleting shop categories. These endpoints are typically used by administrators to manage the categorization system for shops within the platform.
-
-**Base URL:** `http://localhost:8080`
+Create, update, list and remove shop categories.
 
 ## Authentication
 
@@ -29,10 +27,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/shop-categories`**
 
-Create a new shop category. This endpoint allows administrators to add new categories for organizing shops.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Name of the shop category |
@@ -44,7 +38,7 @@ Create a new shop category. This endpoint allows administrators to add new categ
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `application/json` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
@@ -57,7 +51,7 @@ curl -X 'POST' \
   }'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -67,22 +61,11 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created shop category |
-| `name` | string | Name of the shop category |
-
 ---
 
 ### 2. Get Shop Categories
 
 **`GET /api/v1/shop-categories`**
-
-Retrieve a list of shop categories with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -93,7 +76,7 @@ Retrieve a list of shop categories with optional pagination support.
 
 No authentication required (public).
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -101,7 +84,7 @@ curl -X 'GET' \
   -H 'accept: application/json'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -123,27 +106,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop category objects |
-| `data[].id` | string | Unique identifier for the shop category |
-| `data[].name` | string | Name of the shop category |
-| `metadata` | object | Pagination metadata |
-| `metadata.totalCount` | number | Total number of items |
-| `metadata.limit` | number | Limit applied |
-| `metadata.offset` | number | Offset applied |
-
 ---
 
 ### 3. Update Shop Category
 
 **`PUT /api/v1/admin/shop-categories/{id}`**
-
-Update an existing shop category by its ID.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -161,7 +128,7 @@ Update an existing shop category by its ID.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -170,7 +137,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -180,22 +147,11 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated shop category |
-| `name` | string | Updated name of the shop category |
-
 ---
 
 ### 4. Delete Shop Category
 
 **`DELETE /api/v1/admin/shop-categories/{id}`**
-
-Delete a shop category by its ID. This operation permanently removes the category from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -207,7 +163,7 @@ Delete a shop category by its ID. This operation permanently removes the categor
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'DELETE' \
@@ -216,19 +172,13 @@ curl -X 'DELETE' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
   "message": "Shop category deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 
@@ -241,7 +191,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

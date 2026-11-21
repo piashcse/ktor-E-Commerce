@@ -1,9 +1,6 @@
 # Localization & Localized Checkout
 
-Locale negotiation, translated API messages, localized product content, and locale/currency-aware
-checkout totals.
-
-**Base URL:** `http://localhost:8080`
+Locale negotiation, translated messages, product content and localized checkout.
 
 ## Supported locales
 
@@ -72,6 +69,8 @@ Admin APIs:
 | `GET` | `/api/v1/admin/products/{id}/translations` | List translations |
 | `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update |
 | `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete |
+| `GET` | `/api/v1/i18n/locales` | List supported locales |
+| `GET` | `/api/v1/i18n/messages` | Get translated API message catalog |
 
 ```json
 {
@@ -82,3 +81,126 @@ Admin APIs:
 
 Only supported locale codes are accepted. Translations are only applied when the code matches the
 request locale; missing translations fall back to the product's default name/description.
+## Endpoint Details
+
+### 1. List a product's translations
+
+**`GET /api/v1/admin/products/{id}/translations`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "locale": "en",
+    "name": "Example",
+    "description": "Looks good"
+  }
+]
+```
+
+---
+
+### 2. Create or update a product translation
+
+**`PUT /api/v1/admin/products/{id}/translations/{locale}`**
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "description": "Looks good"
+}'
+```
+
+#### Response
+
+```json
+{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "locale": "en",
+  "name": "Example",
+  "description": "Looks good"
+}
+```
+
+---
+
+### 3. Delete a product translation
+
+**`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 4. List supported locales
+
+**`GET /api/v1/i18n/locales`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/locales' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+[
+  {
+    "code": "SAVE10",
+    "language": "string",
+    "englishName": "string",
+    "defaultCurrency": "USD"
+  }
+]
+```
+
+---
+
+### 5. Get translated API message catalog
+
+**`GET /api/v1/i18n/messages`**
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/messages' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "locale": "en",
+  "messages": {}
+}
+```
+
+---

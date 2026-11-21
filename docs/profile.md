@@ -1,8 +1,6 @@
-# Profile API
+# Profile
 
-This documentation provides comprehensive details for the Profile API endpoints. The API supports retrieving user profile information, updating profile details, and uploading profile images for authenticated users.
-
-**Base URL:** `http://localhost:8080`
+Read and update the authenticated user's profile and profile image.
 
 ## Authentication
 
@@ -28,15 +26,11 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/profile`**
 
-Retrieve the profile information for the authenticated user.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'GET' \
@@ -45,7 +39,7 @@ curl -X 'GET' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -62,29 +56,11 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `userId` | string | Unique identifier for the user |
-| `firstName` | string | User's first name |
-| `lastName` | string | User's last name |
-| `mobile` | string | User's mobile phone number |
-| `faxNumber` | string | User's fax number |
-| `streetAddress` | string | User's street address |
-| `city` | string | User's city |
-| `postCode` | string | User's postal code |
-| `gender` | string | User's gender |
-
 ---
 
 ### 2. Update User Profile
 
 **`PUT /api/v1/profile`**
-
-Update profile information for the authenticated user.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -103,7 +79,7 @@ Update profile information for the authenticated user.
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
 
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -112,7 +88,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 {
@@ -135,13 +111,11 @@ curl -X 'PUT' \
 
 **`POST /api/v1/profile/image-upload`**
 
-Upload a profile image for the authenticated user. The image will be processed and stored with a unique filename.
+#### Multipart Form Data
 
-#### Request Body
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `image` | file | Yes | Image file (multipart/form-data) |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
 
 #### Headers
 
@@ -150,33 +124,21 @@ Upload a profile image for the authenticated user. The image will be processed a
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `multipart/form-data` | Yes |
 
-#### Supported Image Formats
-- JPEG (.jpg, .jpeg)
-- PNG (.png)
-- GIF (.gif)
-
-#### Example Request
+#### Request
 
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/profile/image-upload' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Authorization: Bearer <access_token>' \
   -H 'Content-Type: multipart/form-data' \
   -F 'image=@profile.jpg;type=image/jpeg'
 ```
 
-#### Example Response
+#### Response
 
 ```json
 "/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| (root) | string | Public URL of the uploaded profile image |
 
 ---
 
@@ -189,7 +151,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json
