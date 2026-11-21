@@ -1,0 +1,12 @@
+/* Keep every documentation table at the full content width. */
+.md-typeset table,
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+  table-layout: auto;
+}
+
+.md-typeset__table {
+  width: 100%;
+  overflow-x: auto;
+}
