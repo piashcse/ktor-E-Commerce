@@ -66,11 +66,11 @@ Admin APIs:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/products/{id}/translations` | List translations |
-| `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update |
-| `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete |
-| `GET` | `/api/v1/i18n/locales` | List supported locales |
-| `GET` | `/api/v1/i18n/messages` | Get translated API message catalog |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/products/{id}/translations` | List translations |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/products/{id}/translations/{locale}` | Delete |
+| <span class="method-badge get">GET</span> | `/api/v1/i18n/locales` | List supported locales |
+| <span class="method-badge get">GET</span> | `/api/v1/i18n/messages` | Get translated API message catalog |
 
 ```json
 {
@@ -85,7 +85,10 @@ request locale; missing translations fall back to the product's default name/des
 
 ### 1. List a product's translations
 
-**`GET /api/v1/admin/products/{id}/translations`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -111,7 +114,10 @@ curl -X 'GET' \
 
 ### 2. Create or update a product translation
 
-**`PUT /api/v1/admin/products/{id}/translations/{locale}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations/{locale}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -140,7 +146,10 @@ curl -X 'PUT' \
 
 ### 3. Delete a product translation
 
-**`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations/{locale}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -161,7 +170,10 @@ curl -X 'DELETE' \
 
 ### 4. List supported locales
 
-**`GET /api/v1/i18n/locales`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/i18n/locales</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -186,7 +198,10 @@ curl -X 'GET' \
 
 ### 5. Get translated API message catalog
 
-**`GET /api/v1/i18n/messages`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/i18n/messages</span>
+</div>
 
 ```bash
 curl -X 'GET' \

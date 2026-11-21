@@ -1,22 +1,26 @@
-# Profile
+# User Profile
 
-Read and update the authenticated user's profile and profile image.
+Manage the authenticated user's account profile details and avatar image.
+
+---
 
 ## Authentication
 
-All Profile endpoints require Bearer token authentication. Include the access token in the Authorization header:
+All endpoints in the Profile module require a valid **Bearer JWT access token** passed in the `Authorization` header:
 
-```
+```http
 Authorization: Bearer <your_access_token>
 ```
 
-### Profile Endpoints
+---
 
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/profile` | Retrieve user profile information | Yes |
-| `PUT` | `/api/v1/profile` | Update user profile information | Yes |
-| `POST` | `/api/v1/profile/image-upload` | Upload user profile image | Yes |
+## Profile Endpoints Overview
+
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---|
+| <span class="method-badge get">GET</span> | `/api/v1/profile` | Retrieve user profile information | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge put">PUT</span> | `/api/v1/profile` | Update user profile information | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge post">POST</span> | `/api/v1/profile/image-upload` | Upload profile image (multipart) | <span class="badge-req">Bearer JWT</span> |
 
 ---
 
@@ -24,164 +28,244 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get User Profile
 
-**`GET /api/v1/profile`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/profile</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+Retrieves the currently authenticated user's complete profile record.
 
-#### Request
+#### Headers
 
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/profile' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+| Header | Value | Required | Description |
+|:---|:---|:---|:---|
+| `Authorization` | `Bearer <access_token>` | <span class="badge-req">Required</span> | Valid user access token |
+| `Accept` | `application/json` | <span class="badge-opt">Optional</span> | Expected response format |
+
+#### Request Examples
+
+=== "cURL"
+    ```bash
+    curl -X GET 'http://localhost:8080/api/v1/profile' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
+
+=== "Kotlin (Ktor Client)"
+    ```kotlin
+    val response = client.get("http://localhost:8080/api/v1/profile") {
+        header(HttpHeaders.Authorization, "Bearer $accessToken")
+        accept(ContentType.Application.Json)
+    }
+    val profile: UserProfile = response.body()
+    ```
+
+=== "TypeScript (Fetch)"
+    ```typescript
+    const response = await fetch("http://localhost:8080/api/v1/profile", {
+      headers: {
+        "Accept": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+    const profile = await response.json();
+    ```
 
 #### Response
 
-```json
-{
-    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
-    "firstName": "Mehedi ",
-    "lastName": "Hassan",
-    "mobile": "01812353930",
-    "faxNumber": "454",
-    "streetAddress": "Dhaka",
-    "city": "Dhaka",
-    "postCode": "1205",
-    "gender": "Male"
-  }
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
+      "firstName": "Mehedi",
+      "lastName": "Hassan",
+      "mobile": "01812353930",
+      "faxNumber": "454",
+      "streetAddress": "Dhaka",
+      "city": "Dhaka",
+      "postCode": "1205",
+      "gender": "Male"
+    }
+    ```
+
+=== "401 Unauthorized"
+    ```json
+    {
+      "message": "Authentication required"
+    }
+    ```
 
 ---
 
 ### 2. Update User Profile
 
-**`PUT /api/v1/profile`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/profile</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Updates profile information for the authenticated account.
+
+#### Query / Form Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `firstName` | string | No | User's first name |
-| `lastName` | string | No | User's last name |
-| `mobile` | string | No | User's mobile phone number |
-| `faxNumber` | string | No | User's fax number |
-| `streetAddress` | string | No | User's street address |
-| `city` | string | No | User's city |
-| `postCode` | string | No | User's postal code |
-| `gender` | string | No | User's gender |
+|:---|:---|:---|:---|
+| `firstName` | string | <span class="badge-opt">Optional</span> | User's given name |
+| `lastName` | string | <span class="badge-opt">Optional</span> | User's family name |
+| `mobile` | string | <span class="badge-opt">Optional</span> | User's mobile phone number |
+| `faxNumber` | string | <span class="badge-opt">Optional</span> | User's fax contact number |
+| `streetAddress` | string | <span class="badge-opt">Optional</span> | Street address line |
+| `city` | string | <span class="badge-opt">Optional</span> | City or municipality |
+| `postCode` | string | <span class="badge-opt">Optional</span> | Postal / ZIP code |
+| `gender` | string | <span class="badge-opt">Optional</span> | Gender identity (`Male`, `Female`, `Other`) |
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+| Header | Value | Required | Description |
+|:---|:---|:---|:---|
+| `Authorization` | `Bearer <access_token>` | <span class="badge-req">Required</span> | Valid user access token |
 
-#### Request
+#### Request Examples
 
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/profile?firstName=Mehedi&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Male' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X PUT 'http://localhost:8080/api/v1/profile?firstName=Mehedi&lastName=Hassan&mobile=01812353930&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Male' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
+
+=== "Kotlin (Ktor Client)"
+    ```kotlin
+    val response = client.put("http://localhost:8080/api/v1/profile") {
+        header(HttpHeaders.Authorization, "Bearer $accessToken")
+        parameter("firstName", "Mehedi")
+        parameter("lastName", "Hassan")
+        parameter("mobile", "01812353930")
+        parameter("city", "Dhaka")
+        parameter("postCode", "1205")
+        parameter("gender", "Male")
+    }
+    val updatedProfile: UserProfile = response.body()
+    ```
+
+=== "TypeScript (Fetch)"
+    ```typescript
+    const params = new URLSearchParams({
+      firstName: "Mehedi",
+      lastName: "Hassan",
+      mobile: "01812353930",
+      city: "Dhaka",
+      postCode: "1205",
+      gender: "Male"
+    });
+
+    const response = await fetch(`http://localhost:8080/api/v1/profile?${params.toString()}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Accept": "application/json"
+      }
+    });
+    const updatedProfile = await response.json();
+    ```
 
 #### Response
 
-```json
-{
-    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
-    "firstName": "Mehedi",
-    "lastName": "Hassan",
-    "mobile": "01812353930",
-    "faxNumber": "454",
-    "streetAddress": "Dhaka",
-    "city": "Dhaka",
-    "postCode": "1205",
-    "gender": "Male"
-  }
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
+      "firstName": "Mehedi",
+      "lastName": "Hassan",
+      "mobile": "01812353930",
+      "faxNumber": "454",
+      "streetAddress": "Dhaka",
+      "city": "Dhaka",
+      "postCode": "1205",
+      "gender": "Male"
+    }
+    ```
+
+=== "400 Bad Request"
+    ```json
+    {
+      "message": "Validation failed",
+      "errors": [
+        { "field": "mobile", "message": "Invalid mobile number format" }
+      ]
+    }
+    ```
 
 ---
 
 ### 3. Upload Profile Image
 
-**`POST /api/v1/profile/image-upload`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/profile/image-upload</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Uploads a new avatar image for the authenticated user.
 
 #### Multipart Form Data
 
 | Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+|:---|:---|:---|:---|
+| `image` | binary file | <span class="badge-req">Required</span> | Supported formats: `image/jpeg`, `image/png`, `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum size: **5 MB**. |
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `multipart/form-data` | Yes |
+| Header | Value | Required | Description |
+|:---|:---|:---|:---|
+| `Authorization` | `Bearer <access_token>` | <span class="badge-req">Required</span> | Valid user access token |
+| `Content-Type` | `multipart/form-data` | <span class="badge-req">Required</span> | Multipart boundary header |
 
-#### Request
+#### Request Examples
 
-```bash
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/profile/image-upload' \
-  -H 'Authorization: Bearer <access_token>' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'image=@profile.jpg;type=image/jpeg'
-```
+=== "cURL"
+    ```bash
+    curl -X POST 'http://localhost:8080/api/v1/profile/image-upload' \
+      -H 'Authorization: Bearer <access_token>' \
+      -H 'Content-Type: multipart/form-data' \
+      -F 'image=@profile.jpg;type=image/jpeg'
+    ```
+
+=== "Kotlin (Ktor Client)"
+    ```kotlin
+    val response = client.submitFormWithBinaryData(
+        url = "http://localhost:8080/api/v1/profile/image-upload",
+        formData = formData {
+            append("image", fileBytes, Headers.build {
+                append(HttpHeaders.ContentType, "image/jpeg")
+                append(HttpHeaders.ContentDisposition, "filename=\"profile.jpg\"")
+            })
+        }
+    ) {
+        header(HttpHeaders.Authorization, "Bearer $accessToken")
+    }
+    val uploadedUrl: String = response.body()
+    ```
 
 #### Response
 
-```json
-"/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
-```
+=== "200 OK"
+    ```json
+    "/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
+    ```
+
+=== "400 Bad Request (Exceeds Size / Unsupported Format)"
+    ```json
+    {
+      "message": "File size exceeds the 5MB limit or invalid image type"
+    }
+    ```
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-#### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
+!!! tip "Centralized Error Handling Architecture"
+    All profile endpoints return standardized error structures and HTTP status codes. For the complete reference of status codes (`400`, `401`, `403`, `404`, `500`), validation error formats, and retry guidelines, see the **[Error Handling & Status Codes Guide](errors.md)**.

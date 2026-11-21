@@ -6,14 +6,17 @@ Read-only product recommendations from catalog and purchase signals.
 
 | Method | Endpoint | Strategy |
 |---|---|---|
-| `GET` | `/api/v1/products/recommendations?limit=10` | Best sellers (guest-safe fallback) |
-| `GET` | `/api/v1/products/{productId}/related?limit=10` | Same category, subcategory boosted |
-| `GET` | `/api/v1/products/{productId}/also-bought?limit=10` | Co-purchase from paid, non-canceled orders |
-| `GET` | `/api/v1/recommendations?limit=10` | Personalized feed (customer auth required) |
+| <span class="method-badge get">GET</span> | `/api/v1/products/recommendations?limit=10` | Best sellers (guest-safe fallback) |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{productId}/related?limit=10` | Same category, subcategory boosted |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{productId}/also-bought?limit=10` | Co-purchase from paid, non-canceled orders |
+| <span class="method-badge get">GET</span> | `/api/v1/recommendations?limit=10` | Personalized feed (customer auth required) |
 
 ### 1. Personalized endpoint
 
-**`GET /api/v1/recommendations?limit=10`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/recommendations?limit=10</span>
+</div>
 
 ## Response
 
@@ -48,7 +51,10 @@ Strategies returned: `personalized`, `related`, `also-bought`, `best-sellers`.
 
 ### 2. Best-seller recommendations
 
-**`GET /api/v1/products/recommendations`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/recommendations</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -93,7 +99,10 @@ curl -X 'GET' \
 
 ### 3. Related products
 
-**`GET /api/v1/products/{id}/related`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/related</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -138,7 +147,10 @@ curl -X 'GET' \
 
 ### 4. Frequently bought together
 
-**`GET /api/v1/products/{id}/also-bought`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/also-bought</span>
+</div>
 
 ```bash
 curl -X 'GET' \

@@ -10,17 +10,22 @@ both for any order.
 
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
-| `POST` | `/api/v1/orders/{id}/shipping-quotes` | Get live carrier rates for an order | Authenticated |
-| `GET` | `/api/v1/orders/{id}/shipments` | List the order's parcels | Authenticated |
-| `POST` | `/api/v1/orders/{id}/shipments` | Purchase a label and allocate order lines | Seller / Admin |
-| `GET` | `/api/v1/shipments/{id}` | Retrieve one shipment | Authenticated |
-| `POST` | `/api/v1/shipments/webhook/{provider}` | Carrier tracking webhook | Public |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/shipping-quotes` | Get live carrier rates for an order | Authenticated |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/{id}/shipments` | List the order's parcels | Authenticated |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/shipments` | Purchase a label and allocate order lines | Seller / Admin |
+| <span class="method-badge get">GET</span> | `/api/v1/shipments/{id}` | Retrieve one shipment | Authenticated |
+| <span class="method-badge post">POST</span> | `/api/v1/shipments/webhook/{provider}` | Carrier tracking webhook | Public |
 
 ---
 
 ### 1. Rate quote
 
-**`POST /api/v1/orders/{id}/shipping-quotes`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipping-quotes</span>
+</div>
+
+```json
 {
   "origin": {
     "name": "Dhaka Warehouse",
@@ -61,7 +66,12 @@ Response:
 
 ### 2. Purchase a label
 
-**`POST /api/v1/orders/{id}/shipments`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipments</span>
+</div>
+
+```json
 {
   "rateId": "rate_123",
   "items": [
@@ -103,7 +113,10 @@ Rules:
 
 ### 3. List / retrieve shipments
 
-**`GET /api/v1/orders/{id}/shipments`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipments</span>
+</div>
 
 ---
 
@@ -117,7 +130,11 @@ row and writes an audit entry; it does not require the original signature.
 
 ### 4. Tracking webhook
 
-**`POST /api/v1/shipments/webhook/{provider}`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/shipments/webhook/{provider}</span>
+</div>
+
 - Deliveries are deduplicated by `(provider, event_id)`; the event ID is the SHA-256 of the payload,
   so retries are safe.
 - `TRANSIT`/`OUT_FOR_DELIVERY` → `IN_TRANSIT`
@@ -138,7 +155,10 @@ curl -X 'POST' \
 
 ### 5. Retrieve a shipment
 
-**`GET /api/v1/shipments/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shipments/{id}</span>
+</div>
 
 Retrieve a shipment
 

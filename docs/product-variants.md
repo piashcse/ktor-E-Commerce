@@ -6,8 +6,8 @@ Variant SKUs, prices, images, options and per-variant stock.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/products/{productId}/variants` | List purchasable variants |
-| `GET` | `/api/v1/products/{productId}/options` | List option dimensions and values |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{productId}/variants` | List purchasable variants |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{productId}/options` | List option dimensions and values |
 
 Product detail (`GET /api/v1/products/{productId}`) also includes a `variants` array.
 
@@ -37,14 +37,14 @@ All routes are under `/api/v1/seller/products` and require the seller to own the
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/seller/products/{productId}/variants` | Create a variant |
-| `PUT` | `/api/v1/seller/products/{productId}/variants/{variantId}` | Update a variant |
-| `DELETE` | `/api/v1/seller/products/{productId}/variants/{variantId}` | Delete a variant |
-| `PUT` | `/api/v1/seller/products/{productId}/variants/{variantId}/options` | Replace attached option values |
-| `POST` | `/api/v1/seller/products/{productId}/options` | Create an option dimension, e.g. `Size` |
-| `DELETE` | `/api/v1/seller/products/{productId}/options/{optionId}` | Delete an option and its values |
-| `POST` | `/api/v1/seller/products/{productId}/options/{optionId}/values` | Add a value, e.g. `M` |
-| `DELETE` | `/api/v1/seller/products/{productId}/options/{optionId}/values/{valueId}` | Delete a value |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{productId}/variants` | Create a variant |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/products/{productId}/variants/{variantId}` | Update a variant |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{productId}/variants/{variantId}` | Delete a variant |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/products/{productId}/variants/{variantId}/options` | Replace attached option values |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{productId}/options` | Create an option dimension, e.g. `Size` |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{productId}/options/{optionId}` | Delete an option and its values |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{productId}/options/{optionId}/values` | Add a value, e.g. `M` |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{productId}/options/{optionId}/values/{valueId}` | Delete a value |
 
 Create variant body:
 
@@ -81,7 +81,10 @@ Inventory rows accept an optional `variantId`. Rows with `variantId = NULL` are 
 
 ### 1. List product variants
 
-**`GET /api/v1/products/{id}/variants`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/variants</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -126,7 +129,10 @@ curl -X 'GET' \
 
 ### 2. List product options
 
-**`GET /api/v1/products/{id}/options`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/options</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -158,7 +164,10 @@ curl -X 'GET' \
 ---
 ### 3. Create product variant
 
-**`POST /api/v1/seller/products/{id}/variants`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -216,7 +225,10 @@ curl -X 'POST' \
 
 ### 4. Update product variant
 
-**`PUT /api/v1/seller/products/{id}/variants/{variantId}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -274,7 +286,10 @@ curl -X 'PUT' \
 
 ### 5. Delete product variant
 
-**`DELETE /api/v1/seller/products/{id}/variants/{variantId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -295,7 +310,10 @@ curl -X 'DELETE' \
 
 ### 6. Attach option values to a variant
 
-**`PUT /api/v1/seller/products/{id}/variants/{variantId}/options`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}/options</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -345,7 +363,10 @@ curl -X 'PUT' \
 
 ### 7. Create option dimension
 
-**`POST /api/v1/seller/products/{id}/options`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -382,7 +403,10 @@ curl -X 'POST' \
 
 ### 8. Delete option dimension
 
-**`DELETE /api/v1/seller/products/{id}/options/{optionId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -403,7 +427,10 @@ curl -X 'DELETE' \
 
 ### 9. Add option value
 
-**`POST /api/v1/seller/products/{id}/options/{optionId}/values`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}/values</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -432,7 +459,10 @@ curl -X 'POST' \
 
 ### 10. Delete option value
 
-**`DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \

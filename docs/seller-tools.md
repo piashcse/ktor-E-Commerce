@@ -6,7 +6,12 @@ Seller reviews, buyer disputes and commission rules.
 
 Customers can review a seller once per order after it is `DELIVERED` or `RECEIVED`.
 
-**`POST /api/v1/seller-reviews`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller-reviews</span>
+</div>
+
+```json
 {
   "orderId": "order-uuid",
   "rating": 5,
@@ -23,19 +28,19 @@ Admin moderation:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/sellers/{id}/reviews` | Public active reviews |
-| `GET` | `/api/v1/seller/reviews` | Seller's received reviews |
-| `GET` | `/api/v1/admin/seller-reviews?status=` | Admin moderation list |
-| `PUT` | `/api/v1/admin/seller-reviews/{id}/status` | Hide/flag/activate |
-| `GET` | `/api/v1/admin/disputes` | Admin: list disputes |
-| `PUT` | `/api/v1/admin/disputes/{id}` | Admin: resolve/update a dispute |
-| `GET` | `/api/v1/disputes/{id}` | Get a dispute with its message thread |
-| `POST` | `/api/v1/disputes/{id}/messages` | Add a message or evidence to a dispute |
-| `GET` | `/api/v1/seller-reviews/mine` | List my seller reviews |
-| `GET` | `/api/v1/seller/commission` | Seller: get my effective commission rate |
-| `GET` | `/api/v1/seller/commission/orders/{orderId}` | Seller: per-order commission and payout preview |
-| `POST` | `/api/v1/seller/reviews/products/{id}/reply` | Seller: reply to a product review |
-| `POST` | `/api/v1/seller/reviews/{id}/reply` | Seller: reply to a seller review |
+| <span class="method-badge get">GET</span> | `/api/v1/sellers/{id}/reviews` | Public active reviews |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/reviews` | Seller's received reviews |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/seller-reviews?status=` | Admin moderation list |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/seller-reviews/{id}/status` | Hide/flag/activate |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/disputes` | Admin: list disputes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/disputes/{id}` | Admin: resolve/update a dispute |
+| <span class="method-badge get">GET</span> | `/api/v1/disputes/{id}` | Get a dispute with its message thread |
+| <span class="method-badge post">POST</span> | `/api/v1/disputes/{id}/messages` | Add a message or evidence to a dispute |
+| <span class="method-badge get">GET</span> | `/api/v1/seller-reviews/mine` | List my seller reviews |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/commission` | Seller: get my effective commission rate |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/commission/orders/{orderId}` | Seller: per-order commission and payout preview |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/reviews/products/{id}/reply` | Seller: reply to a product review |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/reviews/{id}/reply` | Seller: reply to a seller review |
 
 Moderation body:
 
@@ -47,7 +52,12 @@ Only `ACTIVE` reviews count toward the shop's `rating` and `totalReviews`.
 
 ### 1. Disputes
 
-**`POST /api/v1/disputes`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/disputes</span>
+</div>
+
+```json
 {
   "orderId": "order-uuid",
   "type": "ORDER_ISSUE",
@@ -122,7 +132,10 @@ commission reversals use the same resolver for the refunded item's category.
 
 ### 2. List active reviews for a seller
 
-**`GET /api/v1/sellers/{id}/reviews`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/sellers/{id}/reviews</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -167,7 +180,10 @@ curl -X 'GET' \
 
 ### 3. Seller: list reviews received
 
-**`GET /api/v1/seller/reviews`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/reviews</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -213,7 +229,10 @@ curl -X 'GET' \
 
 ### 4. Admin: list seller reviews
 
-**`GET /api/v1/admin/seller-reviews`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/seller-reviews</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -259,7 +278,10 @@ curl -X 'GET' \
 
 ### 5. Admin: moderate a seller review
 
-**`PUT /api/v1/admin/seller-reviews/{id}/status`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/seller-reviews/{id}/status</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -296,7 +318,10 @@ curl -X 'PUT' \
 
 ### 6. Admin: list disputes
 
-**`GET /api/v1/admin/disputes`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/disputes</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -342,7 +367,10 @@ curl -X 'GET' \
 
 ### 7. Admin: resolve/update a dispute
 
-**`PUT /api/v1/admin/disputes/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/disputes/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -379,7 +407,10 @@ curl -X 'PUT' \
 
 ### 8. Get a dispute with its message thread
 
-**`GET /api/v1/disputes/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/disputes/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -422,7 +453,10 @@ curl -X 'GET' \
 
 ### 9. Add a message or evidence to a dispute
 
-**`POST /api/v1/disputes/{id}/messages`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/disputes/{id}/messages</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -470,7 +504,10 @@ curl -X 'POST' \
 
 ### 10. List my seller reviews
 
-**`GET /api/v1/seller-reviews/mine`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller-reviews/mine</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -516,7 +553,10 @@ curl -X 'GET' \
 
 ### 11. Seller: get my effective commission rate
 
-**`GET /api/v1/seller/commission`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/commission</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -538,7 +578,10 @@ curl -X 'GET' \
 
 ### 12. Seller: per-order commission and payout preview
 
-**`GET /api/v1/seller/commission/orders/{orderId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/commission/orders/{orderId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -566,7 +609,10 @@ curl -X 'GET' \
 
 ### 13. Seller: reply to a product review
 
-**`POST /api/v1/seller/reviews/products/{id}/reply`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/reviews/products/{id}/reply</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -607,7 +653,10 @@ curl -X 'POST' \
 
 ### 14. Seller: reply to a seller review
 
-**`POST /api/v1/seller/reviews/{id}/reply`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/reviews/{id}/reply</span>
+</div>
 
 ```bash
 curl -X 'POST' \

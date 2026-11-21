@@ -14,5 +14,8 @@
 # IDE/bin output
 /bin/
 
+# MkDocs build directory
+/site/
+
 # Kotlin compiler artifacts
 .kotlin/

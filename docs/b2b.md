@@ -6,16 +6,21 @@ Wholesale accounts, quotes, purchase orders, credit limits and net-term invoices
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/b2b/account` | Apply for or update a B2B account | Yes |
-| `POST` | `/api/v1/b2b/quotes` | Request a B2B quote | Yes |
-| `PUT` | `/api/v1/seller/b2b/quotes/{id}` | Seller: price and send/reject a quote | Yes (Seller) |
-| `POST` | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a purchase order | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/b2b/account` | Apply for or update a B2B account | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/b2b/quotes` | Request a B2B quote | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/b2b/quotes/{id}` | Seller: price and send/reject a quote | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a purchase order | Yes |
 
 ## Endpoint Details
 
 ### 1. Accounts
 
-**`POST /api/v1/b2b/account`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/b2b/account</span>
+</div>
+
+```json
 {
   "companyName": "Acme Wholesale",
   "taxId": "TAX-123",
@@ -40,7 +45,12 @@ Admin approval:
 
 ### 2. Quotes
 
-**`POST /api/v1/b2b/quotes`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/b2b/quotes</span>
+</div>
+
+```json
 {
   "items": [
     { "productId": "product-a", "quantity": 10 },
@@ -57,7 +67,12 @@ Admin approval:
 
 Seller response:
 
-**`PUT /api/v1/seller/b2b/quotes/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/b2b/quotes/{id}</span>
+</div>
+
+```json
 {
   "status": "SENT",
   "items": [
@@ -78,7 +93,11 @@ Other endpoints:
 
 ### 3. Purchase orders and net terms
 
-**`POST /api/v1/b2b/quotes/{id}/accept`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/b2b/quotes/{id}/accept</span>
+</div>
+
 - Available credit = `creditLimit - open purchase orders`.
 - Creates an `OPEN` purchase order with a unique PO number.
 - Sets `dueDate = now + paymentTermsDays`.

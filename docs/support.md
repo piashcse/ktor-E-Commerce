@@ -4,7 +4,12 @@ Support tickets with replies, attachments, SLAs and CSAT.
 
 ### 1. Customer flow
 
-**`POST /api/v1/support/tickets`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets</span>
+</div>
+
+```json
 {
   "subject": "Missing item",
   "body": "One item was missing from the parcel",
@@ -24,13 +29,13 @@ Other customer endpoints:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/support/tickets` | My tickets |
-| `GET` | `/api/v1/support/tickets/{id}` | Ticket + public replies |
-| `POST` | `/api/v1/support/tickets/{id}/messages` | Reply |
-| `POST` | `/api/v1/support/tickets/{id}/close` | Close |
-| `POST` | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket |
-| `POST` | `/api/v1/support/tickets/{id}/attachments` | Upload an image attachment |
-| `GET` | `/api/v1/support/tickets/{id}/attachments/{attachmentId}` | Download an attachment |
+| <span class="method-badge get">GET</span> | `/api/v1/support/tickets` | My tickets |
+| <span class="method-badge get">GET</span> | `/api/v1/support/tickets/{id}` | Ticket + public replies |
+| <span class="method-badge post">POST</span> | `/api/v1/support/tickets/{id}/messages` | Reply |
+| <span class="method-badge post">POST</span> | `/api/v1/support/tickets/{id}/close` | Close |
+| <span class="method-badge post">POST</span> | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket |
+| <span class="method-badge post">POST</span> | `/api/v1/support/tickets/{id}/attachments` | Upload an image attachment |
+| <span class="method-badge get">GET</span> | `/api/v1/support/tickets/{id}/attachments/{attachmentId}` | Download an attachment |
 
 - Customers never see `isInternal` messages.
 - Replying reopens `PENDING` / `RESOLVED` tickets.
@@ -40,11 +45,11 @@ Other customer endpoints:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/support/tickets?status=&priority=&assignedTo=` | Filtered list |
-| `GET` | `/api/v1/admin/support/tickets/{id}` | Full thread incl. internal notes |
-| `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Reply or internal note |
-| `PUT` | `/api/v1/admin/support/tickets/{id}` | Status/priority/category/assignment |
-| `GET` | `/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}` | Admin: download a support attachment |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/support/tickets?status=&priority=&assignedTo=` | Filtered list |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/support/tickets/{id}` | Full thread incl. internal notes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/support/tickets/{id}/messages` | Reply or internal note |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/support/tickets/{id}` | Status/priority/category/assignment |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}` | Admin: download a support attachment |
 
 Reply body:
 
@@ -151,7 +156,12 @@ Attachments appear in ticket responses:
 
 ### 2. Satisfaction (CSAT)
 
-**`POST /api/v1/support/tickets/{id}/satisfaction`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/satisfaction</span>
+</div>
+
+```json
 { "score": 5, "comment": "Fast resolution" }
 ```
 
@@ -162,7 +172,10 @@ Attachments appear in ticket responses:
 
 ### 3. List my support tickets
 
-**`GET /api/v1/support/tickets`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -215,7 +228,10 @@ curl -X 'GET' \
 
 ### 4. Get a support ticket and public replies
 
-**`GET /api/v1/support/tickets/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -277,7 +293,10 @@ curl -X 'GET' \
 
 ### 5. Reply to a support ticket
 
-**`POST /api/v1/support/tickets/{id}/messages`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/messages</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -344,7 +363,10 @@ curl -X 'POST' \
 
 ### 6. Close my support ticket
 
-**`POST /api/v1/support/tickets/{id}/close`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/close</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -383,7 +405,10 @@ curl -X 'POST' \
 
 ### 7. Attach an image to my support ticket
 
-**`POST /api/v1/support/tickets/{id}/attachments`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/attachments</span>
+</div>
 
 #### Multipart Form Data
 
@@ -425,7 +450,10 @@ curl -X 'POST' \
 
 ### 8. Download my support attachment
 
-**`GET /api/v1/support/tickets/{id}/attachments/{attachmentId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/support/tickets/{id}/attachments/{attachmentId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -443,7 +471,10 @@ curl -X 'GET' \
 ---
 ### 9. Admin: list support tickets
 
-**`GET /api/v1/admin/support/tickets`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -496,7 +527,10 @@ curl -X 'GET' \
 
 ### 10. Admin: get a ticket with internal notes
 
-**`GET /api/v1/admin/support/tickets/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -558,7 +592,10 @@ curl -X 'GET' \
 
 ### 11. Admin: reply or add an internal note
 
-**`POST /api/v1/admin/support/tickets/{id}/messages`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}/messages</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -625,7 +662,10 @@ curl -X 'POST' \
 
 ### 12. Admin: update ticket status/priority/assignment
 
-**`PUT /api/v1/admin/support/tickets/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -671,7 +711,10 @@ curl -X 'PUT' \
 
 ### 13. Admin: download a support attachment
 
-**`GET /api/v1/admin/support/tickets/{id}/attachments/{attachmentId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \

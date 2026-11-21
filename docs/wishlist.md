@@ -14,12 +14,12 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/wishlists` | Add a product to wishlist | Yes |
-| `GET` | `/api/v1/wishlists` | Retrieve user's wishlist items (Paginated) | Yes |
-| `GET` | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
-| `POST` | `/api/v1/wishlists/move-to-cart` | Move a wishlist product into the cart | Yes |
-| `DELETE` | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
-| `GET` | `/api/v1/wishlists/ids` | List wishlisted product IDs | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/wishlists` | Add a product to wishlist | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/wishlists` | Retrieve user's wishlist items (Paginated) | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/wishlists/move-to-cart` | Move a wishlist product into the cart | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/wishlists/ids` | List wishlisted product IDs | Yes |
 
 ---
 
@@ -27,7 +27,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Add Product to Wishlist
 
-**`POST /api/v1/wishlists`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/wishlists</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -71,7 +74,10 @@ curl -X 'POST' \
 
 ### 2. Get Wishlist Items
 
-**`GET /api/v1/wishlists`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wishlists</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -116,7 +122,10 @@ curl -X 'GET' \
 
 ### 3. Check Product in Wishlist
 
-**`GET /api/v1/wishlists/check`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wishlists/check</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -141,7 +150,10 @@ true
 
 ### 4. Move Product to Cart
 
-**`POST /api/v1/wishlists/move-to-cart`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/wishlists/move-to-cart</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -162,7 +174,10 @@ Returns the updated cart summary (`201 Created`).
 
 ### 5. Remove Product from Wishlist
 
-**`DELETE /api/v1/wishlists/remove`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/wishlists/remove</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -198,7 +213,10 @@ curl -X 'DELETE' \
 
 ### 6. List wishlisted product IDs
 
-**`GET /api/v1/wishlists/ids`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wishlists/ids</span>
+</div>
 
 ```bash
 curl -X 'GET' \

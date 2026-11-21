@@ -11,11 +11,11 @@ Transactional outbox, dead-letter inspection and replay.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/outbox/summary` | Pending rows + dead-letter count |
-| `GET` | `/api/v1/admin/outbox/dead-letters` | Paginated dead letters |
-| `POST` | `/api/v1/admin/outbox/dead-letters/{id}/requeue` | Requeue a payload |
-| `POST` | `/api/v1/admin/outbox/dead-letters/requeue` | Bulk requeue dead letters |
-| `GET` | `/api/v1/admin/outbox/dead-letters/{id}` | Inspect a dead letter |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/outbox/summary` | Pending rows + dead-letter count |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/outbox/dead-letters` | Paginated dead letters |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/outbox/dead-letters/{id}/requeue` | Requeue a payload |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/outbox/dead-letters/requeue` | Bulk requeue dead letters |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/outbox/dead-letters/{id}` | Inspect a dead letter |
 
 ## Semantics
 
@@ -31,7 +31,10 @@ See [Notifications](notification.md).
 
 ### 1. Outbox summary
 
-**`GET /api/v1/admin/outbox/summary`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/outbox/summary</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -54,7 +57,10 @@ curl -X 'GET' \
 
 ### 2. List dead letters
 
-**`GET /api/v1/admin/outbox/dead-letters`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/outbox/dead-letters</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -96,7 +102,10 @@ curl -X 'GET' \
 
 ### 3. Requeue dead letter
 
-**`POST /api/v1/admin/outbox/dead-letters/{id}/requeue`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/outbox/dead-letters/{id}/requeue</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -117,7 +126,10 @@ curl -X 'POST' \
 
 ### 4. Bulk requeue dead letters
 
-**`POST /api/v1/admin/outbox/dead-letters/requeue`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/outbox/dead-letters/requeue</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -144,7 +156,10 @@ curl -X 'POST' \
 
 ### 5. Inspect a dead letter
 
-**`GET /api/v1/admin/outbox/dead-letters/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/outbox/dead-letters/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \

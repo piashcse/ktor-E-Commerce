@@ -13,11 +13,11 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/brands` | Create a new brand | Yes (Admin) |
-| `GET` | `/api/v1/brands` | Retrieve list of brands | No (public) |
-| `PUT` | `/api/v1/admin/brands/{id}` | Update an existing brand | Yes (Admin) |
-| `POST` | `/api/v1/admin/brands/{id}/image` | Upload a brand logo | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/brands/{id}` | Delete a brand | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/brands` | Create a new brand | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/brands` | Retrieve list of brands | No (public) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/brands/{id}` | Update an existing brand | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/brands/{id}/image` | Upload a brand logo | Yes (Admin) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/brands/{id}` | Delete a brand | Yes (Admin) |
 
 ---
 
@@ -25,7 +25,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Brand
 
-**`POST /api/v1/admin/brands`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/brands</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -61,7 +64,10 @@ curl -X 'POST' \
 
 ### 2. Get Brands
 
-**`GET /api/v1/brands`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/brands</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -106,7 +112,10 @@ curl -X 'GET' \
 
 ### 3. Update Brand
 
-**`PUT /api/v1/admin/brands/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/brands/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -147,7 +156,10 @@ curl -X 'PUT' \
 
 ### 4. Upload Brand Logo
 
-**`POST /api/v1/admin/brands/{id}/image`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/brands/{id}/image</span>
+</div>
 
 #### Multipart Form Data
 
@@ -186,7 +198,10 @@ curl -X 'POST' \
 
 ### 5. Delete Brand
 
-**`DELETE /api/v1/admin/brands/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/brands/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

@@ -1,7 +1,3 @@
----
-hide:
-  - navigation
----
 # Ktor-E-Commerce
 
 Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built

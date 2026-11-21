@@ -6,8 +6,8 @@ Runtime switches that toggle platform capabilities without a redeploy.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/feature-flags` | List all flags |
-| `PUT` | `/api/v1/admin/feature-flags/{key}` | Enable/disable a flag |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/feature-flags` | List all flags |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/feature-flags/{key}` | Enable/disable a flag |
 
 Update body:
 
@@ -29,7 +29,10 @@ Unknown flags default to disabled (`FeatureFlags.isEnabled` returns `false`).
 
 ### 1. List feature flags
 
-**`GET /api/v1/admin/feature-flags`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/feature-flags</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -55,7 +58,10 @@ curl -X 'GET' \
 
 ### 2. Set feature flag
 
-**`PUT /api/v1/admin/feature-flags/{key}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/feature-flags/{key}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \

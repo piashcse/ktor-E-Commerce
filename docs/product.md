@@ -18,36 +18,36 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/seller/products` | Create a new product (Seller) | Yes (Seller) |
-| `PUT` | `/api/v1/seller/products/{id}` | Update an existing product (Seller) | Yes (Seller) |
-| `DELETE` | `/api/v1/seller/products/{id}` | Delete a product (Seller) | Yes (Seller) |
-| `GET` | `/api/v1/seller/products` | Retrieve products belonging to seller | Yes (Seller) |
-| `POST` | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
-| `GET` | `/api/v1/products` | Retrieve a paginated list of products with optional filters | No |
-| `GET` | `/api/v1/products/search` | Search products with filters | No |
-| `GET` | `/api/v1/products/suggest` | Autocomplete over products, categories and brands | No |
-| `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
-| `GET` | `/api/v1/products/{id}/variants` | List purchasable variants | No |
-| `GET` | `/api/v1/products/{id}/options` | List option dimensions and values | No |
-| `GET` | `/api/v1/products/{id}/related` | Related products | No |
-| `GET` | `/api/v1/products/{id}/also-bought` | Frequently bought together | No |
-| `GET` | `/api/v1/products/recommendations` | Best-seller recommendations | No |
-| `DELETE` | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
-| `PUT` | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class | Yes |
-| `GET` | `/api/v1/admin/products/{id}/translations` | List a product's translations | Yes |
-| `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete a product translation | Yes |
-| `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create or update a product translation | Yes |
-| `POST` | `/api/v1/seller/products/{id}/options` | Create option dimension | Yes |
-| `DELETE` | `/api/v1/seller/products/{id}/options/{optionId}` | Delete option dimension | Yes |
-| `POST` | `/api/v1/seller/products/{id}/options/{optionId}/values` | Add option value | Yes |
-| `DELETE` | `/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}` | Delete option value | Yes |
-| `POST` | `/api/v1/seller/products/{id}/variants` | Create product variant | Yes |
-| `DELETE` | `/api/v1/seller/products/{id}/variants/{variantId}` | Delete product variant | Yes |
-| `PUT` | `/api/v1/seller/products/{id}/variants/{variantId}` | Update product variant | Yes |
-| `PUT` | `/api/v1/seller/products/{id}/variants/{variantId}/options` | Attach option values to a variant | Yes |
-| `GET` | `/api/v1/stock-alerts` | List back-in-stock alerts | Yes |
-| `POST` | `/api/v1/stock-alerts` | Subscribe to a back-in-stock alert | Yes |
-| `DELETE` | `/api/v1/stock-alerts/{productId}` | Remove a back-in-stock alert | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products` | Create a new product (Seller) | Yes (Seller) |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/products/{id}` | Update an existing product (Seller) | Yes (Seller) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{id}` | Delete a product (Seller) | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/products` | Retrieve products belonging to seller | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/products` | Retrieve a paginated list of products with optional filters | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/search` | Search products with filters | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/suggest` | Autocomplete over products, categories and brands | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}` | Retrieve a specific product | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/variants` | List purchasable variants | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/options` | List option dimensions and values | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/related` | Related products | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/also-bought` | Frequently bought together | No |
+| <span class="method-badge get">GET</span> | `/api/v1/products/recommendations` | Best-seller recommendations | No |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/products/{id}/translations` | List a product's translations | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/products/{id}/translations/{locale}` | Delete a product translation | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/products/{id}/translations/{locale}` | Create or update a product translation | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{id}/options` | Create option dimension | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{id}/options/{optionId}` | Delete option dimension | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{id}/options/{optionId}/values` | Add option value | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}` | Delete option value | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/products/{id}/variants` | Create product variant | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/products/{id}/variants/{variantId}` | Delete product variant | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/products/{id}/variants/{variantId}` | Update product variant | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/products/{id}/variants/{variantId}/options` | Attach option values to a variant | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/stock-alerts` | List back-in-stock alerts | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/stock-alerts` | Subscribe to a back-in-stock alert | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/stock-alerts/{productId}` | Remove a back-in-stock alert | Yes |
 
 ---
 
@@ -55,7 +55,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product (Seller)
 
-**`POST /api/v1/seller/products`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -89,7 +92,10 @@ curl -X 'POST' \
 
 ### 2. Search Products
 
-**`GET /api/v1/products/search`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/search</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -115,7 +121,10 @@ curl -X 'GET' \
 
 ### 3. Get Seller Products
 
-**`GET /api/v1/seller/products`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/products</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -127,7 +136,10 @@ curl -X 'GET' \
 
 ### 4. Upload Product Image
 
-**`POST /api/v1/seller/products/image-upload`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/image-upload</span>
+</div>
 
 #### Multipart Form Data
 
@@ -160,7 +172,10 @@ curl -X 'POST' \
 
 ### 5. Update product
 
-**`PUT /api/v1/seller/products/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -225,7 +240,10 @@ curl -X 'PUT' \
 
 ### 6. Delete product
 
-**`DELETE /api/v1/seller/products/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -246,7 +264,10 @@ curl -X 'DELETE' \
 
 ### 7. Retrieve a paginated list of products with optional filters
 
-**`GET /api/v1/products`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -299,7 +320,10 @@ curl -X 'GET' \
 
 ### 8. Product search suggestions
 
-**`GET /api/v1/products/suggest`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/suggest</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -326,7 +350,10 @@ curl -X 'GET' \
 
 ### 9. Get product detail
 
-**`GET /api/v1/products/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -365,7 +392,10 @@ curl -X 'GET' \
 
 ### 10. List product variants
 
-**`GET /api/v1/products/{id}/variants`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/variants</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -410,7 +440,10 @@ curl -X 'GET' \
 
 ### 11. List product options
 
-**`GET /api/v1/products/{id}/options`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/options</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -443,7 +476,10 @@ curl -X 'GET' \
 
 ### 12. Related products
 
-**`GET /api/v1/products/{id}/related`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/related</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -488,7 +524,10 @@ curl -X 'GET' \
 
 ### 13. Frequently bought together
 
-**`GET /api/v1/products/{id}/also-bought`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/{id}/also-bought</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -533,7 +572,10 @@ curl -X 'GET' \
 
 ### 14. Best-seller recommendations
 
-**`GET /api/v1/products/recommendations`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/products/recommendations</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -578,7 +620,10 @@ curl -X 'GET' \
 
 ### 15. Admin - Permanently delete any product
 
-**`DELETE /api/v1/admin/products/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -599,7 +644,10 @@ curl -X 'DELETE' \
 
 ### 16. Assign a product tax class
 
-**`PUT /api/v1/admin/products/{id}/tax-class`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/tax-class</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -624,7 +672,10 @@ curl -X 'PUT' \
 
 ### 17. List a product's translations
 
-**`GET /api/v1/admin/products/{id}/translations`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -650,7 +701,10 @@ curl -X 'GET' \
 
 ### 18. Delete a product translation
 
-**`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations/{locale}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -671,7 +725,10 @@ curl -X 'DELETE' \
 
 ### 19. Create or update a product translation
 
-**`PUT /api/v1/admin/products/{id}/translations/{locale}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/translations/{locale}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -700,7 +757,10 @@ curl -X 'PUT' \
 
 ### 20. Create option dimension
 
-**`POST /api/v1/seller/products/{id}/options`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -737,7 +797,10 @@ curl -X 'POST' \
 
 ### 21. Delete option dimension
 
-**`DELETE /api/v1/seller/products/{id}/options/{optionId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -758,7 +821,10 @@ curl -X 'DELETE' \
 
 ### 22. Add option value
 
-**`POST /api/v1/seller/products/{id}/options/{optionId}/values`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}/values</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -787,7 +853,10 @@ curl -X 'POST' \
 
 ### 23. Delete option value
 
-**`DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -808,7 +877,10 @@ curl -X 'DELETE' \
 
 ### 24. Create product variant
 
-**`POST /api/v1/seller/products/{id}/variants`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -866,7 +938,10 @@ curl -X 'POST' \
 
 ### 25. Delete product variant
 
-**`DELETE /api/v1/seller/products/{id}/variants/{variantId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -887,7 +962,10 @@ curl -X 'DELETE' \
 
 ### 26. Update product variant
 
-**`PUT /api/v1/seller/products/{id}/variants/{variantId}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -945,7 +1023,10 @@ curl -X 'PUT' \
 
 ### 27. Attach option values to a variant
 
-**`PUT /api/v1/seller/products/{id}/variants/{variantId}/options`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/products/{id}/variants/{variantId}/options</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -995,7 +1076,10 @@ curl -X 'PUT' \
 
 ### 28. List back-in-stock alerts
 
-**`GET /api/v1/stock-alerts`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/stock-alerts</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -1022,7 +1106,10 @@ curl -X 'GET' \
 
 ### 29. Subscribe to a back-in-stock alert
 
-**`POST /api/v1/stock-alerts`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/stock-alerts</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -1052,7 +1139,10 @@ curl -X 'POST' \
 
 ### 30. Remove a back-in-stock alert
 
-**`DELETE /api/v1/stock-alerts/{productId}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/stock-alerts/{productId}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -1077,12 +1167,12 @@ curl -X 'DELETE' \
 
 | Method | Endpoint | Notes |
 |---|---|---|
-| `GET` | `/api/v1/products` | Offset pagination (`page`/`perPage` or `limit`/`offset`) with the same filters as search |
-| `GET` | `/api/v1/products/{id}/related` | Same category/brand, excludes the current product |
-| `GET` | `/api/v1/products/{id}/also-bought` | Co-purchase feed from paid order history |
-| `GET` | `/api/v1/products/recommendations` | Best sellers, accepts `limit` (default 10) |
-| `GET` | `/api/v1/products/{id}/variants` | Purchasable variants with per-variant stock |
-| `GET` | `/api/v1/products/{id}/options` | Option dimensions (Size, Color) and their values |
+| <span class="method-badge get">GET</span> | `/api/v1/products` | Offset pagination (`page`/`perPage` or `limit`/`offset`) with the same filters as search |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/related` | Same category/brand, excludes the current product |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/also-bought` | Co-purchase feed from paid order history |
+| <span class="method-badge get">GET</span> | `/api/v1/products/recommendations` | Best sellers, accepts `limit` (default 10) |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/variants` | Purchasable variants with per-variant stock |
+| <span class="method-badge get">GET</span> | `/api/v1/products/{id}/options` | Option dimensions (Size, Color) and their values |
 
 ```bash
 curl -X 'GET' 'http://localhost:8080/api/v1/products?page=1&perPage=20'

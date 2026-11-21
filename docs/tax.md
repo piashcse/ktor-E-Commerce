@@ -26,22 +26,22 @@ A rule is only eligible when its zone/class/category (when set) matches the line
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/tax-rules` | List rules |
-| `POST` | `/api/v1/admin/tax-rules` | Create or update a rule |
-| `PUT` | `/api/v1/admin/tax-rules` | Upsert a rule |
-| `DELETE` | `/api/v1/admin/tax-rules/{id}` | Delete a rule |
-| `GET` | `/api/v1/admin/tax-classes` | List tax classes |
-| `POST` | `/api/v1/admin/tax-classes` | Create a tax class |
-| `PUT` | `/api/v1/admin/tax-classes/{id}` | Update a tax class |
-| `DELETE` | `/api/v1/admin/tax-classes/{id}` | Delete a tax class |
-| `GET` | `/api/v1/admin/tax-zones` | List zones |
-| `POST` | `/api/v1/admin/tax-zones` | Create a zone |
-| `PUT` | `/api/v1/admin/tax-zones/{id}` | Update a zone |
-| `DELETE` | `/api/v1/admin/tax-zones/{id}` | Delete a zone |
-| `GET` | `/api/v1/admin/tax-exemptions` | List exemptions |
-| `POST` | `/api/v1/admin/tax-exemptions` | Create an exemption |
-| `DELETE` | `/api/v1/admin/tax-exemptions/{id}` | Delete an exemption |
-| `PUT` | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/tax-rules` | List rules |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/tax-rules` | Create or update a rule |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/tax-rules` | Upsert a rule |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/tax-rules/{id}` | Delete a rule |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/tax-classes` | List tax classes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/tax-classes` | Create a tax class |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/tax-classes/{id}` | Update a tax class |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/tax-classes/{id}` | Delete a tax class |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/tax-zones` | List zones |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/tax-zones` | Create a zone |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/tax-zones/{id}` | Update a zone |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/tax-zones/{id}` | Delete a zone |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/tax-exemptions` | List exemptions |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/tax-exemptions` | Create an exemption |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/tax-exemptions/{id}` | Delete an exemption |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class |
 
 ### Tax rule body
 
@@ -99,7 +99,10 @@ Tax is calculated on the post-discount item total and snapshotted on the order l
 
 ### 1. List tax rules
 
-**`GET /api/v1/admin/tax-rules`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/tax-rules</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -130,7 +133,10 @@ curl -X 'GET' \
 
 ### 2. Create or update tax rule
 
-**`POST /api/v1/admin/tax-rules`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/tax-rules</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -170,7 +176,10 @@ curl -X 'POST' \
 
 ### 3. Upsert tax rule
 
-**`PUT /api/v1/admin/tax-rules`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/tax-rules</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -210,7 +219,10 @@ curl -X 'PUT' \
 
 ### 4. Delete tax rule
 
-**`DELETE /api/v1/admin/tax-rules/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/tax-rules/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -231,7 +243,10 @@ curl -X 'DELETE' \
 
 ### 5. List tax classes
 
-**`GET /api/v1/admin/tax-classes`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/tax-classes</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -259,7 +274,10 @@ curl -X 'GET' \
 
 ### 6. Create a tax class
 
-**`POST /api/v1/admin/tax-classes`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/tax-classes</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -293,7 +311,10 @@ curl -X 'POST' \
 
 ### 7. Update a tax class
 
-**`PUT /api/v1/admin/tax-classes/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/tax-classes/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -327,7 +348,10 @@ curl -X 'PUT' \
 
 ### 8. Delete a tax class
 
-**`DELETE /api/v1/admin/tax-classes/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/tax-classes/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -348,7 +372,10 @@ curl -X 'DELETE' \
 
 ### 9. List tax zones
 
-**`GET /api/v1/admin/tax-zones`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/tax-zones</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -377,7 +404,10 @@ curl -X 'GET' \
 
 ### 10. Create a tax zone
 
-**`POST /api/v1/admin/tax-zones`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/tax-zones</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -413,7 +443,10 @@ curl -X 'POST' \
 
 ### 11. Update a tax zone
 
-**`PUT /api/v1/admin/tax-zones/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/tax-zones/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -449,7 +482,10 @@ curl -X 'PUT' \
 
 ### 12. Delete a tax zone
 
-**`DELETE /api/v1/admin/tax-zones/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/tax-zones/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -470,7 +506,10 @@ curl -X 'DELETE' \
 
 ### 13. List tax exemptions
 
-**`GET /api/v1/admin/tax-exemptions`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/tax-exemptions</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -501,7 +540,10 @@ curl -X 'GET' \
 
 ### 14. Create a tax exemption
 
-**`POST /api/v1/admin/tax-exemptions`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/tax-exemptions</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -540,7 +582,10 @@ curl -X 'POST' \
 
 ### 15. Delete a tax exemption
 
-**`DELETE /api/v1/admin/tax-exemptions/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/tax-exemptions/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -561,7 +606,10 @@ curl -X 'DELETE' \
 
 ### 16. Assign a product tax class
 
-**`PUT /api/v1/admin/products/{id}/tax-class`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/products/{id}/tax-class</span>
+</div>
 
 ```bash
 curl -X 'PUT' \

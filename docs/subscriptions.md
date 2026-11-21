@@ -32,17 +32,22 @@ Admin CRUD:
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/subscriptions` | Subscribe to a plan | Yes |
-| `POST` | `/api/v1/admin/subscriptions/run-billing` | Create renewal invoices for due subscriptions | Yes (Admin) |
-| `POST` | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark a pending subscription invoice paid and activate | Yes (Admin) |
-| `GET` | `/api/v1/library` | List my digital purchases | Yes |
-| `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/subscriptions` | Subscribe to a plan | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/subscriptions/run-billing` | Create renewal invoices for due subscriptions | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark a pending subscription invoice paid and activate | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/library` | List my digital purchases | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/library/{token}/download` | Redeem a digital download | Yes |
 
 ## Endpoint Details
 
 ### 1. Subscribing
 
-**`POST /api/v1/subscriptions`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/subscriptions</span>
+</div>
+
+```json
 {
   "planId": "plan-uuid",
   "paymentReference": "pay_123",
@@ -67,7 +72,11 @@ Other endpoints:
 
 ### 2. Renewal billing
 
-**`POST /api/v1/admin/subscriptions/run-billing`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/subscriptions/run-billing</span>
+</div>
+
 - with a stored payment method and `PAYMENT_PROVIDER=stripe` → charges the saved payment method
   off-session. A successful charge extends the period, records a `PAID` invoice, resets dunning and
   refreshes the entitlement. A `requires_action`/`processing` charge stays pending.
@@ -89,7 +98,12 @@ invoice paid and activates the subscription.
 
 Confirm a renewal payment manually and reactivate:
 
-**`POST /api/v1/admin/subscriptions/{id}/activate`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/subscriptions/{id}/activate</span>
+</div>
+
+```json
 { "paymentReference": "pay_renewal" }
 ```
 
@@ -113,7 +127,12 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 
 ### 3. Library
 
-**`GET /api/v1/library`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/library</span>
+</div>
+
+```json
 [
   {
     "entitlementId": "ent-uuid",
@@ -132,7 +151,11 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 ]
 ```
 
-**`GET /api/v1/library/{token}/download`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/library/{token}/download</span>
+</div>
+
 - Rejects expired/exhausted downloads.
 - Increments the download count and returns a short-lived signed
   `/api/v1/library/asset?...` URL plus its expiry and remaining count.

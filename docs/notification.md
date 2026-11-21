@@ -18,8 +18,8 @@ Domain events currently dispatched: `ORDER_PLACED`, `ORDER_<STATUS>` (shipped/de
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/notifications/preferences` | Current default channel |
-| `PUT` | `/api/v1/notifications/preferences` | Set default channel |
+| <span class="method-badge get">GET</span> | `/api/v1/notifications/preferences` | Current default channel |
+| <span class="method-badge put">PUT</span> | `/api/v1/notifications/preferences` | Set default channel |
 
 ```json
 { "channel": "EMAIL" }
@@ -29,8 +29,8 @@ Domain events currently dispatched: `ORDER_PLACED`, `ORDER_<STATUS>` (shipped/de
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/notifications/preferences/{eventType}` | Resolve channel for an event |
-| `PUT` | `/api/v1/notifications/preferences/{eventType}` | Override channel for an event |
+| <span class="method-badge get">GET</span> | `/api/v1/notifications/preferences/{eventType}` | Resolve channel for an event |
+| <span class="method-badge put">PUT</span> | `/api/v1/notifications/preferences/{eventType}` | Override channel for an event |
 
 Example: `PUT /api/v1/notifications/preferences/REFUND_APPROVED` with
 `{ "channel": "SMS" }`. The in-app notification is always recorded; the
@@ -40,13 +40,13 @@ override controls the additional delivery channel.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/notifications` | Paginated inbox |
-| `GET` | `/api/v1/notifications/unread-count` | Unread count |
-| `GET` | `/api/v1/notifications/cursor` | Keyset-paginated inbox |
-| `POST` | `/api/v1/notifications/{id}/read` | Mark one read |
-| `POST` | `/api/v1/notifications/read-all` | Mark all read |
-| `POST` | `/api/v1/notifications/send` | Send an announcement (Admin / Seller) |
-| `POST` | `/api/v1/seller/notifications/send` | Seller: notify one of my customers |
+| <span class="method-badge get">GET</span> | `/api/v1/notifications` | Paginated inbox |
+| <span class="method-badge get">GET</span> | `/api/v1/notifications/unread-count` | Unread count |
+| <span class="method-badge get">GET</span> | `/api/v1/notifications/cursor` | Keyset-paginated inbox |
+| <span class="method-badge post">POST</span> | `/api/v1/notifications/{id}/read` | Mark one read |
+| <span class="method-badge post">POST</span> | `/api/v1/notifications/read-all` | Mark all read |
+| <span class="method-badge post">POST</span> | `/api/v1/notifications/send` | Send an announcement (Admin / Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/notifications/send` | Seller: notify one of my customers |
 
 Sellers/admins can send announcements with `POST /api/v1/notifications/send`
 (sellers may only target customers who ordered from their shop).
@@ -54,7 +54,10 @@ Sellers/admins can send announcements with `POST /api/v1/notifications/send`
 
 ### 1. Get global notification channel
 
-**`GET /api/v1/notifications/preferences`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/notifications/preferences</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -76,7 +79,10 @@ curl -X 'GET' \
 
 ### 2. Set global notification channel
 
-**`PUT /api/v1/notifications/preferences`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/notifications/preferences</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -101,7 +107,10 @@ curl -X 'PUT' \
 ---
 ### 3. Get per-event channel
 
-**`GET /api/v1/notifications/preferences/{eventType}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/notifications/preferences/{eventType}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -123,7 +132,10 @@ curl -X 'GET' \
 
 ### 4. Set per-event channel
 
-**`PUT /api/v1/notifications/preferences/{eventType}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/notifications/preferences/{eventType}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -149,7 +161,10 @@ curl -X 'PUT' \
 
 ### 5. List notifications
 
-**`GET /api/v1/notifications`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/notifications</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -192,7 +207,10 @@ curl -X 'GET' \
 
 ### 6. Unread notification count
 
-**`GET /api/v1/notifications/unread-count`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/notifications/unread-count</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -213,7 +231,10 @@ curl -X 'GET' \
 
 ### 7. Cursor-paginated notifications
 
-**`GET /api/v1/notifications/cursor`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/notifications/cursor</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -249,7 +270,10 @@ curl -X 'GET' \
 
 ### 8. Mark notification read
 
-**`POST /api/v1/notifications/{id}/read`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/notifications/{id}/read</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -278,7 +302,10 @@ curl -X 'POST' \
 
 ### 9. Mark all notifications read
 
-**`POST /api/v1/notifications/read-all`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/notifications/read-all</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -299,7 +326,10 @@ curl -X 'POST' \
 
 ### 10. Send notification
 
-**`POST /api/v1/notifications/send`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/notifications/send</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -336,7 +366,10 @@ curl -X 'POST' \
 
 ### 11. Seller: notify one of my customers
 
-**`POST /api/v1/seller/notifications/send`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/notifications/send</span>
+</div>
 
 ```bash
 curl -X 'POST' \

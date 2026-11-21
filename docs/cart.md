@@ -1,25 +1,29 @@
 # Cart
 
-Manage the authenticated customer's cart, quantities and totals.
+Manage the authenticated customer's shopping cart, update item quantities, and calculate cart checkout totals.
+
+---
 
 ## Authentication
 
-All Cart endpoints require Bearer token authentication. Include the access token in the Authorization header:
+All Cart endpoints require **Bearer JWT access token** authentication for a registered `CUSTOMER` account:
 
-```
+```http
 Authorization: Bearer <your_access_token>
 ```
 
-### Cart Management Endpoints
+---
 
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/carts` | Add product to cart | Yes |
-| `GET` | `/api/v1/carts` | Retrieve cart items | Yes |
-| `GET` | `/api/v1/carts/summary` | Retrieve cart summary with totals | Yes |
-| `PUT` | `/api/v1/carts/update` | Update product quantity in cart | Yes |
-| `DELETE` | `/api/v1/carts/remove` | Remove specific product from cart | Yes |
-| `DELETE` | `/api/v1/carts/all` | Clear entire cart | Yes |
+## Cart Endpoints Overview
+
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---|
+| <span class="method-badge post">POST</span> | `/api/v1/carts` | Add product or variant to cart | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge get">GET</span> | `/api/v1/carts` | Retrieve cart items (Paginated) | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge get">GET</span> | `/api/v1/carts/summary` | Retrieve cart summary with estimated tax & subtotal | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge put">PUT</span> | `/api/v1/carts/update` | Update product quantity in cart (0 removes item) | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/carts/remove` | Remove specific product from cart | <span class="badge-req">Bearer JWT</span> |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/carts/all` | Clear entire shopping cart | <span class="badge-req">Bearer JWT</span> |
 
 ---
 
@@ -27,314 +31,302 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Add Product to Cart
 
-**`POST /api/v1/carts`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/carts</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Adds an item line to the authenticated user's cart. If the product has variants (e.g. Size, Color), `variantId` must be supplied.
+
+#### Request Body Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `productId` | string | Yes | UUID of the product to add to cart |
-| `quantity` | number | Yes | Quantity of the product to add (must be positive) |
-| `variantId` | string | Conditional | Required when the product has variants |
+|:---|:---|:---|:---|
+| `productId` | string | <span class="badge-req">Required</span> | UUID of the product to add |
+| `quantity` | integer | <span class="badge-req">Required</span> | Quantity to add (must be positive, e.g. `>= 1`) |
+| `variantId` | string | <span class="badge-opt">Conditional</span> | UUID of the selected variant. Mandatory if the product has variants. |
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+=== "cURL"
+    ```bash
+    curl -X POST 'http://localhost:8080/api/v1/carts' \
+      -H 'Accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+      -d '{
+        "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+        "quantity": 1
+      }'
+    ```
 
-#### Request
+=== "Kotlin (Ktor Client)"
+    ```kotlin
+    val response = client.post("http://localhost:8080/api/v1/carts") {
+        bearerAuth(accessToken)
+        contentType(ContentType.Application.Json)
+        setBody(CartRequest(productId = "5b24d429-c981-47c8-9318-f4d61dd2c1a4", quantity = 1))
+    }
+    ```
 
-```bash
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/carts' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -d ''
-```
+=== "TypeScript (Fetch)"
+    ```typescript
+    const res = await fetch("http://localhost:8080/api/v1/carts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        productId: "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+        quantity: 1
+      })
+    });
+    ```
 
 #### Response
 
-```json
-{
-  "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-  "quantity": 1
-}
-```
+=== "201 Created"
+    ```json
+    {
+      "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "quantity": 1
+    }
+    ```
+
+=== "400 Bad Request"
+    ```json
+    {
+      "message": "variantId is required for products with variants"
+    }
+    ```
 
 ---
 
 ### 2. Get Cart Items
 
-**`GET /api/v1/carts`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/carts</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Retrieves all line items currently saved in the customer's shopping cart.
+
+#### Query Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of cart items to return (default: 10) |
+|:---|:---|:---|:---|
+| `page` / `offset` | integer | <span class="badge-opt">Optional</span> | Page number (default: 1) or offset (default: 0) |
+| `perPage` / `limit` | integer | <span class="badge-opt">Optional</span> | Items per page (default: 10, max: 100) |
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/carts?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X GET 'http://localhost:8080/api/v1/carts?page=1&perPage=10' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
 
 #### Response
 
-```json
-[
-    {
-      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-      "quantity": 3,
-      "product": {
-        "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-        "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-        "productName": "Smartch watch",
-        "productCode": "string",
-        "productQuantity": 5,
-        "productDetail": "Xiaomi Smart Watch",
-        "price": 10,
-        "discountPrice": 0,
-        "status": "ACTIVE",
-        "videoLink": "string",
-        "mainSlider": "string",
-        "hotDeal": "string",
-        "bestRated": "string",
-        "midSlider": "string",
-        "hotNew": "string",
-        "trend": "string",
-        "buyOneGetOne": "string",
-        "imageOne": "string",
-        "imageTwo": "string"
+=== "200 OK"
+    ```json
+    [
+      {
+        "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+        "quantity": 3,
+        "product": {
+          "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+          "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+          "productName": "Smart Watch",
+          "productCode": "SW-001",
+          "productQuantity": 5,
+          "productDetail": "Xiaomi Smart Watch",
+          "price": 10.0,
+          "discountPrice": 0.0,
+          "status": "ACTIVE"
+        }
       }
-    }
-  ]
-}
-```
+    ]
+    ```
 
 ---
 
 ### 3. Update Cart Item Quantity
 
-**`PUT /api/v1/carts/update`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/carts/update</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Sets the absolute quantity of an item in the cart. Setting `quantity: 0` automatically removes the item line.
+
+#### Request Body Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `productId` | string | Yes | UUID of the product to update |
-| `quantity` | number | Yes | New quantity for the product (must be positive) |
+|:---|:---|:---|:---|
+| `productId` | string | <span class="badge-req">Required</span> | UUID of the product |
+| `quantity` | integer | <span class="badge-req">Required</span> | New absolute quantity (`>= 0`) |
+| `variantId` | string | <span class="badge-opt">Optional</span> | Variant identifier if updating a variant line |
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+=== "cURL"
+    ```bash
+    curl -X PUT 'http://localhost:8080/api/v1/carts/update' \
+      -H 'Accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+      -d '{
+        "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+        "quantity": 2
+      }'
+    ```
 
-#### Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/carts' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "Kotlin (Ktor Client)"
+    ```kotlin
+    val response = client.put("http://localhost:8080/api/v1/carts/update") {
+        bearerAuth(accessToken)
+        contentType(ContentType.Application.Json)
+        setBody(CartRequest(productId = "5b24d429-c981-47c8-9318-f4d61dd2c1a4", quantity = 2))
+    }
+    ```
 
 #### Response
 
-```json
-{
-    "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-    "quantity": 2,
-    "product": {
-      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "productName": "Polo T Shirt",
-      "productCode": "string",
-      "productQuantity": 1,
-      "productDetail": "Chinese polo T-shirt",
-      "price": 100,
-      "discountPrice": 0,
-      "status": "ACTIVE",
-      "hotDeal": "string",
-      "bestRated": "string",
-      "buyOneGetOne": "string"
+=== "200 OK"
+    ```json
+    {
+      "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "quantity": 2,
+      "product": {
+        "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+        "productName": "Polo T-Shirt",
+        "price": 100.0,
+        "discountPrice": 0.0
+      }
     }
-  }
-}
-```
+    ```
 
 ---
 
 ### 4. Remove Product from Cart
 
-**`DELETE /api/v1/carts/remove`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/carts/remove</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
+
+Removes an item line completely from the customer's cart.
+
+#### Query Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `productId` | string | Yes | UUID of the product to remove from cart |
-| `variantId` | string | No | Variant to remove; omit for base-product lines |
+|:---|:---|:---|:---|
+| `productId` | string | <span class="badge-req">Required</span> | UUID of the product to remove |
+| `variantId` | string | <span class="badge-opt">Optional</span> | UUID of the variant line to remove |
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Request
-
-```bash
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/carts/remove?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X DELETE 'http://localhost:8080/api/v1/carts/remove?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
 
 #### Response
 
-```json
-{
-    "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "productName": "Smartch watch",
-    "productCode": "string",
-    "productQuantity": 5,
-    "productDetail": "Xiaomi Smart Watch",
-    "price": 10,
-    "discountPrice": 0,
-    "status": "ACTIVE",
-    "videoLink": "string",
-    "mainSlider": "string",
-    "hotDeal": "string",
-    "bestRated": "string",
-    "midSlider": "string",
-    "hotNew": "string",
-    "trend": "string",
-    "buyOneGetOne": "string",
-    "imageOne": "string",
-    "imageTwo": "string"
-  }
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+      "productName": "Smart Watch"
+    }
+    ```
 
 ---
 
 ### 5. Clear Cart
 
-**`DELETE /api/v1/carts/all`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/carts/all</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+Empties all lines from the customer's shopping cart.
 
-#### Request
+#### Request Examples
 
-```bash
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/carts/all' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X DELETE 'http://localhost:8080/api/v1/carts/all' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
 
 #### Response
 
-**Status: 200 OK**
-
-```json
-{
-  "message": "Cart cleared successfully"
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "message": "Cart cleared successfully"
+    }
+    ```
 
 ---
 
 ### 6. Get Cart Summary
 
-**`GET /api/v1/carts/summary`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/carts/summary</span>
+  <span class="auth-badge">Bearer Token Required</span>
+</div>
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+Calculates variant-aware subtotals, item counts, available stock, and estimated taxation.
 
-#### Request
+#### Request Examples
 
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/carts/summary' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X GET 'http://localhost:8080/api/v1/carts/summary' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+    ```
 
 #### Response
 
-**Status: 200 OK**
-
-```json
-{
-  "items": [
+=== "200 OK"
+    ```json
     {
-      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-      "productName": "Smart Watch",
-      "price": 10.0,
-      "quantity": 3,
-      "image": "https://example.com/image1.jpg",
-      "stockQuantity": 50,
-      "shopId": "shop-uuid-1",
-      "shopName": "Electronics Shop"
+      "items": [
+        {
+          "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+          "productName": "Smart Watch",
+          "price": 10.0,
+          "quantity": 3,
+          "image": "https://example.com/image1.jpg",
+          "stockQuantity": 50,
+          "shopId": "shop-uuid-1",
+          "shopName": "Electronics Shop"
+        }
+      ],
+      "subtotal": 30.0,
+      "estimatedTax": 3.0,
+      "itemCount": 1
     }
-  ],
-  "subtotal": 30.0,
-  "estimatedTax": 3.0,
-  "itemCount": 1
-}
-```
+    ```
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-#### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
+!!! tip "Standard Error Responses"
+    For details on error schemas, validation failure formats, and HTTP status codes (`400`, `401`, `404`), see the **[Error Handling & Status Codes Guide](errors.md)**.

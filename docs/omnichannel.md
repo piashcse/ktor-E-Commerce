@@ -4,7 +4,11 @@ BOPIS pickup, POS sessions and public store discovery.
 
 ### 1. Store locator
 
-**`GET /api/v1/stores?lat=23.81&lng=90.41&radiusKm=10&limit=20`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/stores?lat=23.81&lng=90.41&radiusKm=10&limit=20</span>
+</div>
+
 - With coordinates, results include `distanceKm` (Haversine) and are sorted nearest-first.
 - `radiusKm` filters stores with a known distance.
 - `limit` is clamped to `1..100`.
@@ -74,9 +78,9 @@ Seller flow:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/seller/pickup-orders` | List pickup orders |
-| `POST` | `/api/v1/seller/orders/{id}/pickup/ready` | Mark ready for collection |
-| `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Verify code and complete |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/pickup-orders` | List pickup orders |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/pickup/ready` | Mark ready for collection |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/pickup/complete` | Verify code and complete |
 
 Complete body:
 
@@ -89,7 +93,12 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 
 ### 2. POS sales
 
-**`POST /api/v1/seller/pos/sales`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sales</span>
+</div>
+
+```json
 {
   "items": [
     { "productId": "product-uuid", "quantity": 2 }
@@ -115,17 +124,20 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
   commission and notifications).
 - Returns `201 Created` with the order.
 
-**`GET /api/v1/seller/pos/sales`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sales</span>
+</div>
 
 ## POS cash-drawer sessions
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/seller/pos/sessions` | List drawer sessions |
-| `POST` | `/api/v1/seller/pos/sessions/open` | Open a drawer session |
-| `POST` | `/api/v1/seller/pos/sessions/{id}/close` | Count cash and close |
-| `GET` | `/api/v1/seller/pos/sales/{id}/receipt` | Printable sale receipt |
-| `GET` | `/api/v1/seller/pos/sessions/{id}/report` | Printable session/Z report |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/pos/sessions` | List drawer sessions |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/pos/sessions/open` | Open a drawer session |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/pos/sessions/{id}/close` | Count cash and close |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/pos/sales/{id}/receipt` | Printable sale receipt |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/pos/sessions/{id}/report` | Printable session/Z report |
 
 Open:
 
@@ -156,7 +168,10 @@ Close:
 
 ### 3. Seller: list pickup orders
 
-**`GET /api/v1/seller/pickup-orders`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/pickup-orders</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -214,7 +229,10 @@ curl -X 'GET' \
 
 ### 4. Seller: mark a pickup order ready
 
-**`POST /api/v1/seller/orders/{id}/pickup/ready`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/pickup/ready</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -258,7 +276,10 @@ curl -X 'POST' \
 
 ### 5. Seller: verify pickup code and complete collection
 
-**`POST /api/v1/seller/orders/{id}/pickup/complete`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/pickup/complete</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -305,7 +326,10 @@ curl -X 'POST' \
 ---
 ### 6. Seller: list POS cash-drawer sessions
 
-**`GET /api/v1/seller/pos/sessions`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sessions</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -354,7 +378,10 @@ curl -X 'GET' \
 
 ### 7. Seller: open a POS cash-drawer session
 
-**`POST /api/v1/seller/pos/sessions/open`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sessions/open</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -395,7 +422,10 @@ curl -X 'POST' \
 
 ### 8. Seller: close a POS session and reconcile cash
 
-**`POST /api/v1/seller/pos/sessions/{id}/close`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sessions/{id}/close</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -435,7 +465,10 @@ curl -X 'POST' \
 
 ### 9. Seller: printable POS receipt
 
-**`GET /api/v1/seller/pos/sales/{id}/receipt`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sales/{id}/receipt</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -454,7 +487,10 @@ curl -X 'GET' \
 
 ### 10. Seller: printable POS session report
 
-**`GET /api/v1/seller/pos/sessions/{id}/report`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/pos/sessions/{id}/report</span>
+</div>
 
 ```bash
 curl -X 'GET' \

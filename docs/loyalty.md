@@ -8,15 +8,15 @@ All endpoints require Bearer authentication.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/wallet` | Points, store credit, lifetime points and referral code |
-| `GET` | `/api/v1/wallet/ledger` | Paginated wallet ledger |
-| `GET` | `/api/v1/wallet/gift-cards/{code}` | Gift-card balance |
-| `GET` | `/api/v1/referrals` | Referrals where you are referrer or referee |
-| `POST` | `/api/v1/referrals/claim` | Claim a referral code |
-| `GET` | `/api/v1/admin/gift-cards` | List gift cards |
-| `POST` | `/api/v1/admin/gift-cards` | Issue a gift card |
-| `DELETE` | `/api/v1/admin/gift-cards/{id}` | Void a gift card |
-| `POST` | `/api/v1/admin/wallets/{userId}/credit` | Credit store balance |
+| <span class="method-badge get">GET</span> | `/api/v1/wallet` | Points, store credit, lifetime points and referral code |
+| <span class="method-badge get">GET</span> | `/api/v1/wallet/ledger` | Paginated wallet ledger |
+| <span class="method-badge get">GET</span> | `/api/v1/wallet/gift-cards/{code}` | Gift-card balance |
+| <span class="method-badge get">GET</span> | `/api/v1/referrals` | Referrals where you are referrer or referee |
+| <span class="method-badge post">POST</span> | `/api/v1/referrals/claim` | Claim a referral code |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/gift-cards` | List gift cards |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/gift-cards` | Issue a gift card |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/gift-cards/{id}` | Void a gift card |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/wallets/{userId}/credit` | Credit store balance |
 
 ---
 
@@ -111,7 +111,10 @@ Store credit is held in USD and recorded as an `ADMIN_ADJUSTMENT` ledger entry.
 
 ### 1. Get my loyalty wallet
 
-**`GET /api/v1/wallet`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wallet</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -135,7 +138,10 @@ curl -X 'GET' \
 
 ### 2. List my wallet ledger
 
-**`GET /api/v1/wallet/ledger`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wallet/ledger</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -177,7 +183,10 @@ curl -X 'GET' \
 
 ### 3. Check a gift-card balance
 
-**`GET /api/v1/wallet/gift-cards/{code}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/wallet/gift-cards/{code}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -205,7 +214,10 @@ curl -X 'GET' \
 
 ### 4. List my referrals
 
-**`GET /api/v1/referrals`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/referrals</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -236,7 +248,10 @@ curl -X 'GET' \
 
 ### 5. Claim a referral code
 
-**`POST /api/v1/referrals/claim`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/referrals/claim</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -269,7 +284,10 @@ curl -X 'POST' \
 
 ### 6. List gift cards
 
-**`GET /api/v1/admin/gift-cards`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/gift-cards</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -311,7 +329,10 @@ curl -X 'GET' \
 
 ### 7. Issue a gift card
 
-**`POST /api/v1/admin/gift-cards`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/gift-cards</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -346,7 +367,10 @@ curl -X 'POST' \
 
 ### 8. Void a gift card
 
-**`DELETE /api/v1/admin/gift-cards/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/gift-cards/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -367,7 +391,10 @@ curl -X 'DELETE' \
 
 ### 9. Credit a customer's store balance
 
-**`POST /api/v1/admin/wallets/{userId}/credit`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/wallets/{userId}/credit</span>
+</div>
 
 ```bash
 curl -X 'POST' \

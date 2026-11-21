@@ -6,10 +6,10 @@ Returns and exchanges for delivered, paid order items.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/rma-requests` | Create a return/exchange request |
-| `GET` | `/api/v1/rma-requests` | List your RMA requests |
-| `POST` | `/api/v1/rma-requests/{id}/ship` | Mark an approved RMA as shipped back |
-| `POST` | `/api/v1/rma-requests/{id}/cancel` | Cancel a pending/approved RMA |
+| <span class="method-badge post">POST</span> | `/api/v1/rma-requests` | Create a return/exchange request |
+| <span class="method-badge get">GET</span> | `/api/v1/rma-requests` | List your RMA requests |
+| <span class="method-badge post">POST</span> | `/api/v1/rma-requests/{id}/ship` | Mark an approved RMA as shipped back |
+| <span class="method-badge post">POST</span> | `/api/v1/rma-requests/{id}/cancel` | Cancel a pending/approved RMA |
 
 Create body:
 
@@ -27,12 +27,12 @@ Create body:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/seller/rma-requests` | Seller queue |
-| `PUT` | `/api/v1/seller/rma-requests/{id}/status` | Approve/reject/receive/complete |
-| `GET` | `/api/v1/admin/rma-requests` | Admin queue (optional `status`) |
-| `PUT` | `/api/v1/admin/rma-requests/{id}/status` | Admin status update |
-| `POST` | `/api/v1/admin/rma-requests/bulk/status` | Admin: bulk update RMA status |
-| `GET` | `/api/v1/admin/rma-requests/export` | Admin: export RMAs CSV |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/rma-requests` | Seller queue |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/rma-requests/{id}/status` | Approve/reject/receive/complete |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/rma-requests` | Admin queue (optional `status`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/rma-requests/{id}/status` | Admin status update |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/rma-requests/bulk/status` | Admin: bulk update RMA status |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/rma-requests/export` | Admin: export RMAs CSV |
 
 Status update body:
 
@@ -55,7 +55,10 @@ Status update body:
 
 ### 1. Create return/exchange request
 
-**`POST /api/v1/rma-requests`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/rma-requests</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -105,7 +108,10 @@ curl -X 'POST' \
 
 ### 2. List my RMAs
 
-**`GET /api/v1/rma-requests`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/rma-requests</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -161,7 +167,10 @@ curl -X 'GET' \
 
 ### 3. Mark RMA as shipped
 
-**`POST /api/v1/rma-requests/{id}/ship`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/rma-requests/{id}/ship</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -207,7 +216,10 @@ curl -X 'POST' \
 
 ### 4. Cancel RMA
 
-**`POST /api/v1/rma-requests/{id}/cancel`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/rma-requests/{id}/cancel</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -248,7 +260,10 @@ curl -X 'POST' \
 ---
 ### 5. Seller: list RMAs
 
-**`GET /api/v1/seller/rma-requests`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/rma-requests</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -304,7 +319,10 @@ curl -X 'GET' \
 
 ### 6. Seller: update RMA status
 
-**`PUT /api/v1/seller/rma-requests/{id}/status`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/rma-requests/{id}/status</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -353,7 +371,10 @@ curl -X 'PUT' \
 
 ### 7. Admin: list RMAs
 
-**`GET /api/v1/admin/rma-requests`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/rma-requests</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -409,7 +430,10 @@ curl -X 'GET' \
 
 ### 8. Admin: update RMA status
 
-**`PUT /api/v1/admin/rma-requests/{id}/status`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/rma-requests/{id}/status</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -458,7 +482,10 @@ curl -X 'PUT' \
 
 ### 9. Admin: bulk update RMA status
 
-**`POST /api/v1/admin/rma-requests/bulk/status`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/rma-requests/bulk/status</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -488,7 +515,10 @@ curl -X 'POST' \
 
 ### 10. Admin: export RMAs CSV
 
-**`GET /api/v1/admin/rma-requests/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/rma-requests/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \

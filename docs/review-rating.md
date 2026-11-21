@@ -14,17 +14,17 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/reviews` | Get reviews for a product (public) | No |
-| `POST` | `/api/v1/reviews` | Create a New Review | Yes |
-| `PUT` | `/api/v1/reviews/{id}` | Update Review | Yes |
-| `DELETE` | `/api/v1/reviews/{id}` | Delete Review | Yes |
-| `PUT` | `/api/v1/reviews/{id}/images` | Replace review images (max 8) | Yes |
-| `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
-| `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Yes (Admin) |
-| `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Yes (Admin) |
-| `POST` | `/api/v1/admin/reviews/bulk/status` | Admin: bulk moderate reviews | Yes |
-| `GET` | `/api/v1/admin/reviews/export` | Admin: export reviews CSV | Yes |
-| `GET` | `/api/v1/reviews/summary` | Rating distribution for a product | No |
+| <span class="method-badge get">GET</span> | `/api/v1/reviews` | Get reviews for a product (public) | No |
+| <span class="method-badge post">POST</span> | `/api/v1/reviews` | Create a New Review | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/reviews/{id}` | Update Review | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/reviews/{id}` | Delete Review | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/reviews/{id}/images` | Replace review images (max 8) | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/reviews` | Admin: list reviews by status | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/reviews/bulk/status` | Admin: bulk moderate reviews | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/reviews/export` | Admin: export reviews CSV | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/reviews/summary` | Rating distribution for a product | No |
 
 ---
 
@@ -32,7 +32,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get Reviews
 
-**`GET /api/v1/reviews`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/reviews</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -80,7 +83,10 @@ curl -X 'GET' \
 
 ### 2. Create Review
 
-**`POST /api/v1/reviews`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/reviews</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -127,7 +133,10 @@ curl -X 'POST' \
 
 ### 3. Update Review
 
-**`PUT /api/v1/reviews/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/reviews/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -172,7 +181,10 @@ curl -X 'PUT' \
 
 ### 4. Delete Review
 
-**`DELETE /api/v1/reviews/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/reviews/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -205,8 +217,10 @@ curl -X 'DELETE' \
 
 ### 5. Vote Review Helpful
 
-**`POST /api/v1/reviews/{id}/helpful`**
-
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/reviews/{id}/helpful</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -218,7 +232,12 @@ Returns the updated review with its `helpfulCount`.
 
 ### 6. Replace Review Images
 
-**`PUT /api/v1/reviews/{id}/images`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/reviews/{id}/images</span>
+</div>
+
+```json
 {
   "images": [
     "/uploads/review-images/front.png",
@@ -231,7 +250,10 @@ Only the review owner can replace images.
 
 ### 7. Admin Review Moderation
 
-**`GET /api/v1/admin/reviews?status=FLAGGED`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/reviews?status=FLAGGED</span>
+</div>
 
 ```json
 { "status": "HIDDEN" }
@@ -243,8 +265,10 @@ Hiding a review removes it from public product review lists and recalculates the
 
 ### 8. Admin: bulk moderate reviews
 
-**`POST /api/v1/admin/reviews/bulk/status`**
-
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/reviews/bulk/status</span>
+</div>
 
 #### Request
 
@@ -276,7 +300,10 @@ curl -X 'POST' \
 
 ### 9. Admin: export reviews CSV
 
-**`GET /api/v1/admin/reviews/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/reviews/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -296,7 +323,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 10. Rating distribution for a product
 
-**`GET /api/v1/reviews/summary`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/reviews/summary</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -324,7 +354,10 @@ curl -X 'GET' \
 
 ### 11. Admin: moderate a review
 
-**`PUT /api/v1/admin/reviews/{id}/status`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/reviews/{id}/status</span>
+</div>
 
 Admin: moderate a review
 

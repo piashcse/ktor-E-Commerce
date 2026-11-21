@@ -6,22 +6,27 @@ Seller identity and bank verification required before payouts.
 
 | Method | Endpoint | Description | Authentication Required |
 |---|---|---|---|
-| `GET` | `/api/v1/seller/kyc` | Current KYC state | Yes (Seller) |
-| `POST` | `/api/v1/seller/kyc` | Submit business/bank details and optional document URL | Yes (Seller) |
-| `GET` | `/api/v1/admin/sellers?status=PENDING` | Admin KYC queue (optional status filter) | Yes (Admin) |
-| `PUT` | `/api/v1/admin/sellers/{sellerId}/verify` | Verify KYC | Yes (Admin) |
-| `PUT` | `/api/v1/admin/sellers/{sellerId}/reject` | Reject KYC with a reason | Yes (Admin) |
-| `POST` | `/api/v1/admin/sellers/bulk/reject` | Admin: bulk reject KYC | Yes |
-| `POST` | `/api/v1/admin/sellers/bulk/verify` | Admin: bulk verify KYC | Yes |
-| `GET` | `/api/v1/admin/sellers/export` | Admin: export KYC submissions CSV | Yes |
-| `GET` | `/api/v1/admin/sellers/{sellerId}/history` | Admin: KYC decision history | Yes |
-| `GET` | `/api/v1/seller/kyc/history` | Get my KYC submission history | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/kyc` | Current KYC state | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/kyc` | Submit business/bank details and optional document URL | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/sellers?status=PENDING` | Admin KYC queue (optional status filter) | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/sellers/{sellerId}/verify` | Verify KYC | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/sellers/{sellerId}/reject` | Reject KYC with a reason | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/sellers/bulk/reject` | Admin: bulk reject KYC | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/sellers/bulk/verify` | Admin: bulk verify KYC | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/sellers/export` | Admin: export KYC submissions CSV | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/sellers/{sellerId}/history` | Admin: KYC decision history | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/kyc/history` | Get my KYC submission history | Yes |
 
 States: `NOT_SUBMITTED → PENDING → VERIFIED` or `PENDING → REJECTED`.
 
 ### 1. Submit KYC
 
-**`POST /api/v1/seller/kyc`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/kyc</span>
+</div>
+
+```json
 {
   "businessName": "ACME Ltd",
   "businessRegistrationNumber": "REG-12345",
@@ -38,7 +43,10 @@ already-uploaded document.
 
 ### 2. Verify / reject
 
-**`PUT /api/v1/admin/sellers/{sellerId}/verify`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/verify</span>
+</div>
 
 ```json
 {
@@ -60,7 +68,10 @@ curl -X 'PUT' \
 
 ### 3. Get my KYC status
 
-**`GET /api/v1/seller/kyc`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/kyc</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -93,7 +104,10 @@ curl -X 'GET' \
 
 ### 4. Admin: list KYC submissions
 
-**`GET /api/v1/admin/sellers`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -140,7 +154,10 @@ curl -X 'GET' \
 
 ### 5. Admin: bulk reject KYC
 
-**`POST /api/v1/admin/sellers/bulk/reject`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/bulk/reject</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -170,7 +187,10 @@ curl -X 'POST' \
 
 ### 6. Admin: bulk verify KYC
 
-**`POST /api/v1/admin/sellers/bulk/verify`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/bulk/verify</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -200,7 +220,10 @@ curl -X 'POST' \
 
 ### 7. Admin: export KYC submissions CSV
 
-**`GET /api/v1/admin/sellers/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -220,7 +243,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 8. Admin: KYC decision history
 
-**`GET /api/v1/admin/sellers/{sellerId}/history`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/history</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -247,7 +273,10 @@ curl -X 'GET' \
 
 ### 9. Get my KYC submission history
 
-**`GET /api/v1/seller/kyc/history`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/kyc/history</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -273,7 +302,10 @@ curl -X 'GET' \
 ---
 ### 10. Admin: reject KYC
 
-**`PUT /api/v1/admin/sellers/{sellerId}/reject`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/sellers/{sellerId}/reject</span>
+</div>
 
 Admin: reject KYC
 

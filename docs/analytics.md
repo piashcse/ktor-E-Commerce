@@ -6,16 +6,19 @@ Track anonymous storefront funnels, UTM attribution and product conversion.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/analytics/events` | Ingest storefront analytics events | No |
-| `GET` | `/api/v1/admin/analytics/funnel` | Conversion funnel report | Yes (Admin) |
-| `GET` | `/api/v1/admin/analytics/attribution` | UTM/referrer attribution report | Yes (Admin) |
-| `GET` | `/api/v1/admin/analytics/products` | Product view → cart → purchase conversion | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/analytics/events` | Ingest storefront analytics events | No |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/analytics/funnel` | Conversion funnel report | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/analytics/attribution` | UTM/referrer attribution report | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/analytics/products` | Product view → cart → purchase conversion | Yes (Admin) |
 
 ## Endpoint Details
 
 ### 1. Event ingestion
 
-**`POST /api/v1/analytics/events`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/analytics/events</span>
+</div>
 
 ```json
 {
@@ -56,7 +59,12 @@ can treat this as a successful no-op.
 
 ### 2. Funnel
 
-**`GET /api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31</span>
+</div>
+
+```json
 {
   "startDate": "2026-05-01",
   "endDate": "2026-05-31",
@@ -75,7 +83,12 @@ can treat this as a successful no-op.
 
 ### 3. Attribution
 
-**`GET /api/v1/admin/analytics/attribution?startDate=...&endDate=...`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/analytics/attribution?startDate=...&endDate=...</span>
+</div>
+
+```json
 {
   "startDate": "2026-05-01",
   "endDate": "2026-05-31",
@@ -98,7 +111,11 @@ Revenue is normalized to USD via the order FX rate.
 
 ### 4. Product conversion
 
-**`GET /api/v1/admin/analytics/products?startDate=...&endDate=...&limit=20`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/analytics/products?startDate=...&endDate=...&limit=20</span>
+</div>
+
 - `addToCart` — distinct `ADD_TO_CART` events
 - `purchases` — units in paid orders
 - `conversionRate` — purchases / views

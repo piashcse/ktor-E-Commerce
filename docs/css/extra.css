@@ -1,12 +1,325 @@
-/* Keep every documentation table at the full content width. */
-.md-typeset table,
+/* ==========================================================================
+   Ktor-E-Commerce Documentation - Modern Developer Theme
+   ========================================================================== */
+
+:root {
+  --ecom-font-mono: 'JetBrains Mono', 'Fira Code', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Official Swagger UI HTTP Method Palette */
+  --swagger-get: #61affe;        /* Swagger Blue */
+  --swagger-post: #49cc90;       /* Swagger Green */
+  --swagger-put: #fca130;        /* Swagger Orange */
+  --swagger-patch: #50e3c2;      /* Swagger Teal */
+  --swagger-delete: #f93e3e;     /* Swagger Red */
+}
+
+/* --- Maximize Center Content Space & Remove Wasted Outer Margins --- */
+.md-grid {
+  max-width: 92rem; /* Expands page container from 61rem (~1220px) to 92rem (~1472px) */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media screen and (min-width: 100em) {
+  .md-grid {
+    max-width: 102rem; /* Expands up to 1630px on large 2K/4K displays */
+  }
+}
+
+/* Ensure center content dynamically claims all available expanded space */
+.md-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.md-content__inner {
+  max-width: 100%;
+  margin-left: 1.2rem;
+  margin-right: 1.2rem;
+}
+
+.md-typeset {
+  max-width: 100%;
+}
+
+/* Ensure left and right sidebars have clean, fixed proportions */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    width: 14rem;
+  }
+  .md-sidebar--secondary {
+    width: 14rem;
+  }
+}
+
+/* --- Center Home Page & Landing Pages (where navigation is hidden) --- */
+.md-sidebar--primary[hidden] ~ .md-content {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 56rem !important; /* Elegant, balanced reading column */
+}
+
+.md-sidebar--primary[hidden] ~ .md-content > .md-content__inner {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 56rem !important;
+}
+
+/* In case secondary sidebar is hidden on home */
+.md-sidebar--secondary[hidden] {
+  display: none !important;
+}
+
+/* --- Layout & Typography Polish --- */
+.md-typeset h1 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 1.8rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.4rem;
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 1.4rem;
+}
+
+/* --- Modern Endpoint Headers & Cards (Swagger UI Styling) --- */
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  margin: 1.2rem 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Swagger UI Method-Specific Header Borders & Tints */
+.endpoint-header:has(.method-badge.get) {
+  border: 1px solid var(--swagger-get);
+  background-color: rgba(97, 175, 254, 0.08);
+}
+
+.endpoint-header:has(.method-badge.post) {
+  border: 1px solid var(--swagger-post);
+  background-color: rgba(73, 204, 144, 0.08);
+}
+
+.endpoint-header:has(.method-badge.put) {
+  border: 1px solid var(--swagger-put);
+  background-color: rgba(252, 161, 48, 0.08);
+}
+
+.endpoint-header:has(.method-badge.delete) {
+  border: 1px solid var(--swagger-delete);
+  background-color: rgba(249, 62, 62, 0.08);
+}
+
+.endpoint-header:has(.method-badge.patch) {
+  border: 1px solid var(--swagger-patch);
+  background-color: rgba(80, 227, 194, 0.08);
+}
+
+.method-badge {
+  font-family: var(--ecom-font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  line-height: 1;
+  min-width: 4rem;
+  text-align: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ffffff !important;
+  display: inline-block;
+}
+
+/* Official Swagger UI Method Colors */
+.method-badge.get, .badge-get { background-color: var(--swagger-get) !important; }
+.method-badge.post, .badge-post { background-color: var(--swagger-post) !important; }
+.method-badge.put, .badge-put { background-color: var(--swagger-put) !important; }
+.method-badge.patch, .badge-patch { background-color: var(--swagger-patch) !important; }
+.method-badge.delete, .badge-delete { background-color: var(--swagger-delete) !important; }
+
+/* In table cells, keep method badges neatly aligned without wrapping */
+.md-typeset table:not([class]) td .method-badge {
+  margin: 0;
+  vertical-align: middle;
+}
+
+.md-typeset table:not([class]) td:first-child:has(.method-badge) {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.endpoint-path {
+  font-family: var(--ecom-font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--md-default-fg-color);
+}
+
+.auth-badge {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background-color: var(--md-primary-fg-color--transparent);
+  color: var(--md-primary-fg-color);
+  border: 1px solid var(--md-primary-fg-color--light);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.auth-badge.public {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* --- Status Pills --- */
+.status-pill {
+  font-family: var(--ecom-font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.status-pill.s200 {
+  background-color: rgba(5, 150, 105, 0.15);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+.status-pill.s400, .status-pill.s404, .status-pill.s409 {
+  background-color: rgba(217, 119, 6, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.status-pill.s401, .status-pill.s403 {
+  background-color: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.status-pill.s500 {
+  background-color: rgba(153, 27, 27, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* --- Parameter Requirement Badges --- */
+.badge-req {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #dc2626;
+  background-color: rgba(220, 38, 38, 0.1);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.badge-opt {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--md-default-fg-color--lighter);
+  background-color: var(--md-default-fg-color--lightest);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+/* --- Modern API Tables --- */
 .md-typeset table:not([class]) {
   display: table;
   width: 100%;
-  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1rem 0 1.5rem 0;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  font-size: 0.85rem;
 }
 
-.md-typeset__table {
-  width: 100%;
-  overflow-x: auto;
+.md-typeset table:not([class]) th {
+  background-color: var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  text-align: left;
+}
+
+.md-typeset table:not([class]) td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  vertical-align: middle;
+}
+
+.md-typeset table:not([class]) tr:last-child td {
+  border-bottom: none;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background-color: var(--md-default-fg-color--lightest);
+}
+
+/* First column parameter styling */
+.md-typeset table:not([class]) td:first-child code {
+  font-family: var(--ecom-font-mono);
+  font-weight: 600;
+  color: var(--md-code-fg-color);
+}
+
+/* --- Code Blocks & Tabs Refinement --- */
+.md-typeset .tabbed-set {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.md-typeset .highlight {
+  border-radius: 6px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+}
+
+.md-typeset .highlight pre {
+  font-family: var(--ecom-font-mono);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+/* Copy button hover elevation */
+.md-clipboard:hover {
+  color: var(--md-primary-fg-color) !important;
+}
+
+/* --- Admonition Callout Polish --- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
