@@ -35,10 +35,6 @@ public detail endpoint and are excluded from all public lists.
 
 **`GET /api/v1/shops/{id}`**
 
-Retrieve detailed information about a specific shop
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -76,10 +72,6 @@ curl -X 'GET' \
 ### 2. Retrieve public shops with filters (public)
 
 **`GET /api/v1/shops/public`**
-
-Retrieve public shops with filters (public)
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -133,10 +125,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/shops/category/{categoryId}`**
 
-Retrieve shops by category (public)
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/shops/category/6c5078d3-f8e3-4c88-9afe-48b5423c664f?page=1&perPage=20' \
@@ -188,10 +176,6 @@ curl -X 'GET' \
 ### 4. Retrieve featured shops (public)
 
 **`GET /api/v1/shops/featured`**
-
-Retrieve featured shops (public)
-
-#### Request
 
 ```bash
 curl -X 'GET' \

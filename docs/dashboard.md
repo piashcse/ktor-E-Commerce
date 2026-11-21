@@ -28,10 +28,6 @@ All Dashboard endpoints require `ADMIN` role.
 
 **`GET /api/v1/admin/dashboard`**
 
-Returns aggregate statistics for the main dashboard view including revenue, orders, users, products, and shops.
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/dashboard' \
@@ -55,10 +51,6 @@ curl -X 'GET' \
 ### 2. Get Revenue Stats
 
 **`GET /api/v1/admin/dashboard/revenue`**
-
-Returns revenue data with daily breakdown and average order value for a date range.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -93,10 +85,6 @@ curl -X 'GET' \
 ### 3. Get Order Stats
 
 **`GET /api/v1/admin/dashboard/orders`**
-
-Returns order status distribution and recent orders.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -135,10 +123,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/dashboard/users`**
 
-Returns user registration trends over a specified period.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `days` | int | No | Number of days to look back (default: 30) |
@@ -171,10 +155,6 @@ curl -X 'GET' \
 ### 5. Get Top Products
 
 **`GET /api/v1/admin/dashboard/top-products`**
-
-Returns best-selling products ranked by total sales.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -210,10 +190,6 @@ curl -X 'GET' \
 ### 6. Get Recent Activity
 
 **`GET /api/v1/admin/dashboard/activity`**
-
-Returns a combined feed of recent orders and user registrations.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -252,8 +228,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/dashboard`**
 
-Returns the same metric families as the admin dashboard, scoped to the seller's own shop(s):
-paid-only revenue normalized to USD, order counts by status, top products and low-stock counts.
 
 ```bash
 curl -X 'GET' \
@@ -267,7 +241,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/queues`**
 
-Admin work queues
 
 #### Request
 
@@ -299,10 +272,6 @@ curl -X 'GET' \
 ### 9. Seller readiness
 
 **`GET /api/v1/seller/readiness`**
-
-Seller readiness
-
-#### Request
 
 ```bash
 curl -X 'GET' \

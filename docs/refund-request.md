@@ -32,9 +32,6 @@ All Refund Request endpoints require Bearer token authentication.
 
 **`GET /api/v1/refund-requests/{id}/evidence/{fileName}`**
 
-Refund evidence is **not** served from the public `/uploads` tree. The caller must own the refund
-request (customer), own the shop (seller), or be an admin. The response is the image bytes with a
-`Content-Type` derived from the stored extension.
 
 ```bash
 curl -X 'GET' \
@@ -47,7 +44,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/seller/refund-requests/{id}/status`**
 
-Update the status of a refund request (APPROVED, REJECTED, etc.).
 
 #### Request
 
@@ -70,10 +66,6 @@ curl -X 'PUT' \
 ### 3. Create a refund request for an order item
 
 **`POST /api/v1/refund-requests/{orderId}`**
-
-Create a refund request for an order item
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -124,10 +116,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/refund-requests/{id}`**
 
-Get refund request details
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -169,10 +157,6 @@ curl -X 'GET' \
 ### 5. Get refund requests for an order
 
 **`GET /api/v1/refund-requests/order/{orderId}`**
-
-Get refund requests for an order
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -230,10 +214,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/refund-requests/{id}/ship`**
 
-Mark an approved refund as shipped
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/ship' \
@@ -279,10 +259,6 @@ curl -X 'POST' \
 ### 7. Admin - Get all refund requests for an order
 
 **`GET /api/v1/admin/refund-requests/order/{orderId}`**
-
-Admin - Get all refund requests for an order
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -340,10 +316,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/refund-requests/{id}/status`**
 
-Admin - Update refund status
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
@@ -394,10 +366,6 @@ curl -X 'PUT' \
 ### 9. Admin - List refund requests
 
 **`GET /api/v1/admin/refund-requests`**
-
-Admin - List refund requests
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -455,10 +423,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/refund-requests/bulk/status`**
 
-Admin - Bulk update refund status
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/refund-requests/bulk/status?status=PENDING' \
@@ -489,10 +453,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/refund-requests/export`**
 
-Admin - Export refunds CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/refund-requests/export?status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
@@ -513,15 +473,27 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 **`POST /api/v1/refund-requests/{id}/evidence`**
 
-Upload private evidence for a refund request
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
 
 #### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/evidence' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <access_token>'
+  'http://localhost:8080/api/v1/refund-requests/{id}/evidence' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@evidence.png;type=image/png'
 ```
 
 #### Response
@@ -558,10 +530,6 @@ curl -X 'POST' \
 ### 13. Seller - List refund requests
 
 **`GET /api/v1/seller/refund-requests`**
-
-Seller - List refund requests
-
-#### Request
 
 ```bash
 curl -X 'GET' \

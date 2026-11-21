@@ -13,9 +13,7 @@ Recommendations are read-only, cache-friendly and derived from catalog signals t
 
 ### 1. Personalized endpoint
 
-**`GET /api/v1/recommendations?limit=10`** — customer auth required.
-
-Uses the customer's order history, cart and wishlist categories as weighted signals, excludes items they already bought or have in the cart/wishlist, and fills any shortfall with best sellers.
+**`GET /api/v1/recommendations?limit=10`**
 
 ## Response
 
@@ -51,10 +49,6 @@ Strategies returned: `personalized`, `related`, `also-bought`, `best-sellers`.
 ### 2. Best-seller recommendations
 
 **`GET /api/v1/products/recommendations`**
-
-Best-seller recommendations
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -101,10 +95,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/products/{id}/related`**
 
-Related products
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/related' \
@@ -149,10 +139,6 @@ curl -X 'GET' \
 ### 4. Frequently bought together
 
 **`GET /api/v1/products/{id}/also-bought`**
-
-Frequently bought together
-
-#### Request
 
 ```bash
 curl -X 'GET' \

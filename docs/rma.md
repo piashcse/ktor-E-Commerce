@@ -57,10 +57,6 @@ Status update body:
 
 **`POST /api/v1/rma-requests`**
 
-Create return/exchange request
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/rma-requests' \
@@ -110,10 +106,6 @@ curl -X 'POST' \
 ### 2. List my RMAs
 
 **`GET /api/v1/rma-requests`**
-
-List my RMAs
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -171,10 +163,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/rma-requests/{id}/ship`**
 
-Mark RMA as shipped
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/ship' \
@@ -221,10 +209,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/rma-requests/{id}/cancel`**
 
-Cancel RMA
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/cancel' \
@@ -265,10 +249,6 @@ curl -X 'POST' \
 ### 5. Seller: list RMAs
 
 **`GET /api/v1/seller/rma-requests`**
-
-Seller: list RMAs
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -326,10 +306,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/seller/rma-requests/{id}/status`**
 
-Seller: update RMA status
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
@@ -378,10 +354,6 @@ curl -X 'PUT' \
 ### 7. Admin: list RMAs
 
 **`GET /api/v1/admin/rma-requests`**
-
-Admin: list RMAs
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -439,10 +411,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/rma-requests/{id}/status`**
 
-Admin: update RMA status
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
@@ -492,10 +460,6 @@ curl -X 'PUT' \
 
 **`POST /api/v1/admin/rma-requests/bulk/status`**
 
-Admin: bulk update RMA status
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/rma-requests/bulk/status?status=PENDING' \
@@ -525,10 +489,6 @@ curl -X 'POST' \
 ### 10. Admin: export RMAs CSV
 
 **`GET /api/v1/admin/rma-requests/export`**
-
-Admin: export RMAs CSV
-
-#### Request
 
 ```bash
 curl -X 'GET' \

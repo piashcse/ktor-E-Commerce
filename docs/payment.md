@@ -29,12 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/payments`**
 
-Create a new payment intent for an existing order. **The status is owned by the server**:
-clients cannot mark a payment `COMPLETED`. Non-COD payments start `PENDING` and are completed
-by the provider callback (or an admin confirmation); COD payments follow the order lifecycle.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `amount` | number | Yes | Payment amount; must match the order total |
@@ -75,10 +69,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/payments/{id}`**
 
-Retrieve details of a specific payment by its ID.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the payment |
@@ -115,10 +105,6 @@ curl -X 'GET' \
 ### 3. Get Payments by Order
 
 **`GET /api/v1/payments/order/{orderId}`**
-
-Retrieve all payments associated with a specific order. This is useful for tracking payment history and partial payments.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -167,10 +153,6 @@ curl -X 'GET' \
 ### 4. Admin - List payments
 
 **`GET /api/v1/admin/payments`**
-
-Admin - List payments
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -225,10 +207,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/payments/{id}/risk`**
 
-Record AVS/CVV results for a payment
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/risk' \
@@ -254,10 +232,6 @@ curl -X 'POST' \
 ### 6. Admin: bulk replay webhooks
 
 **`POST /api/v1/admin/webhooks/bulk/replay`**
-
-Admin: bulk replay webhooks
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -288,10 +262,6 @@ curl -X 'POST' \
 ### 7. Admin: inspect a webhook payload
 
 **`GET /api/v1/admin/webhooks/{id}`**
-
-Admin: inspect a webhook payload
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -367,9 +337,6 @@ All error messages are centralized and consistent across all endpoints.
 
 **`POST /api/v1/admin/payments/{id}/confirm`**
 
-Confirms a `PENDING` payment as `COMPLETED`. This is the server-side/manual confirmation path
-used when no provider webhook is configured (for example bank transfers or COD reconciliation).
-Repeating the call is idempotent for an already-completed payment.
 
 ```bash
 curl -X 'POST' \
@@ -382,11 +349,6 @@ curl -X 'POST' \
 ### 9. Provider Webhook
 
 **`POST /api/v1/payments/webhook/{provider}`**
-
-Public endpoint called by the payment processor. The raw request body and the provider
-signature header are verified before anything is written:
-
-- Stripe sends `Stripe-Signature` (`t=<timestamp>,v1=<hmac-sha256>`); the default tolerance is
   300 seconds and can be tuned with `STRIPE_WEBHOOK_TOLERANCE_SECONDS`.
 - Other adapters can use `X-Webhook-Signature`.
 - Deliveries are deduplicated by `(provider, event_id)`, so retries are safe.
@@ -431,29 +393,11 @@ provider payment, the API issues the refund through the processor and stores
 
 **`POST /api/v1/admin/payments/{id}/risk/approve`**
 
-Sets a `REVIEW` payment decision to `ALLOW` and finalizes the order if the payment was already
-captured. `BLOCK` payments cannot be released.
-
----
-
 ### 11. Webhook inspection and replay
 
 **`GET /api/v1/admin/webhooks?source=PAYMENT&status=FAILED`**
 
-Lists stored payment and carrier webhook events. Filters: `source` (`PAYMENT`/`CARRIER`), `status`
-(`RECEIVED`/`PROCESSED`/`IGNORED`/`FAILED`), `limit`, `offset`.
-
-**`POST /api/v1/admin/webhooks/payments/{id}/replay`**
-
-Replays a stored payment payload. Because the payload was signature-verified on receipt, replay
-applies it directly, updates the inbox status/error and writes an audit entry. Use this for provider
-outages or ignored events after the original delivery.
-
 **`POST /api/v1/admin/webhooks/carriers/{id}/replay`**
-
-Same flow for carrier tracking payloads.
-
----
 
 ## Payment Status Values
 

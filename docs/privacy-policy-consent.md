@@ -17,8 +17,6 @@ The admin view is read-only; consent is always written by the authenticated user
 ### 1. Record consent
 
 **`POST /api/v1/policy-consents/consent`**
-
-```json
 {
   "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
 }
@@ -31,8 +29,6 @@ Consent rows are append-only: re-consenting creates a new row with `grantedAt`, 
 
 **`GET /api/v1/policy-consents/{policyType}`**
 
-`policyType` is one of `PRIVACY_POLICY`, `TERMS_CONDITIONS`, `REFUND_POLICY`, `COOKIE_POLICY`,
-`DISCLAIMER`, `EULA`, `SHIPPING_POLICY`.
 
 ```bash
 curl -X 'GET' \
@@ -44,10 +40,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/policy-consents?userId=&policyType=`**
 
-Both filters are optional; results are paginated with `page`/`perPage` or `limit`/`offset`.
-
-## Checkout enforcement
-
 When `REQUIRE_POLICY_CONSENT=true`, checkout rejects orders until the customer has consented to
 every policy type where `requiresConsent` is true (`SHIPPING_POLICY` is excluded).
 ## Endpoint Details
@@ -56,7 +48,6 @@ every policy type where `requiresConsent` is true (`SHIPPING_POLICY` is excluded
 
 **`GET /api/v1/policy-consents`**
 
-Retrieve all consent records for the authenticated user
 
 #### Request
 
@@ -103,10 +94,6 @@ curl -X 'GET' \
 
 **`DELETE /api/v1/policy-consents/{id}`**
 
-Revoke a consent record (owner or admin)
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/policy-consents/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -127,10 +114,6 @@ curl -X 'DELETE' \
 ### 6. Policies requiring consent
 
 **`GET /api/v1/policy-consents/requirements`**
-
-Policies requiring consent
-
-#### Request
 
 ```bash
 curl -X 'GET' \

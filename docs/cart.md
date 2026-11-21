@@ -29,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/carts`**
 
-Add a product to the user's shopping cart with specified quantity. If the product already exists in the cart, this will add to the existing quantity.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to add to cart |
@@ -69,10 +65,6 @@ curl -X 'POST' \
 ### 2. Get Cart Items
 
 **`GET /api/v1/carts`**
-
-Retrieve all items in the user's shopping cart with detailed product information and pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -132,10 +124,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/carts/update`**
 
-Update the quantity of a specific product in the user's cart. This operation sets the absolute quantity rather than adding to existing quantity.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to update |
@@ -185,10 +173,6 @@ curl -X 'PUT' \
 ### 4. Remove Product from Cart
 
 **`DELETE /api/v1/carts/remove`**
-
-Remove a specific product from the user's cart completely, regardless of quantity.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -243,10 +227,6 @@ curl -X 'DELETE' \
 
 **`DELETE /api/v1/carts/all`**
 
-Remove all items from the user's cart, effectively clearing the entire shopping cart.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -275,10 +255,6 @@ curl -X 'DELETE' \
 ### 6. Get Cart Summary
 
 **`GET /api/v1/carts/summary`**
-
-Retrieve a summary of the user's cart including all items with product details, subtotal, estimated tax, and item count. This endpoint provides enriched data for checkout pages.
-
-#### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|

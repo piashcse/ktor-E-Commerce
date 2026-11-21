@@ -83,10 +83,6 @@ Inventory rows accept an optional `variantId`. Rows with `variantId = NULL` are 
 
 **`GET /api/v1/products/{id}/variants`**
 
-List product variants
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
@@ -132,10 +128,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/products/{id}/options`**
 
-List product options
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
@@ -167,10 +159,6 @@ curl -X 'GET' \
 ### 3. Create product variant
 
 **`POST /api/v1/seller/products/{id}/variants`**
-
-Create product variant
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -230,10 +218,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/seller/products/{id}/variants/{variantId}`**
 
-Update product variant
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -292,10 +276,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/seller/products/{id}/variants/{variantId}`**
 
-Delete product variant
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -316,10 +296,6 @@ curl -X 'DELETE' \
 ### 6. Attach option values to a variant
 
 **`PUT /api/v1/seller/products/{id}/variants/{variantId}/options`**
-
-Attach option values to a variant
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -371,10 +347,6 @@ curl -X 'PUT' \
 
 **`POST /api/v1/seller/products/{id}/options`**
 
-Create option dimension
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
@@ -412,10 +384,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/products/{id}/options/{optionId}`**
 
-Delete option dimension
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -436,10 +404,6 @@ curl -X 'DELETE' \
 ### 9. Add option value
 
 **`POST /api/v1/seller/products/{id}/options/{optionId}/values`**
-
-Add option value
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -469,10 +433,6 @@ curl -X 'POST' \
 ### 10. Delete option value
 
 **`DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}`**
-
-Delete option value
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \

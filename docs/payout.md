@@ -74,10 +74,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller/payouts`**
 
-Seller: list payouts
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/payouts?page=1&perPage=20&status=PENDING&from=2026-05-01&to=2026-05-31' \
@@ -132,10 +128,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/payouts/balance`**
 
-Seller: available balance
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/payouts/balance' \
@@ -159,10 +151,6 @@ curl -X 'GET' \
 ### 3. Seller: request payout
 
 **`POST /api/v1/seller/payouts/request`**
-
-Seller: request payout
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -211,10 +199,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller/payouts/statement`**
 
-Seller: payout statement
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/payouts/statement?from=2026-05-01&to=2026-05-31' \
@@ -258,10 +242,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/payouts/statement/export`**
 
-Seller: export statement CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/payouts/statement/export?from=2026-05-01&to=2026-05-31' \
@@ -281,10 +261,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 6. Seller: list payout requests
 
 **`GET /api/v1/seller/payouts/requests`**
-
-Seller: list payout requests
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -331,10 +307,6 @@ curl -X 'GET' \
 ### 7. Seller: payout request detail
 
 **`GET /api/v1/seller/payouts/requests/{id}`**
-
-Seller: payout request detail
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -393,10 +365,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/payouts`**
 
-Admin: list payouts
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/payouts?page=1&perPage=20&status=PENDING&seller=6c5078d3-f8e3-4c88-9afe-48b5423c664f&from=2026-05-01&to=2026-05-31' \
@@ -451,10 +419,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/payouts/export`**
 
-Admin: export payouts CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/payouts/export?status=PENDING&seller=6c5078d3-f8e3-4c88-9afe-48b5423c664f&from=2026-05-01&to=2026-05-31' \
@@ -474,10 +438,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 10. Admin: approve payout row
 
 **`POST /api/v1/admin/payouts/{id}/approve`**
-
-Admin: approve payout row
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -518,10 +478,6 @@ curl -X 'POST' \
 ### 11. Admin: reject payout row
 
 **`POST /api/v1/admin/payouts/{id}/reject`**
-
-Admin: reject payout row
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -567,10 +523,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/admin/payouts/{id}/pay`**
 
-Admin: mark payout row paid
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payouts/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pay' \
@@ -610,10 +562,6 @@ curl -X 'POST' \
 ### 13. Admin: list payout requests
 
 **`GET /api/v1/admin/payouts/requests`**
-
-Admin: list payout requests
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -661,10 +609,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/payouts/requests/bulk/approve`**
 
-Admin: bulk approve payout requests
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payouts/requests/bulk/approve' \
@@ -694,10 +638,6 @@ curl -X 'POST' \
 ### 15. Admin: bulk mark payout requests paid
 
 **`POST /api/v1/admin/payouts/requests/bulk/pay`**
-
-Admin: bulk mark payout requests paid
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -729,10 +669,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/admin/payouts/requests/bulk/reject`**
 
-Admin: bulk reject payout requests
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payouts/requests/bulk/reject' \
@@ -762,10 +698,6 @@ curl -X 'POST' \
 ### 17. Admin: payout request detail
 
 **`GET /api/v1/admin/payouts/requests/{id}`**
-
-Admin: payout request detail
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -825,10 +757,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/payouts/requests/{id}/approve`**
 
-Admin: approve a payout request
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/approve' \
@@ -861,10 +789,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/admin/payouts/requests/{id}/pay`**
 
-Admin: mark a payout request paid
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payouts/requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pay' \
@@ -896,10 +820,6 @@ curl -X 'POST' \
 ### 20. Admin: reject a payout request
 
 **`POST /api/v1/admin/payouts/requests/{id}/reject`**
-
-Admin: reject a payout request
-
-#### Request
 
 ```bash
 curl -X 'POST' \

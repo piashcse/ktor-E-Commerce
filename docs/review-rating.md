@@ -34,10 +34,6 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/reviews`**
 
-Retrieve reviews for a specific product with optional pagination support.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to get reviews for |
@@ -86,10 +82,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/reviews`**
 
-Create a new review and rating for a product. The review will be associated with the authenticated user and specified product.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product being reviewed |
@@ -137,10 +129,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/reviews/{id}`**
 
-Update an existing review by its ID. You can modify both the review text and rating.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the review to update |
@@ -186,10 +174,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/reviews/{id}`**
 
-Delete a review by its ID. This operation permanently removes the review from the system.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the review to delete |
@@ -223,8 +207,6 @@ curl -X 'DELETE' \
 
 **`POST /api/v1/reviews/{id}/helpful`**
 
-Records an idempotent helpful vote for the authenticated user. Pass `?helpful=false` to remove an
-existing vote.
 
 ```bash
 curl -X 'POST' \
@@ -237,10 +219,6 @@ Returns the updated review with its `helpfulCount`.
 ### 6. Replace Review Images
 
 **`PUT /api/v1/reviews/{id}/images`**
-
-Replaces the review gallery. At most **8** image URLs are allowed; each must be non-blank.
-
-```json
 {
   "images": [
     "/uploads/review-images/front.png",
@@ -255,10 +233,6 @@ Only the review owner can replace images.
 
 **`GET /api/v1/admin/reviews?status=FLAGGED`**
 
-Lists reviews, optionally filtered by `ACTIVE`, `HIDDEN` or `FLAGGED`.
-
-**`PUT /api/v1/admin/reviews/{id}/status`**
-
 ```json
 { "status": "HIDDEN" }
 ```
@@ -271,7 +245,6 @@ Hiding a review removes it from public product review lists and recalculates the
 
 **`POST /api/v1/admin/reviews/bulk/status`**
 
-Admin: bulk moderate reviews
 
 #### Request
 
@@ -305,10 +278,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/reviews/export`**
 
-Admin: export reviews CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/reviews/export?status=PENDING' \
@@ -328,10 +297,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 10. Rating distribution for a product
 
 **`GET /api/v1/reviews/summary`**
-
-Rating distribution for a product
-
-#### Request
 
 ```bash
 curl -X 'GET' \

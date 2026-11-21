@@ -46,10 +46,6 @@ All Order endpoints require Bearer token authentication.
 
 **`GET /api/v1/orders`**
 
-Retrieve all orders placed by the authenticated customer.
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/orders?limit=10&offset=0' \
@@ -61,9 +57,6 @@ curl -X 'GET' \
 ### 2. Update Order Status (Customer/Seller)
 
 **`PATCH /api/v1/orders/status/{id}`**
-
-Update the status of an order. The allowed statuses depend on the user role.
-- **Customer**: `CANCELED`, `RECEIVED`
 - **Seller**: `CONFIRMED`, `SHIPPED`, `DELIVERED`
 
 #### Request
@@ -79,10 +72,6 @@ curl -X 'PATCH' \
 ### 3. Cancel Order
 
 **`POST /api/v1/orders/{id}/cancel`**
-
-Cancel an order and provide a reason. This will restore stock for all items in the order.
-
-#### Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -106,10 +95,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/orders`**
 
-Retrieve all orders with advanced filters.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `status` | string | No | Filter by order status |
@@ -121,10 +106,6 @@ Retrieve all orders with advanced filters.
 ### 5. Cursor-paginated order history
 
 **`GET /api/v1/orders/cursor`**
-
-Cursor-paginated order history
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -177,10 +158,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/orders/track`**
 
-Guest order tracking
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/orders/track?orderNumber=ORD-20240506-0001-A1B2C3D4&email=jane@example.com' \
@@ -220,10 +197,6 @@ curl -X 'GET' \
 ### 7. Seller: mark order shipped
 
 **`POST /api/v1/orders/{id}/shipping`**
-
-Seller: mark order shipped
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -273,10 +246,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/admin/orders/{id}/shipping`**
 
-Admin - Mark a paid order as shipped
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/shipping' \
@@ -324,10 +293,6 @@ curl -X 'POST' \
 ### 9. Seller: list orders
 
 **`GET /api/v1/seller/orders`**
-
-Seller: list orders
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -387,10 +352,6 @@ curl -X 'GET' \
 
 **`PATCH /api/v1/admin/orders/status/{id}`**
 
-Admin - Update the status of any order
-
-#### Request
-
 ```bash
 curl -X 'PATCH' \
   'http://localhost:8080/api/v1/admin/orders/status/6c5078d3-f8e3-4c88-9afe-48b5423c664f?status=PENDING' \
@@ -434,10 +395,6 @@ curl -X 'PATCH' \
 ### 11. Admin - Cancel any order
 
 **`POST /api/v1/admin/orders/{id}/cancel`**
-
-Admin - Cancel any order
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -487,10 +444,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/orders/{id}/invoice`**
 
-Printable order invoice
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/invoice' \
@@ -509,10 +462,6 @@ curl -X 'GET' \
 ### 13. Printable packing slip
 
 **`GET /api/v1/orders/{id}/packing-slip`**
-
-Printable packing slip
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -533,10 +482,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/orders/export`**
 
-Admin: export orders CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/orders/export?status=PENDING&q=phone&startDate=2026-05-01&endDate=2026-05-31' \
@@ -556,10 +501,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 15. Admin: get order by ID
 
 **`GET /api/v1/admin/orders/{id}`**
-
-Admin: get order by ID
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -605,10 +546,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/orders/track/invoice`**
 
-Guest order invoice
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/orders/track/invoice?orderNumber=ORD-20240506-0001-A1B2C3D4&email=jane@example.com' \
@@ -626,10 +563,6 @@ curl -X 'GET' \
 ### 17. Guest order timeline
 
 **`GET /api/v1/orders/track/timeline`**
-
-Guest order timeline
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -659,10 +592,6 @@ curl -X 'GET' \
 ### 18. Get order by ID
 
 **`GET /api/v1/orders/{id}`**
-
-Get order by ID
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -708,10 +637,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/orders/{id}/shipments`**
 
-List order shipments
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/shipments' \
@@ -751,10 +676,6 @@ curl -X 'GET' \
 ### 20. Purchase a shipping label
 
 **`POST /api/v1/orders/{id}/shipments`**
-
-Purchase a shipping label
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -804,10 +725,6 @@ curl -X 'POST' \
 ### 21. Get shipping rate quotes
 
 **`POST /api/v1/orders/{id}/shipping-quotes`**
-
-Get shipping rate quotes
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -870,10 +787,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller/orders/export`**
 
-Seller: export orders CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/orders/export?status=PENDING&q=phone&from=2026-05-01&to=2026-05-31' \
@@ -893,10 +806,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 23. Seller: get order by ID
 
 **`GET /api/v1/seller/orders/{id}`**
-
-Seller: get order by ID
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -941,10 +850,6 @@ curl -X 'GET' \
 ### 24. Seller: cancel order
 
 **`POST /api/v1/seller/orders/{id}/cancel`**
-
-Seller: cancel order
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -994,10 +899,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/seller/orders/{id}/pickup/complete`**
 
-Seller: verify pickup code and complete collection
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pickup/complete' \
@@ -1046,10 +947,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/seller/orders/{id}/pickup/ready`**
 
-Seller: mark a pickup order ready
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pickup/ready' \
@@ -1093,10 +990,6 @@ curl -X 'POST' \
 ### 27. Seller: mark order shipped
 
 **`POST /api/v1/seller/orders/{id}/shipping`**
-
-Seller: mark order shipped
-
-#### Request
 
 ```bash
 curl -X 'POST' \

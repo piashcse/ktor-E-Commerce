@@ -53,10 +53,6 @@ returns:
 
 **`GET /api/v1/api-keys`**
 
-List API keys
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/api-keys' \
@@ -88,10 +84,6 @@ curl -X 'GET' \
 ### 2. Create API key
 
 **`POST /api/v1/api-keys`**
-
-Create API key
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -128,10 +120,6 @@ curl -X 'POST' \
 ### 3. Revoke API key
 
 **`DELETE /api/v1/api-keys/{id}`**
-
-Revoke API key
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \

@@ -35,10 +35,6 @@ See [Inventory](inventory.md) and [Product Variants](product-variants.md).
 
 **`GET /api/v1/seller/warehouses`**
 
-List warehouses
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/warehouses' \
@@ -75,10 +71,6 @@ curl -X 'GET' \
 ### 2. Create warehouse
 
 **`POST /api/v1/seller/warehouses`**
-
-Create warehouse
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -129,10 +121,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/seller/warehouses/{id}`**
 
-Update warehouse
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/warehouses/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -181,10 +169,6 @@ curl -X 'PUT' \
 ### 4. Deactivate warehouse
 
 **`DELETE /api/v1/seller/warehouses/{id}`**
-
-Deactivate warehouse
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \

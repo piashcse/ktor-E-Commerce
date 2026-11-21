@@ -8,8 +8,6 @@ scope-aware commission rules.
 Customers can review a seller once per order after it is `DELIVERED` or `RECEIVED`.
 
 **`POST /api/v1/seller-reviews`**
-
-```json
 {
   "orderId": "order-uuid",
   "rating": 5,
@@ -51,8 +49,6 @@ Only `ACTIVE` reviews count toward the shop's `rating` and `totalReviews`.
 ### 1. Disputes
 
 **`POST /api/v1/disputes`**
-
-```json
 {
   "orderId": "order-uuid",
   "type": "ORDER_ISSUE",
@@ -129,10 +125,6 @@ commission reversals use the same resolver for the refunded item's category.
 
 **`GET /api/v1/sellers/{id}/reviews`**
 
-List active reviews for a seller
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reviews?page=1&perPage=20' \
@@ -177,10 +169,6 @@ curl -X 'GET' \
 ### 3. Seller: list reviews received
 
 **`GET /api/v1/seller/reviews`**
-
-Seller: list reviews received
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -228,10 +216,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/seller-reviews`**
 
-Admin: list seller reviews
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/seller-reviews?page=1&perPage=20&status=PENDING' \
@@ -278,10 +262,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/seller-reviews/{id}/status`**
 
-Admin: moderate a seller review
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/seller-reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
@@ -318,10 +298,6 @@ curl -X 'PUT' \
 ### 6. Admin: list disputes
 
 **`GET /api/v1/admin/disputes`**
-
-Admin: list disputes
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -369,10 +345,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/disputes/{id}`**
 
-Admin: resolve/update a dispute
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/disputes/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -409,10 +381,6 @@ curl -X 'PUT' \
 ### 8. Get a dispute with its message thread
 
 **`GET /api/v1/disputes/{id}`**
-
-Get a dispute with its message thread
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -456,10 +424,6 @@ curl -X 'GET' \
 ### 9. Add a message or evidence to a dispute
 
 **`POST /api/v1/disputes/{id}/messages`**
-
-Add a message or evidence to a dispute
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -509,10 +473,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller-reviews/mine`**
 
-List my seller reviews
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller-reviews/mine?page=1&perPage=20' \
@@ -559,10 +519,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/commission`**
 
-Seller: get my effective commission rate
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/commission' \
@@ -584,10 +540,6 @@ curl -X 'GET' \
 ### 12. Seller: per-order commission and payout preview
 
 **`GET /api/v1/seller/commission/orders/{orderId}`**
-
-Seller: per-order commission and payout preview
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -616,10 +568,6 @@ curl -X 'GET' \
 ### 13. Seller: reply to a product review
 
 **`POST /api/v1/seller/reviews/products/{id}/reply`**
-
-Seller: reply to a product review
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -661,10 +609,6 @@ curl -X 'POST' \
 ### 14. Seller: reply to a seller review
 
 **`POST /api/v1/seller/reviews/{id}/reply`**
-
-Seller: reply to a seller review
-
-#### Request
 
 ```bash
 curl -X 'POST' \

@@ -29,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/product-categories`**
 
-Create a new product category with a specified name. The category will be created with an empty sub-categories array.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Name of the product category |
@@ -69,10 +65,6 @@ curl -X 'POST' \
 ### 2. Get Product Categories
 
 **`GET /api/v1/product-categories`**
-
-Retrieve a list of product categories with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -121,10 +113,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/product-categories/{id}`**
 
-Update an existing product category by its ID. You can modify the category name.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the product category to update |
@@ -166,10 +154,6 @@ curl -X 'PUT' \
 ### 4. Delete Product Category
 
 **`DELETE /api/v1/admin/product-categories/{id}`**
-
-Delete a product category by its ID. This operation permanently removes the category from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -246,14 +230,25 @@ All error messages are centralized and consistent across all endpoints.
 
 **`POST /api/v1/admin/product-categories/{id}/image`**
 
-`multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
-Returns the updated category with its new `image` URL.
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <admin_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
+
+#### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-categories/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  'http://localhost:8080/api/v1/admin/product-categories/{id}/image' \
   -H 'Authorization: Bearer <admin_token>' \
-  -F 'file=@category.png'
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@category.png;type=image/png'
 ```
-
----

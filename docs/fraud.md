@@ -125,10 +125,6 @@ curl -X POST 'http://localhost:8080/api/v1/admin/payments/payment-uuid/risk/appr
 
 **`GET /api/v1/admin/fraud/rules`**
 
-List fraud velocity rules
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/fraud/rules' \
@@ -158,10 +154,6 @@ curl -X 'GET' \
 ### 2. Create a fraud velocity rule
 
 **`POST /api/v1/admin/fraud/rules`**
-
-Create a fraud velocity rule
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -201,10 +193,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/fraud/rules/{id}`**
 
-Update a fraud velocity rule
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/fraud/rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -243,10 +231,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/admin/fraud/rules/{id}`**
 
-Delete a fraud velocity rule
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/fraud/rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -267,10 +251,6 @@ curl -X 'DELETE' \
 ### 5. List blocklist entries
 
 **`GET /api/v1/admin/fraud/blocklist`**
-
-List blocklist entries
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -300,10 +280,6 @@ curl -X 'GET' \
 ### 6. Add a blocklist entry
 
 **`POST /api/v1/admin/fraud/blocklist`**
-
-Add a blocklist entry
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -340,10 +316,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/fraud/blocklist/{id}`**
 
-Delete a blocklist entry
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/fraud/blocklist/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -364,10 +336,6 @@ curl -X 'DELETE' \
 ### 8. List payments flagged for review or blocked
 
 **`GET /api/v1/admin/fraud/high-risk`**
-
-List payments flagged for review or blocked
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -422,10 +390,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/payments/{id}/risk`**
 
-Record AVS/CVV results for a payment
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/risk' \
@@ -451,10 +415,6 @@ curl -X 'POST' \
 ### 10. List chargebacks
 
 **`GET /api/v1/admin/chargebacks`**
-
-List chargebacks
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -504,10 +464,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/chargebacks`**
 
-Record a chargeback/dispute
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/chargebacks' \
@@ -550,10 +506,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/chargebacks/{id}`**
 
-Retrieve a chargeback
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/chargebacks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -587,10 +539,6 @@ curl -X 'GET' \
 ### 13. Update a chargeback status/outcome
 
 **`PUT /api/v1/admin/chargebacks/{id}`**
-
-Update a chargeback status/outcome
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -632,10 +580,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/admin/chargebacks/export`**
 
-Export chargebacks CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/chargebacks/export?status=PENDING' \
@@ -655,10 +599,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 15. Attach evidence to a chargeback
 
 **`POST /api/v1/admin/chargebacks/{id}/evidence`**
-
-Attach evidence to a chargeback
-
-#### Request
 
 ```bash
 curl -X 'POST' \

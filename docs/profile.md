@@ -26,10 +26,6 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/profile`**
 
-Retrieve the profile information for the authenticated user.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -65,10 +61,6 @@ curl -X 'GET' \
 ### 2. Update User Profile
 
 **`PUT /api/v1/profile`**
-
-Update profile information for the authenticated user.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -119,13 +111,11 @@ curl -X 'PUT' \
 
 **`POST /api/v1/profile/image-upload`**
 
-Upload a profile image for the authenticated user. The image will be processed and stored with a unique filename.
+#### Multipart Form Data
 
-#### Request Body
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `image` | file | Yes | Image file (multipart/form-data) |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
 
 #### Headers
 
@@ -134,18 +124,12 @@ Upload a profile image for the authenticated user. The image will be processed a
 | `Authorization` | `Bearer <access_token>` | Yes |
 | `Content-Type` | `multipart/form-data` | Yes |
 
-#### Supported Image Formats
-- JPEG (.jpg, .jpeg)
-- PNG (.png)
-- GIF (.gif)
-
 #### Request
 
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/profile/image-upload' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Authorization: Bearer <access_token>' \
   -H 'Content-Type: multipart/form-data' \
   -F 'image=@profile.jpg;type=image/jpeg'
 ```

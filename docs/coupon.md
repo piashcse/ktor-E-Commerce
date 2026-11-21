@@ -30,10 +30,6 @@ The Coupon module provides a flexible way to manage discounts and promotional of
 
 **`GET /api/v1/admin/coupons`**
 
-Admin - Retrieve a list of all coupons
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/coupons?page=1&perPage=20&active=true' \
@@ -81,10 +77,6 @@ curl -X 'GET' \
 ### 2. Admin - Create a new discount coupon
 
 **`POST /api/v1/admin/coupons`**
-
-Admin - Create a new discount coupon
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -135,10 +127,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/coupons/{id}`**
 
-Admin - Delete a coupon
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/coupons/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -159,10 +147,6 @@ curl -X 'DELETE' \
 ### 4. Admin - Update an existing coupon
 
 **`PUT /api/v1/admin/coupons/{id}`**
-
-Admin - Update an existing coupon
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -213,10 +197,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/admin/promotions`**
 
-Admin: list promotions
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/promotions?page=1&perPage=20&active=true' \
@@ -264,10 +244,6 @@ curl -X 'GET' \
 ### 6. Admin: create a promotion
 
 **`POST /api/v1/admin/promotions`**
-
-Admin: create a promotion
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -317,10 +293,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/promotions/{id}`**
 
-Admin: deactivate a promotion
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/promotions/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -341,10 +313,6 @@ curl -X 'DELETE' \
 ### 8. Admin: update a promotion
 
 **`PUT /api/v1/admin/promotions/{id}`**
-
-Admin: update a promotion
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -394,10 +362,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/coupons/{code}`**
 
-Retrieve detailed information about a coupon by its code
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/coupons/SAVE10' \
@@ -430,10 +394,6 @@ curl -X 'GET' \
 ### 10. Seller - List my shop coupons
 
 **`GET /api/v1/seller/coupons`**
-
-Seller - List my shop coupons
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -482,10 +442,6 @@ curl -X 'GET' \
 ### 11. Seller - Create a shop coupon
 
 **`POST /api/v1/seller/coupons`**
-
-Seller - Create a shop coupon
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -536,10 +492,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/coupons/{id}`**
 
-Seller - Delete a shop coupon
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/coupons/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -560,10 +512,6 @@ curl -X 'DELETE' \
 ### 13. Seller - Update a shop coupon
 
 **`PUT /api/v1/seller/coupons/{id}`**
-
-Seller - Update a shop coupon
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -614,10 +562,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/seller/promotions`**
 
-Seller: list my promotions
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/promotions?page=1&perPage=20&active=true' \
@@ -665,10 +609,6 @@ curl -X 'GET' \
 ### 15. Seller: create a promotion
 
 **`POST /api/v1/seller/promotions`**
-
-Seller: create a promotion
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -718,10 +658,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/promotions/{id}`**
 
-Seller: deactivate a promotion
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/promotions/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -742,10 +678,6 @@ curl -X 'DELETE' \
 ### 17. Seller: update a promotion
 
 **`PUT /api/v1/seller/promotions/{id}`**
-
-Seller: update a promotion
-
-#### Request
 
 ```bash
 curl -X 'PUT' \

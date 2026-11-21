@@ -21,10 +21,6 @@ both for any order.
 ### 1. Rate quote
 
 **`POST /api/v1/orders/{id}/shipping-quotes`**
-
-Returns rates from the configured carrier for the supplied origin/destination and parcels.
-
-```json
 {
   "origin": {
     "name": "Dhaka Warehouse",
@@ -66,12 +62,6 @@ Response:
 ### 2. Purchase a label
 
 **`POST /api/v1/orders/{id}/shipments`**
-
-Buys the selected rate and records the parcel. `items` is optional; when omitted every remaining
-unit on the order ships in this parcel. Partial fulfillment is supported by supplying only some
-lines/quantities.
-
-```json
 {
   "rateId": "rate_123",
   "items": [
@@ -113,9 +103,7 @@ Rules:
 
 ### 3. List / retrieve shipments
 
-**`GET /api/v1/orders/{id}/shipments`** returns all parcels for an order.
-
-**`GET /api/v1/shipments/{id}`** returns one shipment, including its allocated lines.
+**`GET /api/v1/orders/{id}/shipments`**
 
 ---
 
@@ -130,11 +118,6 @@ row and writes an audit entry; it does not require the original signature.
 ### 4. Tracking webhook
 
 **`POST /api/v1/shipments/webhook/{provider}`**
-
-Public endpoint called by the carrier. The raw body is verified with
-`X-Carrier-Signature` (`X-Webhook-Signature` is also accepted) before any update:
-
-- HMAC-SHA256 hex of the raw payload using `CARRIER_WEBHOOK_SECRET`, or the shared secret itself.
 - Deliveries are deduplicated by `(provider, event_id)`; the event ID is the SHA-256 of the payload,
   so retries are safe.
 - `TRANSIT`/`OUT_FOR_DELIVERY` → `IN_TRANSIT`

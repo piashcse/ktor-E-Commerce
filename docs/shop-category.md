@@ -27,10 +27,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/shop-categories`**
 
-Create a new shop category. This endpoint allows administrators to add new categories for organizing shops.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Name of the shop category |
@@ -70,10 +66,6 @@ curl -X 'POST' \
 ### 2. Get Shop Categories
 
 **`GET /api/v1/shop-categories`**
-
-Retrieve a list of shop categories with optional pagination support.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -120,10 +112,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/shop-categories/{id}`**
 
-Update an existing shop category by its ID.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shop category to update |
@@ -164,10 +152,6 @@ curl -X 'PUT' \
 ### 4. Delete Shop Category
 
 **`DELETE /api/v1/admin/shop-categories/{id}`**
-
-Delete a shop category by its ID. This operation permanently removes the category from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

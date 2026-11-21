@@ -37,10 +37,6 @@ Authorization: Bearer <admin_access_token>
 
 **`GET /api/v1/checkout/shipping-method`**
 
-Retrieve all available shipping methods.
-
-#### Response
-
 ```json
 [
   {
@@ -66,10 +62,6 @@ Retrieve all available shipping methods.
 
 **`POST /api/v1/admin/shipping-methods`**
 
-Create a new shipping method.
-
-#### Request Body
-
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | Yes | Name of the shipping method |
@@ -94,10 +86,6 @@ Create a new shipping method.
 
 **`PUT /api/v1/admin/shipping-methods/{id}`**
 
-Update an existing shipping method.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to update |
@@ -112,20 +100,12 @@ Same as **Create Shipping Method**.
 
 **`DELETE /api/v1/admin/shipping-methods/{id}`**
 
-Delete a shipping method by its ID.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to delete |
 ### 5. Seller - List my shipping methods
 
 **`GET /api/v1/seller/shipping-methods`**
-
-Seller - List my shipping methods
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -167,10 +147,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/seller/shipping-methods`**
 
-Seller - Create a shipping method
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/shipping-methods' \
@@ -204,10 +180,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/shipping-methods/{id}`**
 
-Seller - Delete a shipping method
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -228,10 +200,6 @@ curl -X 'DELETE' \
 ### 8. Seller - Update a shipping method
 
 **`PUT /api/v1/seller/shipping-methods/{id}`**
-
-Seller - Update a shipping method
-
-#### Request
 
 ```bash
 curl -X 'PUT' \

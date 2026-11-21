@@ -19,8 +19,6 @@ is rejected for new checkout calculations.
 
 **`PUT /api/v1/admin/fx-rates/{targetCurrency}`**
 
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `targetCurrency` | string | Yes | One of `USD`, `EUR`, `GBP`, `BDT`, `INR` |
@@ -64,10 +62,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/admin/fx-rates`**
 
-List FX rates
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/fx-rates' \
@@ -92,10 +86,6 @@ curl -X 'GET' \
 ### 3. List FX rates
 
 **`GET /api/v1/fx-rates`**
-
-List FX rates
-
-#### Request
 
 ```bash
 curl -X 'GET' \

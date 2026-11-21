@@ -30,10 +30,6 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/checkout/shipping-address`**
 
-Retrieve all shipping addresses associated with the authenticated user.
-
-#### Response
-
 ```json
 [
   {
@@ -58,10 +54,6 @@ Retrieve all shipping addresses associated with the authenticated user.
 ### 2. Add Shipping Address
 
 **`POST /api/v1/checkout/shipping-address`**
-
-Add a new shipping address for the authenticated user.
-
-#### Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -99,10 +91,6 @@ Add a new shipping address for the authenticated user.
 
 **`PUT /api/v1/checkout/shipping-address/{id}`**
 
-Update an existing shipping address.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping address to update |
@@ -116,10 +104,6 @@ Same as **Add Shipping Address**.
 ### 4. Delete Shipping Address
 
 **`DELETE /api/v1/checkout/shipping-address/{id}`**
-
-Delete a shipping address by its ID.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

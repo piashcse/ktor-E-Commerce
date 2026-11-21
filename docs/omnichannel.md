@@ -5,10 +5,6 @@ Omnichannel pickup, in-store sales and nearby store discovery.
 ### 1. Store locator
 
 **`GET /api/v1/stores?lat=23.81&lng=90.41&radiusKm=10&limit=20`**
-
-Lists active warehouses with `supportsPickup = true`.
-
-- Without coordinates, stores are returned without distance.
 - With coordinates, results include `distanceKm` (Haversine) and are sorted nearest-first.
 - `radiusKm` filters stores with a known distance.
 - `limit` is clamped to `1..100`.
@@ -94,8 +90,6 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 ### 2. POS sales
 
 **`POST /api/v1/seller/pos/sales`**
-
-```json
 {
   "items": [
     { "productId": "product-uuid", "quantity": 2 }
@@ -121,7 +115,7 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
   commission and notifications).
 - Returns `201 Created` with the order.
 
-**`GET /api/v1/seller/pos/sales`** lists the seller’s POS sales with pagination.
+**`GET /api/v1/seller/pos/sales`**
 
 ## POS cash-drawer sessions
 
@@ -163,10 +157,6 @@ Close:
 ### 3. Seller: list pickup orders
 
 **`GET /api/v1/seller/pickup-orders`**
-
-Seller: list pickup orders
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -226,10 +216,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/seller/orders/{id}/pickup/ready`**
 
-Seller: mark a pickup order ready
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pickup/ready' \
@@ -273,10 +259,6 @@ curl -X 'POST' \
 ### 5. Seller: verify pickup code and complete collection
 
 **`POST /api/v1/seller/orders/{id}/pickup/complete`**
-
-Seller: verify pickup code and complete collection
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -324,10 +306,6 @@ curl -X 'POST' \
 ### 6. Seller: list POS cash-drawer sessions
 
 **`GET /api/v1/seller/pos/sessions`**
-
-Seller: list POS cash-drawer sessions
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -378,10 +356,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/seller/pos/sessions/open`**
 
-Seller: open a POS cash-drawer session
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/pos/sessions/open' \
@@ -423,10 +397,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/seller/pos/sessions/{id}/close`**
 
-Seller: close a POS session and reconcile cash
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/pos/sessions/6c5078d3-f8e3-4c88-9afe-48b5423c664f/close' \
@@ -467,10 +437,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller/pos/sales/{id}/receipt`**
 
-Seller: printable POS receipt
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/pos/sales/6c5078d3-f8e3-4c88-9afe-48b5423c664f/receipt' \
@@ -489,10 +455,6 @@ curl -X 'GET' \
 ### 10. Seller: printable POS session report
 
 **`GET /api/v1/seller/pos/sessions/{id}/report`**
-
-Seller: printable POS session report
-
-#### Request
 
 ```bash
 curl -X 'GET' \

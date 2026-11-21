@@ -23,8 +23,6 @@ States: `NOT_SUBMITTED → PENDING → VERIFIED` or `PENDING → REJECTED`.
 ### 1. Submit KYC
 
 **`POST /api/v1/seller/kyc`**
-
-```json
 {
   "businessName": "ACME Ltd",
   "businessRegistrationNumber": "REG-12345",
@@ -42,10 +40,6 @@ already-uploaded document.
 ### 2. Verify / reject
 
 **`PUT /api/v1/admin/sellers/{sellerId}/verify`**
-
-Marks the seller `VERIFIED` and records `verifiedAt`.
-
-**`PUT /api/v1/admin/sellers/{sellerId}/reject`**
 
 ```json
 {
@@ -68,10 +62,6 @@ curl -X 'PUT' \
 ### 3. Get my KYC status
 
 **`GET /api/v1/seller/kyc`**
-
-Get my KYC status
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -105,10 +95,6 @@ curl -X 'GET' \
 ### 4. Admin: list KYC submissions
 
 **`GET /api/v1/admin/sellers`**
-
-Admin: list KYC submissions
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -157,10 +143,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/sellers/bulk/reject`**
 
-Admin: bulk reject KYC
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/sellers/bulk/reject' \
@@ -190,10 +172,6 @@ curl -X 'POST' \
 ### 6. Admin: bulk verify KYC
 
 **`POST /api/v1/admin/sellers/bulk/verify`**
-
-Admin: bulk verify KYC
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -225,10 +203,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/sellers/export`**
 
-Admin: export KYC submissions CSV
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/sellers/export?status=PENDING' \
@@ -248,10 +222,6 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 ### 8. Admin: KYC decision history
 
 **`GET /api/v1/admin/sellers/{sellerId}/history`**
-
-Admin: KYC decision history
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -279,10 +249,6 @@ curl -X 'GET' \
 ### 9. Get my KYC submission history
 
 **`GET /api/v1/seller/kyc/history`**
-
-Get my KYC submission history
-
-#### Request
 
 ```bash
 curl -X 'GET' \

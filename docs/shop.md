@@ -57,10 +57,6 @@ analyst, warehouse and POS. See [RBAC](rbac.md) for the full role catalog.
 
 **`POST /api/v1/seller/shops`**
 
-Create a new shop with a specified name and category. The shop will be associated with the authenticated seller.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -102,16 +98,27 @@ curl -X 'POST' \
 
 **`POST /api/v1/seller/shops/{id}/image`**
 
-`multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
-The response is the updated shop with its new `logo` URL.
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <seller_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
 
 #### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/shops/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7/image' \
+  'http://localhost:8080/api/v1/seller/shops/{id}/image' \
   -H 'Authorization: Bearer <seller_token>' \
-  -F 'file=@shop-logo.png'
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@shop-logo.png;type=image/png'
 ```
 
 #### Response
@@ -129,10 +136,6 @@ curl -X 'POST' \
 ### 3. Get Public Shops (V1)
 
 **`GET /api/v1/shops/public`**
-
-Retrieve a list of public shops with optional status and category filters.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -174,10 +177,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/shops/approve/{id}`**
 
-Approve a pending shop application (Admin only).
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/shops/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
@@ -198,10 +197,6 @@ curl -X 'PUT' \
 ### 5. Seller - Retrieve owned shops
 
 **`GET /api/v1/seller/shops`**
-
-Seller - Retrieve owned shops
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -256,10 +251,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/seller/shops/{id}`**
 
-Seller - Update shop details
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -309,10 +300,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/shops/{id}`**
 
-Retrieve detailed information about a specific shop
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -350,10 +337,6 @@ curl -X 'GET' \
 ### 8. Retrieve shops by category (public)
 
 **`GET /api/v1/shops/category/{categoryId}`**
-
-Retrieve shops by category (public)
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -407,10 +390,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/shops/featured`**
 
-Retrieve featured shops (public)
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/shops/featured?page=1&perPage=20' \
@@ -462,10 +441,6 @@ curl -X 'GET' \
 ### 10. Admin - Retrieve shops filtered by status
 
 **`GET /api/v1/admin/shops/status`**
-
-Admin - Retrieve shops filtered by status
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -520,10 +495,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/shops/reject/{id}`**
 
-Admin - Reject a shop application
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/shops/reject/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -566,10 +537,6 @@ curl -X 'PUT' \
 ### 12. Admin - Suspend an active shop
 
 **`PUT /api/v1/admin/shops/suspend/{id}`**
-
-Admin - Suspend an active shop
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -614,10 +581,6 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/admin/shops/activate/{id}`**
 
-Admin - Activate a suspended shop
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/shops/activate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -656,10 +619,6 @@ curl -X 'PUT' \
 ### 14. Admin - List all shops
 
 **`GET /api/v1/admin/shops`**
-
-Admin - List all shops
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -714,10 +673,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/shops/bulk/approve`**
 
-Admin - Bulk approve shops
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/shops/bulk/approve' \
@@ -747,10 +702,6 @@ curl -X 'POST' \
 ### 16. Admin - Bulk reject shops
 
 **`POST /api/v1/admin/shops/bulk/reject`**
-
-Admin - Bulk reject shops
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -782,10 +733,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/admin/shops/bulk/suspend`**
 
-Admin - Bulk suspend shops
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/shops/bulk/suspend' \
@@ -815,10 +762,6 @@ curl -X 'POST' \
 ### 18. List products for a shop
 
 **`GET /api/v1/shops/{id}/products`**
-
-List products for a shop
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -873,10 +816,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/members`**
 
-Seller: list shop members
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/members' \
@@ -907,10 +846,6 @@ curl -X 'GET' \
 ### 20. Seller: invite a staff member
 
 **`POST /api/v1/seller/members/invite`**
-
-Seller: invite a staff member
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -943,10 +878,6 @@ curl -X 'POST' \
 ### 21. Seller: replace a member's roles
 
 **`PUT /api/v1/seller/members/{id}/roles`**
-
-Seller: replace a member's roles
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -982,10 +913,6 @@ curl -X 'PUT' \
 ### 22. Seller: remove a shop member
 
 **`DELETE /api/v1/seller/members/{id}`**
-
-Seller: remove a shop member
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \

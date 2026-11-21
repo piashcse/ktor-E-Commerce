@@ -5,7 +5,7 @@ conversion reporting.
 
 ### 1. Event ingestion
 
-**`POST /api/v1/analytics/events`** — public, rate-limited, max 50 events per request.
+**`POST /api/v1/analytics/events`**
 
 ```json
 {
@@ -47,10 +47,6 @@ can treat this as a successful no-op.
 ### 2. Funnel
 
 **`GET /api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31`**
-
-Stages: `page_view` → `product_view` → `add_to_cart` → `checkout_start` → `purchase`.
-
-```json
 {
   "startDate": "2026-05-01",
   "endDate": "2026-05-31",
@@ -70,11 +66,6 @@ Stages: `page_view` → `product_view` → `add_to_cart` → `checkout_start` �
 ### 3. Attribution
 
 **`GET /api/v1/admin/analytics/attribution?startDate=...&endDate=...`**
-
-Paid orders are grouped by the first-touch attribution captured at checkout. Orders without
-attribution are grouped under `direct` / `none` / `none`.
-
-```json
 {
   "startDate": "2026-05-01",
   "endDate": "2026-05-31",
@@ -98,10 +89,6 @@ Revenue is normalized to USD via the order FX rate.
 ### 4. Product conversion
 
 **`GET /api/v1/admin/analytics/products?startDate=...&endDate=...&limit=20`**
-
-Per product:
-
-- `views` — distinct `PRODUCT_VIEW` events
 - `addToCart` — distinct `ADD_TO_CART` events
 - `purchases` — units in paid orders
 - `conversionRate` — purchases / views

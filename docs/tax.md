@@ -103,10 +103,6 @@ Tax is calculated on the post-discount item total and snapshotted on the order l
 
 **`GET /api/v1/admin/tax-rules`**
 
-List tax rules
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/tax-rules' \
@@ -137,10 +133,6 @@ curl -X 'GET' \
 ### 2. Create or update tax rule
 
 **`POST /api/v1/admin/tax-rules`**
-
-Create or update tax rule
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -182,10 +174,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/tax-rules`**
 
-Upsert tax rule
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/tax-rules' \
@@ -226,10 +214,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/admin/tax-rules/{id}`**
 
-Delete tax rule
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/tax-rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -250,10 +234,6 @@ curl -X 'DELETE' \
 ### 5. List tax classes
 
 **`GET /api/v1/admin/tax-classes`**
-
-List tax classes
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -282,10 +262,6 @@ curl -X 'GET' \
 ### 6. Create a tax class
 
 **`POST /api/v1/admin/tax-classes`**
-
-Create a tax class
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -321,10 +297,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/tax-classes/{id}`**
 
-Update a tax class
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/tax-classes/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -359,10 +331,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/admin/tax-classes/{id}`**
 
-Delete a tax class
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/tax-classes/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -383,10 +351,6 @@ curl -X 'DELETE' \
 ### 9. List tax zones
 
 **`GET /api/v1/admin/tax-zones`**
-
-List tax zones
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -416,10 +380,6 @@ curl -X 'GET' \
 ### 10. Create a tax zone
 
 **`POST /api/v1/admin/tax-zones`**
-
-Create a tax zone
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -457,10 +417,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/tax-zones/{id}`**
 
-Update a tax zone
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/tax-zones/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -497,10 +453,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/admin/tax-zones/{id}`**
 
-Delete a tax zone
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/tax-zones/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -521,10 +473,6 @@ curl -X 'DELETE' \
 ### 13. List tax exemptions
 
 **`GET /api/v1/admin/tax-exemptions`**
-
-List tax exemptions
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -556,10 +504,6 @@ curl -X 'GET' \
 ### 14. Create a tax exemption
 
 **`POST /api/v1/admin/tax-exemptions`**
-
-Create a tax exemption
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -600,10 +544,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/tax-exemptions/{id}`**
 
-Delete a tax exemption
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/tax-exemptions/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -624,10 +564,6 @@ curl -X 'DELETE' \
 ### 16. Assign a product tax class
 
 **`PUT /api/v1/admin/products/{id}/tax-class`**
-
-Assign a product tax class
-
-#### Request
 
 ```bash
 curl -X 'PUT' \

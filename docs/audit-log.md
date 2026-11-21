@@ -21,10 +21,6 @@ All Audit Log endpoints require `ADMIN` role.
 
 **`GET /api/v1/admin/audit-logs`**
 
-Returns paginated audit log entries with optional filters.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `actorId` | string | No | Filter by actor user ID |
@@ -77,10 +73,6 @@ curl -X 'GET' \
 ### 2. Get Audit Log by ID
 
 **`GET /api/v1/admin/audit-logs/{id}`**
-
-Returns a single audit log entry.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

@@ -57,10 +57,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/seller/products`**
 
-Create a new product as a seller. The product will be automatically associated with your shop.
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/products' \
@@ -95,10 +91,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/products/search`**
 
-Search for products using various filters. This is a public endpoint.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `categoryId` | string | No | Filter by category |
@@ -125,10 +117,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/seller/products`**
 
-Retrieve all products belonging to the authenticated seller.
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/products?limit=10' \
@@ -141,27 +129,38 @@ curl -X 'GET' \
 
 **`POST /api/v1/seller/products/image-upload`**
 
-Upload an image for a specific product.
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <seller_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
 
 #### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/products/image-upload?id=718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  'http://localhost:8080/api/v1/seller/products/image-upload' \
   -H 'Authorization: Bearer <seller_token>' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'file=@product_watch.png;type=image/png'
+  -F 'image=@product.png;type=image/png'
 ```
 
----
+#### Response
+
+```json
+"/uploads/product-images/8f2c1a.png"
+```
 
 ### 5. Update product
 
 **`PUT /api/v1/seller/products/{id}`**
-
-Update product
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -228,10 +227,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/seller/products/{id}`**
 
-Delete product
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -252,10 +247,6 @@ curl -X 'DELETE' \
 ### 7. Retrieve a paginated list of products with optional filters
 
 **`GET /api/v1/products`**
-
-Retrieve a paginated list of products with optional filters
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -310,10 +301,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/products/suggest`**
 
-Product search suggestions
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/suggest?limit=20&q=phone' \
@@ -340,10 +327,6 @@ curl -X 'GET' \
 ### 9. Get product detail
 
 **`GET /api/v1/products/{id}`**
-
-Get product detail
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -383,10 +366,6 @@ curl -X 'GET' \
 ### 10. List product variants
 
 **`GET /api/v1/products/{id}/variants`**
-
-List product variants
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -433,10 +412,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/products/{id}/options`**
 
-List product options
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
@@ -469,10 +444,6 @@ curl -X 'GET' \
 ### 12. Related products
 
 **`GET /api/v1/products/{id}/related`**
-
-Related products
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -519,10 +490,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/products/{id}/also-bought`**
 
-Frequently bought together
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/also-bought' \
@@ -567,10 +534,6 @@ curl -X 'GET' \
 ### 14. Best-seller recommendations
 
 **`GET /api/v1/products/recommendations`**
-
-Best-seller recommendations
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -617,10 +580,6 @@ curl -X 'GET' \
 
 **`DELETE /api/v1/admin/products/{id}`**
 
-Admin - Permanently delete any product
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -641,10 +600,6 @@ curl -X 'DELETE' \
 ### 16. Assign a product tax class
 
 **`PUT /api/v1/admin/products/{id}/tax-class`**
-
-Assign a product tax class
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -670,10 +625,6 @@ curl -X 'PUT' \
 ### 17. List a product's translations
 
 **`GET /api/v1/admin/products/{id}/translations`**
-
-List a product's translations
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -701,10 +652,6 @@ curl -X 'GET' \
 
 **`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
 
-Delete a product translation
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
@@ -725,10 +672,6 @@ curl -X 'DELETE' \
 ### 19. Create or update a product translation
 
 **`PUT /api/v1/admin/products/{id}/translations/{locale}`**
-
-Create or update a product translation
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -758,10 +701,6 @@ curl -X 'PUT' \
 ### 20. Create option dimension
 
 **`POST /api/v1/seller/products/{id}/options`**
-
-Create option dimension
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -800,10 +739,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/products/{id}/options/{optionId}`**
 
-Delete option dimension
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -824,10 +759,6 @@ curl -X 'DELETE' \
 ### 22. Add option value
 
 **`POST /api/v1/seller/products/{id}/options/{optionId}/values`**
-
-Add option value
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -858,10 +789,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}`**
 
-Delete option value
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f/values/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -882,10 +809,6 @@ curl -X 'DELETE' \
 ### 24. Create product variant
 
 **`POST /api/v1/seller/products/{id}/variants`**
-
-Create product variant
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -945,10 +868,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/seller/products/{id}/variants/{variantId}`**
 
-Delete product variant
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -969,10 +888,6 @@ curl -X 'DELETE' \
 ### 26. Update product variant
 
 **`PUT /api/v1/seller/products/{id}/variants/{variantId}`**
-
-Update product variant
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -1032,10 +947,6 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/seller/products/{id}/variants/{variantId}/options`**
 
-Attach option values to a variant
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
@@ -1086,10 +997,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/stock-alerts`**
 
-List back-in-stock alerts
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/stock-alerts' \
@@ -1116,10 +1023,6 @@ curl -X 'GET' \
 ### 29. Subscribe to a back-in-stock alert
 
 **`POST /api/v1/stock-alerts`**
-
-Subscribe to a back-in-stock alert
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -1150,10 +1053,6 @@ curl -X 'POST' \
 ### 30. Remove a back-in-stock alert
 
 **`DELETE /api/v1/stock-alerts/{productId}`**
-
-Remove a back-in-stock alert
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \

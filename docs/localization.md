@@ -88,10 +88,6 @@ request locale; missing translations fall back to the product's default name/des
 
 **`GET /api/v1/admin/products/{id}/translations`**
 
-List a product's translations
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations' \
@@ -117,10 +113,6 @@ curl -X 'GET' \
 ### 2. Create or update a product translation
 
 **`PUT /api/v1/admin/products/{id}/translations/{locale}`**
-
-Create or update a product translation
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -151,10 +143,6 @@ curl -X 'PUT' \
 
 **`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
 
-Delete a product translation
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
@@ -175,10 +163,6 @@ curl -X 'DELETE' \
 ### 4. List supported locales
 
 **`GET /api/v1/i18n/locales`**
-
-List supported locales
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -204,10 +188,6 @@ curl -X 'GET' \
 ### 5. Get translated API message catalog
 
 **`GET /api/v1/i18n/messages`**
-
-Get translated API message catalog
-
-#### Request
 
 ```bash
 curl -X 'GET' \

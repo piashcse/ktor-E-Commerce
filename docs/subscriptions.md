@@ -31,8 +31,6 @@ Admin CRUD:
 ### 1. Subscribing
 
 **`POST /api/v1/subscriptions`**
-
-```json
 {
   "planId": "plan-uuid",
   "paymentReference": "pay_123",
@@ -58,11 +56,6 @@ Other endpoints:
 ### 2. Renewal billing
 
 **`POST /api/v1/admin/subscriptions/run-billing`**
-
-Processes every `ACTIVE` subscription whose period has ended and every `PAST_DUE` subscription
-that is due for a retry:
-
-- `cancelAtPeriodEnd = true` → status becomes `CANCELED`, entitlement revoked
 - with a stored payment method and `PAYMENT_PROVIDER=stripe` → charges the saved payment method
   off-session. A successful charge extends the period, records a `PAID` invoice, resets dunning and
   refreshes the entitlement. A `requires_action`/`processing` charge stays pending.
@@ -85,8 +78,6 @@ invoice paid and activates the subscription.
 Confirm a renewal payment manually and reactivate:
 
 **`POST /api/v1/admin/subscriptions/{id}/activate`**
-
-```json
 { "paymentReference": "pay_renewal" }
 ```
 
@@ -111,8 +102,6 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 ### 3. Library
 
 **`GET /api/v1/library`**
-
-```json
 [
   {
     "entitlementId": "ent-uuid",
@@ -132,8 +121,6 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 ```
 
 **`GET /api/v1/library/{token}/download`**
-
-- Requires ownership of the entitlement.
 - Rejects expired/exhausted downloads.
 - Increments the download count and returns a short-lived signed
   `/api/v1/library/asset?...` URL plus its expiry and remaining count.

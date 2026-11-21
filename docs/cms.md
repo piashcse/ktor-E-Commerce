@@ -41,15 +41,9 @@ Publishing sets `publishedAt`; unpublishing clears it. Slugs must match
 
 **`GET /api/v1/seo/metadata?entityType=PAGE&entityId=about-us&locale=en`**
 
-Entity types: `HOME`, `PAGE`, `PRODUCT`, `CATEGORY`, `SHOP`.
-
-Unknown metadata returns an empty shell with `noIndex = false`.
-
 Admin upsert:
 
 **`PUT /api/v1/admin/seo/metadata`**
-
-```json
 {
   "entityType": "PRODUCT",
   "entityId": "product-uuid",

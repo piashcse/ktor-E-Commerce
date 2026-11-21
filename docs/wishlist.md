@@ -29,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/wishlists`**
 
-Add a product to the authenticated user's wishlist.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to add to wishlist |
@@ -76,10 +72,6 @@ curl -X 'POST' \
 ### 2. Get Wishlist Items
 
 **`GET /api/v1/wishlists`**
-
-Retrieve all products in the authenticated user's wishlist with pagination.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -126,10 +118,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/wishlists/check`**
 
-Check if a specific product exists in the user's wishlist.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to check |
@@ -155,11 +143,6 @@ true
 
 **`POST /api/v1/wishlists/move-to-cart`**
 
-Adds the product to the cart (merging with an existing cart row if present) and removes it from
-the wishlist.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the wishlist product to move |
@@ -180,10 +163,6 @@ Returns the updated cart summary (`201 Created`).
 ### 5. Remove Product from Wishlist
 
 **`DELETE /api/v1/wishlists/remove`**
-
-Remove a specific product from the authenticated user's wishlist.
-
-#### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -220,10 +199,6 @@ curl -X 'DELETE' \
 ### 6. List wishlisted product IDs
 
 **`GET /api/v1/wishlists/ids`**
-
-List wishlisted product IDs
-
-#### Request
 
 ```bash
 curl -X 'GET' \

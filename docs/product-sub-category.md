@@ -28,10 +28,6 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/admin/product-subcategories`**
 
-Create a new product sub category with a specified name and associated product category.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `name` | string | Yes | Name of the product sub category |
@@ -75,10 +71,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/product-subcategories`**
 
-Retrieve a list of product sub categories with optional filtering and pagination support.
-
-#### Query Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `categoryId` | string | No | Filter by category ID (returns sub categories for that category) |
@@ -115,10 +107,6 @@ curl -X 'GET' \
 ### 3. Update Product Sub Category
 
 **`PUT /api/v1/admin/product-subcategories/{id}`**
-
-Update an existing product sub category by its ID. You can modify the sub category name.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -161,10 +149,6 @@ curl -X 'PUT' \
 ### 4. Delete Product Sub Category
 
 **`DELETE /api/v1/admin/product-subcategories/{id}`**
-
-Delete a product sub category by its ID. This operation permanently removes the sub category from the system.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

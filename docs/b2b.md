@@ -5,8 +5,6 @@ Wholesale accounts, negotiated quotes, purchase orders with credit limits and pa
 ### 1. Accounts
 
 **`POST /api/v1/b2b/account`**
-
-```json
 {
   "companyName": "Acme Wholesale",
   "taxId": "TAX-123",
@@ -32,8 +30,6 @@ Admin approval:
 ### 2. Quotes
 
 **`POST /api/v1/b2b/quotes`**
-
-```json
 {
   "items": [
     { "productId": "product-a", "quantity": 10 },
@@ -51,8 +47,6 @@ Admin approval:
 Seller response:
 
 **`PUT /api/v1/seller/b2b/quotes/{id}`**
-
-```json
 {
   "status": "SENT",
   "items": [
@@ -74,8 +68,6 @@ Other endpoints:
 ### 3. Purchase orders and net terms
 
 **`POST /api/v1/b2b/quotes/{id}/accept`**
-
-- Only a `SENT`, unexpired quote can be accepted.
 - Available credit = `creditLimit - open purchase orders`.
 - Creates an `OPEN` purchase order with a unique PO number.
 - Sets `dueDate = now + paymentTermsDays`.

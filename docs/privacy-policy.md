@@ -29,10 +29,6 @@ Authorization: Bearer <your_access_token>
 
 **`GET /api/v1/policies/{policyType}`**
 
-Retrieve a list of all policies including Privacy Policies and Terms & Conditions.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
@@ -80,10 +76,6 @@ curl -X 'GET' \
 ### 2. Create Policy
 
 **`POST /api/v1/admin/policies`**
-
-Create a new policy with specified type, title, content, version, and effective date.
-
-#### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -139,10 +131,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/admin/policies/{type}/history`**
 
-Get policy version history
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `type` | string | Yes | Policy type (PRIVACY_POLICY or TERMS_CONDITIONS) |
@@ -194,10 +182,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/policy-consents/consent`**
 
-Create a new consent record when a user agrees to a privacy policy. This endpoint captures the policy ID and user information for audit purposes.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -244,10 +228,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/policies/{id}`**
 
-Admin - Update an existing policy document
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/policies/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -285,10 +265,6 @@ curl -X 'PUT' \
 
 **`POST /api/v1/admin/policies/deactivate/{id}`**
 
-Admin - Deactivate a policy document
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/policies/deactivate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -307,10 +283,6 @@ true
 ### 7. Admin - Retrieve a policy document by ID
 
 **`GET /api/v1/admin/policies/by-id/{id}`**
-
-Admin - Retrieve a policy document by ID
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -340,10 +312,6 @@ curl -X 'GET' \
 ### 8. Export all personal data held for the authenticated user
 
 **`GET /api/v1/privacy/export`**
-
-Export all personal data held for the authenticated user
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -537,10 +505,6 @@ curl -X 'GET' \
 ### 9. Erase/anonymize the authenticated account (password required)
 
 **`POST /api/v1/privacy/erase`**
-
-Erase/anonymize the authenticated account (password required)
-
-#### Request
 
 ```bash
 curl -X 'POST' \

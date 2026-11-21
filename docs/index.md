@@ -231,7 +231,6 @@ Connection tab:
   <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/ktor-postgres.png" />
 </p>
 
-
 ## 📧 SMTP Email Setup
 
 This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). The email configuration is managed through environment variables in your `.env` file.
@@ -274,8 +273,6 @@ For comprehensive API documentation, please refer to the following resources:
 - [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
 - [Dashboard API](dashboard.md) - Admin dashboard analytics
 - [Audit Log API](audit-log.md) - Admin audit log tracking
-
-
 
 ## 👨 Developed By
 

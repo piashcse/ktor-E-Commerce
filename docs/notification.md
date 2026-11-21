@@ -56,10 +56,6 @@ Sellers/admins can send announcements with `POST /api/v1/notifications/send`
 
 **`GET /api/v1/notifications/preferences`**
 
-Get global notification channel
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/notifications/preferences' \
@@ -81,10 +77,6 @@ curl -X 'GET' \
 ### 2. Set global notification channel
 
 **`PUT /api/v1/notifications/preferences`**
-
-Set global notification channel
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -111,10 +103,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/notifications/preferences/{eventType}`**
 
-Get per-event channel
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/notifications/preferences/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -136,10 +124,6 @@ curl -X 'GET' \
 ### 4. Set per-event channel
 
 **`PUT /api/v1/notifications/preferences/{eventType}`**
-
-Set per-event channel
-
-#### Request
 
 ```bash
 curl -X 'PUT' \
@@ -166,10 +150,6 @@ curl -X 'PUT' \
 ### 5. List notifications
 
 **`GET /api/v1/notifications`**
-
-List notifications
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -214,10 +194,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/notifications/unread-count`**
 
-Unread notification count
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/notifications/unread-count' \
@@ -238,10 +214,6 @@ curl -X 'GET' \
 ### 7. Cursor-paginated notifications
 
 **`GET /api/v1/notifications/cursor`**
-
-Cursor-paginated notifications
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -279,10 +251,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/notifications/{id}/read`**
 
-Mark notification read
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/notifications/6c5078d3-f8e3-4c88-9afe-48b5423c664f/read' \
@@ -312,10 +280,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/notifications/read-all`**
 
-Mark all notifications read
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/notifications/read-all' \
@@ -336,10 +300,6 @@ curl -X 'POST' \
 ### 10. Send notification
 
 **`POST /api/v1/notifications/send`**
-
-Send notification
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -377,10 +337,6 @@ curl -X 'POST' \
 ### 11. Seller: notify one of my customers
 
 **`POST /api/v1/seller/notifications/send`**
-
-Seller: notify one of my customers
-
-#### Request
 
 ```bash
 curl -X 'POST' \

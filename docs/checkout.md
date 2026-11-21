@@ -93,7 +93,6 @@ Finalizes the purchase and creates order records. Send `Idempotency-Key` (or the
 **Response:**
 A list of created orders (split by shop if multi-vendor).
 
-
 ## Guest Checkout
 
 `POST /api/v1/checkout/guest` places an order without an account. It is gated by the `guest_checkout` feature flag (disabled by default; enable via the super-admin feature-flags API).

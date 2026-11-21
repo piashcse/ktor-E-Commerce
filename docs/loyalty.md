@@ -113,10 +113,6 @@ Store credit is held in USD and recorded as an `ADMIN_ADJUSTMENT` ledger entry.
 
 **`GET /api/v1/wallet`**
 
-Get my loyalty wallet
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/wallet' \
@@ -140,10 +136,6 @@ curl -X 'GET' \
 ### 2. List my wallet ledger
 
 **`GET /api/v1/wallet/ledger`**
-
-List my wallet ledger
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -187,10 +179,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/wallet/gift-cards/{code}`**
 
-Check a gift-card balance
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/wallet/gift-cards/SAVE10' \
@@ -218,10 +206,6 @@ curl -X 'GET' \
 ### 4. List my referrals
 
 **`GET /api/v1/referrals`**
-
-List my referrals
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -253,10 +237,6 @@ curl -X 'GET' \
 ### 5. Claim a referral code
 
 **`POST /api/v1/referrals/claim`**
-
-Claim a referral code
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -290,10 +270,6 @@ curl -X 'POST' \
 ### 6. List gift cards
 
 **`GET /api/v1/admin/gift-cards`**
-
-List gift cards
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -337,10 +313,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/gift-cards`**
 
-Issue a gift card
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/gift-cards' \
@@ -376,10 +348,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/admin/gift-cards/{id}`**
 
-Void a gift card
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/admin/gift-cards/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -400,10 +368,6 @@ curl -X 'DELETE' \
 ### 9. Credit a customer's store balance
 
 **`POST /api/v1/admin/wallets/{userId}/credit`**
-
-Credit a customer's store balance
-
-#### Request
 
 ```bash
 curl -X 'POST' \

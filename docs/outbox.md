@@ -35,10 +35,6 @@ See [Notifications](notification.md).
 
 **`GET /api/v1/admin/outbox/summary`**
 
-Outbox summary
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/outbox/summary' \
@@ -61,10 +57,6 @@ curl -X 'GET' \
 ### 2. List dead letters
 
 **`GET /api/v1/admin/outbox/dead-letters`**
-
-List dead letters
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -108,10 +100,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/admin/outbox/dead-letters/{id}/requeue`**
 
-Requeue dead letter
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/outbox/dead-letters/6c5078d3-f8e3-4c88-9afe-48b5423c664f/requeue' \
@@ -132,10 +120,6 @@ curl -X 'POST' \
 ### 4. Bulk requeue dead letters
 
 **`POST /api/v1/admin/outbox/dead-letters/requeue`**
-
-Bulk requeue dead letters
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -163,10 +147,6 @@ curl -X 'POST' \
 ### 5. Inspect a dead letter
 
 **`GET /api/v1/admin/outbox/dead-letters/{id}`**
-
-Inspect a dead letter
-
-#### Request
 
 ```bash
 curl -X 'GET' \

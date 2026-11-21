@@ -31,10 +31,6 @@ Unknown flags default to disabled (`FeatureFlags.isEnabled` returns `false`).
 
 **`GET /api/v1/admin/feature-flags`**
 
-List feature flags
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/feature-flags' \
@@ -60,10 +56,6 @@ curl -X 'GET' \
 ### 2. Set feature flag
 
 **`PUT /api/v1/admin/feature-flags/{key}`**
-
-Set feature flag
-
-#### Request
 
 ```bash
 curl -X 'PUT' \

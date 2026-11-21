@@ -5,8 +5,6 @@ Customer support with threaded replies, internal notes, assignment, priorities a
 ### 1. Customer flow
 
 **`POST /api/v1/support/tickets`**
-
-```json
 {
   "subject": "Missing item",
   "body": "One item was missing from the parcel",
@@ -129,9 +127,10 @@ required.
 
 ## Attachments
 
-`POST /api/v1/support/tickets/{id}/attachments` accepts a multipart image (JPEG/PNG/WebP/GIF, 5 MB)
-from the ticket owner. `GET /api/v1/support/tickets/{id}/attachments/{attachmentId}` and the admin
-counterpart serve the file privately with `Cache-Control: private, no-store`.
+`POST /api/v1/support/tickets/{id}/attachments` accepts a single multipart image from the ticket
+owner. Send one file part (`image/jpeg`, `image/png` or `image/webp`; maximum **5 MB**). The field
+name is not enforced; the examples use `file`. `GET /api/v1/support/tickets/{id}/attachments/{attachmentId}`
+and the admin counterpart serve the file privately with `Cache-Control: private, no-store`.
 
 Attachments appear in ticket responses:
 
@@ -153,8 +152,6 @@ Attachments appear in ticket responses:
 ### 2. Satisfaction (CSAT)
 
 **`POST /api/v1/support/tickets/{id}/satisfaction`**
-
-```json
 { "score": 5, "comment": "Fast resolution" }
 ```
 
@@ -166,10 +163,6 @@ Attachments appear in ticket responses:
 ### 3. List my support tickets
 
 **`GET /api/v1/support/tickets`**
-
-List my support tickets
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -223,10 +216,6 @@ curl -X 'GET' \
 ### 4. Get a support ticket and public replies
 
 **`GET /api/v1/support/tickets/{id}`**
-
-Get a support ticket and public replies
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -289,10 +278,6 @@ curl -X 'GET' \
 ### 5. Reply to a support ticket
 
 **`POST /api/v1/support/tickets/{id}/messages`**
-
-Reply to a support ticket
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -361,10 +346,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/support/tickets/{id}/close`**
 
-Close my support ticket
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/close' \
@@ -404,15 +385,27 @@ curl -X 'POST' \
 
 **`POST /api/v1/support/tickets/{id}/attachments`**
 
-Attach an image to my support ticket
+#### Multipart Form Data
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | file | Yes | `image/jpeg`, `image/png` or `image/webp` (`.jpg`, `.jpeg`, `.png`, `.webp`). Maximum **5 MB**. |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `multipart/form-data` | Yes |
 
 #### Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <access_token>'
+  'http://localhost:8080/api/v1/support/tickets/{id}/attachments' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@attachment.png;type=image/png'
 ```
 
 #### Response
@@ -434,10 +427,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/support/tickets/{id}/attachments/{attachmentId}`**
 
-Download my support attachment
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/attachments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -455,10 +444,6 @@ curl -X 'GET' \
 ### 9. Admin: list support tickets
 
 **`GET /api/v1/admin/support/tickets`**
-
-Admin: list support tickets
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -512,10 +497,6 @@ curl -X 'GET' \
 ### 10. Admin: get a ticket with internal notes
 
 **`GET /api/v1/admin/support/tickets/{id}`**
-
-Admin: get a ticket with internal notes
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -578,10 +559,6 @@ curl -X 'GET' \
 ### 11. Admin: reply or add an internal note
 
 **`POST /api/v1/admin/support/tickets/{id}/messages`**
-
-Admin: reply or add an internal note
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -650,10 +627,6 @@ curl -X 'POST' \
 
 **`PUT /api/v1/admin/support/tickets/{id}`**
 
-Admin: update ticket status/priority/assignment
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/support/tickets/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -699,10 +672,6 @@ curl -X 'PUT' \
 ### 13. Admin: download a support attachment
 
 **`GET /api/v1/admin/support/tickets/{id}/attachments/{attachmentId}`**
-
-Admin: download a support attachment
-
-#### Request
 
 ```bash
 curl -X 'GET' \

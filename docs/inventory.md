@@ -25,10 +25,6 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 **`PUT /api/v1/seller/inventories/stock/{productId}`**
 
-Update the stock quantity for a specific product using atomic operations (`add`, `subtract`, `set`).
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/seller/inventories/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
@@ -51,10 +47,6 @@ curl -X 'PUT' \
 
 **`GET /api/v1/seller/inventories/low-stock`**
 
-Retrieve inventory records that have fallen below the minimum stock level.
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/inventories/low-stock' \
@@ -65,8 +57,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/inventories`**
 
-Admins can list inventory across every shop with the standard `page`/`perPage` or
-`limit`/`offset` pagination parameters.
 
 ```bash
 curl -X 'GET' \
@@ -80,7 +70,6 @@ curl -X 'GET' \
 
 **`POST /api/v1/seller/inventories`**
 
-Create or update inventory
 
 #### Request
 
@@ -130,10 +119,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/seller/inventories/product/{productId}`**
 
-Get product inventory
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/inventories/product/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -168,10 +153,6 @@ curl -X 'GET' \
 ### 6. List shop inventory
 
 **`GET /api/v1/seller/inventories/shop/{shopId}`**
-
-List shop inventory
-
-#### Request
 
 ```bash
 curl -X 'GET' \

@@ -61,10 +61,6 @@ Platform roles and permissions are stored in the database and resolved on every 
 
 **`POST /api/v1/auth/login`**
 
-Authenticate a user and receive access + refresh tokens for subsequent API calls.
-
-> **Security**: This endpoint is rate-limited to 5 requests per 10 minutes per IP address to prevent brute-force attacks. After 5 failed login attempts, the account will be locked for 30 minutes.
-
 #### Request Parameters
 
 | Parameter | Type | Required | Description |
@@ -127,10 +123,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/auth/register`**
 
-Register a new user account. Users can register with the same email for different roles.
-
-> **Security**: This endpoint is rate-limited to 5 requests per 10 minutes per IP address. Passwords must meet strength requirements: minimum 8 characters with uppercase, lowercase, digit, and special character.
-
 #### Key Features
 - Multiple user types supported for self-registration (customer, seller)
 - Same email can be used for different user types
@@ -176,10 +168,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/auth/otp-verification`**
 
-Verify the OTP (One-Time Password) sent to user's email during registration.
-
-> **Security**: Limited to 5 OTP attempts per user. After 5 failed attempts the OTP is invalidated.
-
 #### Request Body
 
 | Parameter | Type | Required | Description |
@@ -213,10 +201,6 @@ true
 ### 4. Forgot Password
 
 **`POST /api/v1/auth/forgot-password`**
-
-Request a password reset verification code. The code will be sent to the user's email address.
-
-> **Security**: This endpoint is rate-limited to 5 requests per 10 minutes per IP address.
 
 #### Request Body
 
@@ -253,10 +237,6 @@ curl -X 'POST' \
 ### 5. Reset Password
 
 **`POST /api/v1/auth/reset-password`**
-
-Reset user password using the verification code sent via email.
-
-> **Security**: This endpoint is rate-limited to 5 requests per 10 minutes per IP address. Passwords must meet strength requirements.
 
 #### Request Body
 
@@ -297,10 +277,6 @@ curl -X 'POST' \
 ### 6. Refresh Token
 
 **`POST /api/v1/auth/refresh-token`**
-
-Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair.
-
-#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -345,10 +321,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/auth/logout`**
 
-Logout the authenticated user and revoke the refresh token to prevent further token refreshes.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -388,10 +360,6 @@ curl -X 'POST' \
 ### 8. Change Password
 
 **`PUT /api/v1/auth/change-password`**
-
-Change password for an authenticated user. Requires valid access token.
-
-#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -433,12 +401,6 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/admin/auth/{userId}/change-user-type`**
 
-Change an existing user's account type. This endpoint is available to administrators
-with `user:manage`. Promoting to `ADMIN` also assigns the `platform:admin` role; the actor
-must be allowed to grant that role.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `userId` | string | Yes | Unique identifier of the user to update |
@@ -479,10 +441,6 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/admin/auth/{userId}/deactivate`**
 
-Deactivate a user account, preventing the user from logging in or accessing the system. This operation can be reversed with the activate endpoint.
-
-#### Path Parameters
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `userId` | string | Yes | Unique identifier of the user to deactivate |
@@ -514,10 +472,6 @@ curl -X 'PUT' \
 ### 11. Activate User
 
 **`PUT /api/v1/admin/auth/{userId}/activate`**
-
-Activate a previously deactivated user account, allowing the user to log in and access the system again.
-
-#### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -551,12 +505,6 @@ curl -X 'PUT' \
 
 **`POST /api/v1/auth/mfa/setup`**
 
-Start TOTP multi-factor authentication setup for the authenticated user. Returns a Base32 secret and
-an `otpauth://` URL that can be rendered as a QR code. MFA is not enforced until `mfa/enable`
-succeeds.
-
-#### Headers
-
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
@@ -586,10 +534,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/auth/mfa/enable`**
 
-Verify a 6-digit code from the authenticator app and enable MFA for the account.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `code` | string | Yes | 6-digit TOTP code from the authenticator app |
@@ -618,10 +562,6 @@ curl -X 'POST' \
 
 **`POST /api/v1/auth/mfa/disable`**
 
-Verify a current authenticator code and disable MFA. The stored secret is removed.
-
-#### Request Body
-
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `code` | string | Yes | 6-digit TOTP code from the authenticator app |
@@ -649,8 +589,6 @@ curl -X 'POST' \
 ### 15. Social login
 
 **`POST /api/v1/auth/social/google`**
-
-```json
 { "idToken": "google-id-token", "mfaCode": "123456" }
 ```
 
@@ -765,10 +703,6 @@ SPKI key and verifies assertions.
 
 **`POST /api/v1/auth/passkeys/login/options`**
 
-Start passkey login
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/passkeys/login/options' \
@@ -805,10 +739,6 @@ curl -X 'POST' \
 ### 17. Finish passkey login
 
 **`POST /api/v1/auth/passkeys/login`**
-
-Finish passkey login
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -853,10 +783,6 @@ curl -X 'POST' \
 
 **`GET /api/v1/auth/passkeys`**
 
-List my passkeys
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/auth/passkeys' \
@@ -885,10 +811,6 @@ curl -X 'GET' \
 ### 19. Start passkey registration
 
 **`POST /api/v1/auth/passkeys/register/options`**
-
-Start passkey registration
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -926,10 +848,6 @@ curl -X 'POST' \
 ### 20. Finish passkey registration
 
 **`POST /api/v1/auth/passkeys/register`**
-
-Finish passkey registration
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -970,10 +888,6 @@ curl -X 'POST' \
 
 **`DELETE /api/v1/auth/passkeys/{id}`**
 
-Delete a passkey
-
-#### Request
-
 ```bash
 curl -X 'DELETE' \
   'http://localhost:8080/api/v1/auth/passkeys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -999,10 +913,6 @@ curl -X 'DELETE' \
 ### 22. Admin: search users
 
 **`GET /api/v1/admin/users`**
-
-Admin: search users
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -1046,10 +956,6 @@ curl -X 'GET' \
 
 **`GET /api/v1/admin/users/{id}`**
 
-Admin: user detail
-
-#### Request
-
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
@@ -1085,10 +991,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/users/{id}/activate`**
 
-Admin: activate a user
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/activate' \
@@ -1110,10 +1012,6 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/admin/users/{id}/deactivate`**
 
-Admin: deactivate a user
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/deactivate' \
@@ -1134,10 +1032,6 @@ curl -X 'PUT' \
 ### 26. Admin: inspect login/OTP lockouts
 
 **`GET /api/v1/admin/users/{id}/login-attempts`**
-
-Admin: inspect login/OTP lockouts
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -1168,10 +1062,6 @@ curl -X 'GET' \
 
 **`PUT /api/v1/admin/users/{id}/type`**
 
-Admin: change a user's role
-
-#### Request
-
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/type' \
@@ -1197,10 +1087,6 @@ curl -X 'PUT' \
 
 **`POST /api/v1/admin/users/{id}/unlock`**
 
-Admin: clear login and OTP lockouts
-
-#### Request
-
 ```bash
 curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/unlock' \
@@ -1221,10 +1107,6 @@ curl -X 'POST' \
 ### 29. List API keys
 
 **`GET /api/v1/api-keys`**
-
-List API keys
-
-#### Request
 
 ```bash
 curl -X 'GET' \
@@ -1257,10 +1139,6 @@ curl -X 'GET' \
 ### 30. Create API key
 
 **`POST /api/v1/api-keys`**
-
-Create API key
-
-#### Request
 
 ```bash
 curl -X 'POST' \
@@ -1297,10 +1175,6 @@ curl -X 'POST' \
 ### 31. Revoke API key
 
 **`DELETE /api/v1/api-keys/{id}`**
-
-Revoke API key
-
-#### Request
 
 ```bash
 curl -X 'DELETE' \
