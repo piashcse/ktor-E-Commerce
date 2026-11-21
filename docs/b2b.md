@@ -2,8 +2,6 @@
 
 Wholesale accounts, negotiated quotes, purchase orders with credit limits and payment terms.
 
-**Base URL:** `http://localhost:8080`
-
 ## Accounts
 
 **`POST /api/v1/b2b/account`**

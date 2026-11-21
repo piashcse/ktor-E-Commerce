@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Wishlist API endpoints. The API supports adding products to wishlist, retrieving user's wishlist items, checking product status, and removing products from wishlist. Wishlist functionality is user-specific and requires authentication to access personal wishlist data.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Wishlist endpoints require Bearer token authentication. Include the access token in the Authorization header:

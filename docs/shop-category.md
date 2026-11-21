@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Shop Category API endpoints. The API supports creating, retrieving, updating, and deleting shop categories. These endpoints are typically used by administrators to manage the categorization system for shops within the platform.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Shop Category endpoints require Bearer token authentication with admin privileges. Include the access token in the Authorization header:

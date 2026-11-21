@@ -2,8 +2,6 @@
 
 Velocity rules, blocklists, AVS/CVV capture, 3-D Secure enforcement and dispute records.
 
-**Base URL:** `http://localhost:8080`
-
 All endpoints require an admin Bearer token.
 
 ## Endpoints

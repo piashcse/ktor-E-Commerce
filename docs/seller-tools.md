@@ -3,8 +3,6 @@
 Marketplace trust and economics: post-delivery seller ratings, buyer/seller disputes and
 scope-aware commission rules.
 
-**Base URL:** `http://localhost:8080`
-
 ## Seller reviews
 
 Customers can review a seller once per order after it is `DELIVERED` or `RECEIVED`.

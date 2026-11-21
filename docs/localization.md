@@ -3,8 +3,6 @@
 Locale negotiation, translated API messages, localized product content, and locale/currency-aware
 checkout totals.
 
-**Base URL:** `http://localhost:8080`
-
 ## Supported locales
 
 | Code | Language | Default currency |

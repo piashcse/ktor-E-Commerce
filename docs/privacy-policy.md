@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Privacy Policy API endpoints. The API supports creating, retrieving, updating, and managing privacy policies and terms of conditions within the platform. Policies can be versioned, activated/deactivated, and managed by administrators.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 Most Policy endpoints require Bearer token authentication. Include the access token in the Authorization header:

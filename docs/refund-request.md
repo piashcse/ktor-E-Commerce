@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Refund Request API endpoints.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Refund Request endpoints require Bearer token authentication.

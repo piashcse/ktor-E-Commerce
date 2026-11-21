@@ -4,8 +4,6 @@
 
 This documentation provides comprehensive details for the Product API endpoints. The API supports managing products within the platform, including creating, retrieving, updating, and deleting products. Products are associated with categories and can be managed by authorized sellers or administrators.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 Most Product API endpoints require Bearer token authentication. Include the access token in the Authorization header:

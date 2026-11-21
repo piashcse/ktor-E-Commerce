@@ -3,8 +3,6 @@
 Anonymous storefront events power conversion funnels, UTM/referrer attribution and per-product
 conversion reporting.
 
-**Base URL:** `http://localhost:8080`
-
 ## Event ingestion
 
 **`POST /api/v1/analytics/events`** — public, rate-limited, max 50 events per request.

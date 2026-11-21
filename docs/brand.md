@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Brand API endpoints. The API supports creating, retrieving, updating, and deleting brands within the platform. Brands are independent entities that can be associated with products and managed by administrators or authorized users.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 Brand listing (`GET /api/v1/brands`) is public. Brand management endpoints require Bearer token authentication.

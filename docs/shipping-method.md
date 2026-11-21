@@ -2,7 +2,6 @@
 
 This documentation provides details for the Shipping Method API endpoints. Shipping methods define delivery options, prices, and estimated delivery times.
 
-**Base URL:** `http://localhost:8080/api/v1/checkout/shipping-method` (Public)
 **Admin URL:** `http://localhost:8080/api/v1/admin/shipping-methods` (Admin)
 
 > [!NOTE]

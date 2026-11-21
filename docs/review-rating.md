@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Review Rating API endpoints. The API supports creating, retrieving, updating, and deleting product reviews and ratings within the platform. Reviews are associated with specific products and users, enabling a complete feedback system for e-commerce platforms.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Review Rating endpoints require Bearer token authentication. Include the access token in the Authorization header:

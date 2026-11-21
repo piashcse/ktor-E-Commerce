@@ -2,8 +2,6 @@
 
 This documentation provides details for the Shipping Address API endpoints. The API supports managing multiple saved shipping addresses for authenticated users.
 
-**Base URL:** `http://localhost:8080/api/v1/checkout/shipping-address`
-
 > [!NOTE]
 > Shipping addresses are nested under the **Checkout** module. There is no standalone `/shipping-address` prefix — all endpoints below live under `/api/v1/checkout/shipping-address` (see `CheckoutRoutes.kt`).
 

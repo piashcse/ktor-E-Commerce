@@ -2,8 +2,6 @@
 
 Omnichannel pickup, in-store sales and nearby store discovery.
 
-**Base URL:** `http://localhost:8080`
-
 ## Store locator
 
 **`GET /api/v1/stores?lat=23.81&lng=90.41&radiusKm=10&limit=20`**
@@ -124,7 +122,6 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 - Returns `201 Created` with the order.
 
 **`GET /api/v1/seller/pos/sales`** lists the seller’s POS sales with pagination.
-
 
 ## POS cash-drawer sessions
 

@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Authentication API endpoints. The API supports user registration, login, password management, token refresh, email verification, and account security features.
 
-**Base URL:** `http://localhost:8080`
-
 ### Auth Endpoints
 
 | Method | Endpoint | Description | Authentication Required |
@@ -853,7 +851,6 @@ All passwords must meet the following criteria:
 - Changing user types should be done carefully to maintain system security
 - Deactivation should be used for temporary account suspension
 - Regular monitoring of user type changes helps maintain security
-
 
 ## API Keys
 

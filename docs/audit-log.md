@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Audit Log API endpoints. The API provides a centralized, immutable record of all administrative actions for compliance monitoring, security auditing, and operational troubleshooting.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Audit Log endpoints require `ADMIN` role.

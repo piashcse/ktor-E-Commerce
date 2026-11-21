@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Profile API endpoints. The API supports retrieving user profile information, updating profile details, and uploading profile images for authenticated users.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Profile endpoints require Bearer token authentication. Include the access token in the Authorization header:

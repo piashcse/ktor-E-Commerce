@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Order API endpoints. Tax is resolved per item from `tax_rule` (country/category) with a 5% fallback. The API supports creating, retrieving, and updating orders, with a full audit trail for status changes.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Order endpoints require Bearer token authentication.

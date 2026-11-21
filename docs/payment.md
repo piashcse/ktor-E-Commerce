@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Payment API endpoints. The API supports creating and retrieving payments within the platform. Payments are associated with specific orders and support various payment methods for transaction management.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 All Payment endpoints require Bearer token authentication. Include the access token in the Authorization header:

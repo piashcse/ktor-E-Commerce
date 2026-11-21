@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Shop API endpoints. The API supports creating, retrieving, updating, and deleting shops within the platform. Shops are associated with specific categories and can be managed by administrators or authorized users.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 Most Shop endpoints require Bearer token authentication. Include the access token in the Authorization header:

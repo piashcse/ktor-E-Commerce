@@ -2,8 +2,6 @@
 
 Storefront content pages, per-entity SEO metadata, XML sitemap and robots policy.
 
-**Base URL:** `http://localhost:8080`
-
 ## CMS pages
 
 Pages are addressed by a lowercase slug.

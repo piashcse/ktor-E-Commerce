@@ -2,8 +2,6 @@
 
 Recurring plans, invoices and download entitlements for digital products.
 
-**Base URL:** `http://localhost:8080`
-
 ## Plans
 
 A plan is attached to a digital product and bills monthly or yearly.

@@ -3,8 +3,6 @@
 Public endpoints for browsing shops. No authentication is required. Shop management and admin
 approval lives in [Shop API](shop.md).
 
-**Base URL:** `http://localhost:8080`
-
 ## Endpoints
 
 | Method | Endpoint | Description |

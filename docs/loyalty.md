@@ -2,8 +2,6 @@
 
 A unified wallet for loyalty points, store credit, referral rewards and gift cards.
 
-**Base URL:** `http://localhost:8080`
-
 All endpoints require Bearer authentication.
 
 ## Endpoints

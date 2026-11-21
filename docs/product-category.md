@@ -2,8 +2,6 @@
 
 This documentation provides comprehensive details for the Product Category API endpoints. The API supports creating, retrieving, updating, and deleting product categories within the platform. Product categories can have sub-categories and are managed by administrators or authorized users.
 
-**Base URL:** `http://localhost:8080`
-
 ## Authentication
 
 This documentation provides comprehensive details for the Product Category API endpoints. The

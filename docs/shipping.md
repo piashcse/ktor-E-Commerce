@@ -2,8 +2,6 @@
 
 Carrier rate quotes, label purchase, per-line fulfillment, and tracking webhooks.
 
-**Base URL:** `http://localhost:8080`
-
 All endpoints except the tracking webhook require Bearer authentication. A customer may read
 their own order's shipments; sellers may quote and purchase labels for their shop; admins may do
 both for any order.

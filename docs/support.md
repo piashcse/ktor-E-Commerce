@@ -2,8 +2,6 @@
 
 Customer support with threaded replies, internal notes, assignment, priorities and resolution.
 
-**Base URL:** `http://localhost:8080`
-
 ## Customer flow
 
 **`POST /api/v1/support/tickets`**
@@ -128,7 +126,6 @@ The first admin reply records `firstResponseAt`.
 
 This is polling-based chat: clients fetch the ticket thread and post replies. No WebSocket channel is
 required.
-
 
 ## Attachments
 
