@@ -66,14 +66,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created product category |
-| `name` | string | Name of the product category |
-| `subCategories` | array | Array of sub-categories (empty for new categories) |
-
 ---
 
 ### 2. Get Product Categories
@@ -125,15 +117,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product category objects |
-| `data[].id` | string | Unique identifier for the product category |
-| `data[].name` | string | Name of the product category |
-| `data[].subCategories` | array | Array of sub-categories associated with the category |
-
 ---
 
 ### 3. Update Product Category
@@ -180,14 +163,6 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated product category |
-| `name` | string | Updated name of the product category |
-| `subCategories` | array | Array of sub-categories associated with the category |
-
 ---
 
 ### 4. Delete Product Category
@@ -222,12 +197,6 @@ curl -X 'DELETE' \
 ```json
 "75b44e08-2c94-438f-b500-b204c7c90cca"
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | string | ID of the deleted product category |
 
 ---
 

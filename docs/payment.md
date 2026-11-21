@@ -71,16 +71,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the payment |
-| `orderId` | string | UUID of the associated order |
-| `amount` | number | Payment amount |
-| `status` | string | Current payment status |
-| `paymentMethod` | string | Payment method used |
-
 ---
 
 ### 3. Get Payment by ID
@@ -121,16 +111,6 @@ curl -X 'GET' \
     "paymentMethod": "BANK_TRANSFER"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the payment |
-| `orderId` | string | UUID of the associated order |
-| `amount` | number | Payment amount |
-| `status` | string | Current payment status |
-| `paymentMethod` | string | Payment method used |
 
 ---
 
@@ -177,18 +157,6 @@ curl -X 'GET' \
   }
 ]
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of payment objects |
-| `data[].id` | string | Unique identifier for the payment |
-| `data[].orderId` | string | UUID of the associated order |
-| `data[].amount` | number | Payment amount |
-| `data[].status` | string | Current payment status |
-| `data[].paymentMethod` | string | Payment method used |
-| `data[].transactionId` | string | Transaction reference ID (nullable) |
 
 #### Notes
 

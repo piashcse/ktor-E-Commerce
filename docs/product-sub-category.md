@@ -71,14 +71,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created product sub category |
-| `categoryId` | string | UUID of the associated product category |
-| `name` | string | Name of the product sub category |
-
 ---
 
 ### 2. Get Product Sub Categories
@@ -119,15 +111,6 @@ curl -X 'GET' \
   ]
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product sub category objects |
-| `data[].id` | string | Unique identifier for the product sub category |
-| `data[].categoryId` | string | UUID of the associated product category |
-| `data[].name` | string | Name of the product sub category |
 
 ---
 
@@ -175,14 +158,6 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated product sub category |
-| `categoryId` | string | UUID of the associated product category |
-| `name` | string | Updated name of the product sub category |
-
 ---
 
 ### 4. Delete Product Sub Category
@@ -219,12 +194,6 @@ curl -X 'DELETE' \
   "message": "Subcategory deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 

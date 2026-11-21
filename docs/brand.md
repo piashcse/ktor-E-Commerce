@@ -63,13 +63,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created brand |
-| `name` | string | Name of the brand |
-
 ---
 
 ### 2. Get Brands
@@ -119,14 +112,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of brand objects |
-| `data[].id` | string | Unique identifier for the brand |
-| `data[].name` | string | Name of the brand |
-
 ---
 
 ### 3. Update Brand
@@ -171,13 +156,6 @@ curl -X 'PUT' \
   }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated brand |
-| `name` | string | Updated name of the brand |
 
 ---
 
@@ -244,12 +222,6 @@ curl -X 'DELETE' \
   "message": "Brand deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 

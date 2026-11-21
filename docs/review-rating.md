@@ -82,17 +82,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of review objects |
-| `data[].id` | string | Unique identifier for the review |
-| `data[].userId` | string | UUID of the user who created the review |
-| `data[].productId` | string | UUID of the reviewed product |
-| `data[].reviewText` | string | Text content of the review |
-| `data[].rating` | number | Numerical rating (typically 1-5) |
-
 ---
 
 ### 2. Create Review
@@ -144,16 +133,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created review |
-| `userId` | string | UUID of the user who created the review |
-| `productId` | string | UUID of the reviewed product |
-| `reviewText` | string | Text content of the review |
-| `rating` | number | Numerical rating for the product |
-
 ---
 
 ### 3. Update Review
@@ -203,16 +182,6 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated review |
-| `userId` | string | UUID of the user who created the review |
-| `productId` | string | UUID of the reviewed product |
-| `reviewText` | string | Updated review text content |
-| `rating` | number | Updated numerical rating |
-
 ---
 
 ### 4. Delete Review
@@ -249,12 +218,6 @@ curl -X 'DELETE' \
   "message": "Review deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 

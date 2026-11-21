@@ -77,21 +77,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of policy objects |
-| `data[].id` | string | Unique identifier for the policy |
-| `data[].type` | string | Policy type (PRIVACY_POLICY, TERMS_CONDITIONS) |
-| `data[].title` | string | Title of the policy |
-| `data[].content` | string | Full content of the policy |
-| `data[].version` | string | Version number of the policy |
-| `data[].effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data[].isActive` | boolean | Whether the policy is currently active |
-| `data[].createdAt` | string | ISO 8601 timestamp of creation |
-| `data[].updatedAt` | string | ISO 8601 timestamp of last update |
-
 ---
 
 ### 2. Get Policy by Type
@@ -137,23 +122,7 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Full content of the policy |
-| `data.version` | string | Version number of the policy |
-| `data.effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data.isActive` | boolean | Whether the policy is currently active |
-| `data.createdAt` | string | ISO 8601 timestamp of creation |
-| `data.updatedAt` | string | ISO 8601 timestamp of last update |
-
 ---
-
-
 
 ### 4. Create Policy
 
@@ -211,21 +180,7 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the created policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Full content of the policy |
-| `data.version` | string | Version number of the policy |
-| `data.effectiveDate` | string | ISO 8601 date when policy becomes effective |
-| `data.isActive` | boolean | Whether the policy is currently active (defaults to true) |
-
 ---
-
-
 
 ### 6. Get Policy History
 
@@ -269,18 +224,6 @@ curl -X 'GET' \
   }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the deactivated policy |
-| `data.type` | string | Policy type |
-| `data.title` | string | Title of the policy |
-| `data.content` | string | Content of the policy |
-| `data.version` | string | Version number |
-| `data.effectiveDate` | string | Effective date |
-| `data.isActive` | boolean | Whether the policy is active (will be false) |
 
 ---
 
@@ -339,17 +282,6 @@ curl -X 'POST' \
   }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created consent record |
-| `userId` | string | UUID of the user who provided consent |
-| `policyId` | string | UUID of the policy that was consented to |
-| `ipAddress` | string | IP address from which consent was given |
-| `userAgent` | string | Browser user agent when consent was provided |
-| `consentedAt` | string | ISO 8601 timestamp when consent was recorded |
 
 ---
 

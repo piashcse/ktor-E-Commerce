@@ -67,13 +67,6 @@ curl -X 'POST' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created shop category |
-| `name` | string | Name of the shop category |
-
 ---
 
 ### 2. Get Shop Categories
@@ -123,18 +116,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop category objects |
-| `data[].id` | string | Unique identifier for the shop category |
-| `data[].name` | string | Name of the shop category |
-| `metadata` | object | Pagination metadata |
-| `metadata.totalCount` | number | Total number of items |
-| `metadata.limit` | number | Limit applied |
-| `metadata.offset` | number | Offset applied |
-
 ---
 
 ### 3. Update Shop Category
@@ -180,13 +161,6 @@ curl -X 'PUT' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated shop category |
-| `name` | string | Updated name of the shop category |
-
 ---
 
 ### 4. Delete Shop Category
@@ -223,12 +197,6 @@ curl -X 'DELETE' \
   "message": "Shop category deleted successfully"
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `message` | string | Delete acknowledgement |
 
 ---
 

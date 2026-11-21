@@ -62,20 +62,6 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `userId` | string | Unique identifier for the user |
-| `firstName` | string | User's first name |
-| `lastName` | string | User's last name |
-| `mobile` | string | User's mobile phone number |
-| `faxNumber` | string | User's fax number |
-| `streetAddress` | string | User's street address |
-| `city` | string | User's city |
-| `postCode` | string | User's postal code |
-| `gender` | string | User's gender |
-
 ---
 
 ### 2. Update User Profile
@@ -171,12 +157,6 @@ curl -X 'POST' \
 ```json
 "/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| (root) | string | Public URL of the uploaded profile image |
 
 ---
 
