@@ -30,7 +30,6 @@ theme:
 nav:
   - Home: index.md
   - API Reference:
-      - Endpoint Index (all): endpoints.md
       - Auth: auth.md
       - Users, Roles & Permissions: rbac.md
       - Profile: profile.md
@@ -80,8 +79,6 @@ nav:
       - Dashboard: dashboard.md
       - Analytics: analytics.md
       - Audit Log: audit-log.md
-  - Testing & Coverage: testing.md
-  - Roadmap: roadmap.md
   - Changelog: changelog.md
 
 repo_url: https://github.com/piashcse/ktor-ecommerce

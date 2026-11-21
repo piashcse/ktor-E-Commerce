@@ -12,9 +12,8 @@ scalable, and efficient service for handling your e-commerce needs.
 
 Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery for frontend developers and testers.
 
-For a plain-text, always-current list of every operation (method, path, description and access
-level), see the [Complete API Endpoint Index](endpoints.md). It is generated from the same OpenAPI
-document as Swagger UI.
+Every module has its own API page under **API Reference**, with methods, paths, access rules and
+request/response examples. Swagger UI remains the live contract generated from the route tree.
 
 <p align="center">
   <img width="100%" height="40%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/swagger.gif" />

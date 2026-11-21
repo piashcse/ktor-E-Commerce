@@ -266,7 +266,7 @@ Shared utilities: `utils/common/Hashing.kt` and `Iterable<String>.entityIDs(...)
 
 - `./gradlew build` passes: **637 tests, 0 failures**.
 - `mkdocs build --strict` passes.
-- The endpoint index documents **464 operations / 47 tags**, including the 16 RBAC operations.
+- The module API pages and Swagger UI cover **464 operations / 47 tags**, including the 16 RBAC operations.
 - `./gradlew detekt` reports only the four pre-existing structural warnings.
 - `V66` was applied against a fresh PostgreSQL schema; seeds produced 25 permissions, 21 roles and 98 role-permission links. `V67` adds `b2b:manage` and two role links (26 permissions, 100 links).
 - `platform:admin` intentionally excludes `feature_flag:manage`.

@@ -144,12 +144,6 @@
 # report: build/reports/jacoco/test/html/index.html
 ```
 
-See [Testing & Coverage](docs/testing.md) for the test pyramid, local database setup, thresholds
-and known gaps.
-
-See the [Product Roadmap](docs/roadmap.md) for the prioritised list of remaining
-e-commerce capabilities and the PR-per-feature branch plan.
-
 ## Architecture
 
 <p align="center">
@@ -459,9 +453,9 @@ The API is organized into the following modules:
 - **Audit Log** - Admin audit trail and activity tracking
 - **Health** - Liveness and readiness probes
 
-See the **[complete endpoint index](docs/endpoints.md)** for all **464** operations with
-method, path, description and access level. It mirrors the same OpenAPI document
-that powers Swagger UI.
+Each module has its own page under [`docs/`](docs/index.md) with its **464** operations,
+methods, paths, access levels and request/response examples. Those pages mirror the same
+OpenAPI document that powers Swagger UI.
 
 ### 🌐 Swagger/OpenAPI
 
@@ -469,7 +463,7 @@ Interactive API documentation is available via Swagger UI at `http://localhost:8
 
 > **API contract note:** common operations are documented below as `<details>` blocks with
 > Description, Curl, Request URL and Response. The generated specification currently exposes
-> 464 operations; the [endpoint index](docs/endpoints.md) documents all 464 operations.
+> 464 operations; the module pages under [`docs/`](docs/index.md) document the same surface.
 > Success responses return data directly and errors use the `ApiError` shape; some older
 > examples may still show a legacy `data`/`message` wrapper, so use the generated blocks and
 > Swagger as the canonical contract.
