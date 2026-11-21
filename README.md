@@ -9162,6 +9162,7 @@ http://localhost:8080/api/v1/admin/products/{id}/tax-class
 {"message":"Product tax class updated"}
 ```
 </details>
+
 ### FRAUD / RISK
 
 <details>
@@ -9488,6 +9489,7 @@ http://localhost:8080/api/v1/admin/chargebacks/{id}
 {"message":"ok"}
 ```
 </details>
+
 ### LOYALTY / WALLET
 
 <details>
@@ -9712,6 +9714,7 @@ http://localhost:8080/api/v1/admin/wallets/{userId}/credit
 {"creditBalance":"25.00","pointsBalance":0,"referralCode":"REF12345"}
 ```
 </details>
+
 ### LOCALIZATION
 
 <details>
@@ -9831,6 +9834,7 @@ http://localhost:8080/api/v1/admin/products/{id}/translations/{locale}
 {"message":"ok"}
 ```
 </details>
+
 ### ANALYTICS
 
 <details>
@@ -9927,6 +9931,7 @@ http://localhost:8080/api/v1/admin/analytics/products?startDate=2026-05-01&endDa
 {"products":[{"productId":"p-1","views":100,"purchases":5}]}
 ```
 </details>
+
 ### SELLER TOOLS
 
 <details>
@@ -10263,6 +10268,7 @@ http://localhost:8080/api/v1/seller/commission
 {"rate":"3.00","source":"rule"}
 ```
 </details>
+
 ### SUBSCRIPTIONS / DIGITAL
 
 <details>
@@ -10570,6 +10576,7 @@ http://localhost:8080/api/v1/library/{token}/download
 {"downloadUrl":"https://downloads.example/pack.zip","remainingDownloads":4}
 ```
 </details>
+
 ### B2B QUOTES / PO / NET TERMS
 
 <details>
@@ -11040,6 +11047,7 @@ http://localhost:8080/api/v1/admin/b2b/purchase-orders
 {"data":[{"id":"po-1"}]}
 ```
 </details>
+
 ### OMNICHANNEL / BOPIS / POS
 
 <details>
@@ -11303,6 +11311,7 @@ http://localhost:8080/api/v1/seller/pos/sales
 {"orderId":"order-uuid","fulfillmentType":"POS","total":"20.00"}
 ```
 </details>
+
 ### CMS / SEO / SITEMAP
 
 <details>
@@ -11541,6 +11550,7 @@ http://localhost:8080/robots.txt
 User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml
 ```
 </details>
+
 ### SUPPORT TICKETS
 
 <details>
