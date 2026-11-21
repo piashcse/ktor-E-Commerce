@@ -81,7 +81,8 @@ nav:
       - Audit Log: audit-log.md
   - Changelog: changelog.md
 
-repo_url: https://github.com/piashcse/ktor-ecommerce
+site_url: https://piashcse.github.io/ktor-E-Commerce/
+repo_url: https://github.com/piashcse/ktor-E-Commerce
 edit_uri: edit/main/docs/
 
 extra_css:
