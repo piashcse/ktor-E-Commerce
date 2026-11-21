@@ -1,4 +1,4 @@
-# Shipping Address API
+# Shipping Address
 
 This documentation provides details for the Shipping Address API endpoints. The API supports managing multiple saved shipping addresses for authenticated users.
 

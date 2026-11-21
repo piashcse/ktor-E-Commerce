@@ -1,4 +1,4 @@
-# Policy Consent API
+# Policy Consent
 
 Records and audits a user's consent to policy documents (privacy policy, terms, cookies, etc.).
 The admin view is read-only; consent is always written by the authenticated user.

@@ -1,4 +1,4 @@
-# Inventory API
+# Inventory
 
 This documentation provides comprehensive details for the Inventory API endpoints. The API supports managing inventory records for products.
 

@@ -1,4 +1,4 @@
-# Cart API
+# Cart
 
 This documentation provides comprehensive details for the Cart API endpoints. The API supports adding products to cart, retrieving cart items, updating quantities, and removing items from the shopping cart. All cart operations are user-specific and require authentication to ensure cart data privacy and security.
 

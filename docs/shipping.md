@@ -1,4 +1,4 @@
-# Shipping & Carrier API
+# Shipping & Carrier
 
 Carrier rate quotes, label purchase, per-line fulfillment, and tracking webhooks.
 

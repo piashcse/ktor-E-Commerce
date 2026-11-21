@@ -1,4 +1,4 @@
-# Shop API
+# Shop
 
 This documentation provides comprehensive details for the Shop API endpoints. The API supports creating, retrieving, updating, and deleting shops within the platform. Shops are associated with specific categories and can be managed by administrators or authorized users.
 

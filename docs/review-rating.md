@@ -1,4 +1,4 @@
-# Review Rating API
+# Review Rating
 
 This documentation provides comprehensive details for the Review Rating API endpoints. The API supports creating, retrieving, updating, and deleting product reviews and ratings within the platform. Reviews are associated with specific products and users, enabling a complete feedback system for e-commerce platforms.
 

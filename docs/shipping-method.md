@@ -1,4 +1,4 @@
-# Shipping Method API
+# Shipping Method
 
 This documentation provides details for the Shipping Method API endpoints. Shipping methods define delivery options, prices, and estimated delivery times.
 

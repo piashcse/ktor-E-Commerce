@@ -1,4 +1,4 @@
-# Payment API
+# Payment
 
 This documentation provides comprehensive details for the Payment API endpoints. The API supports creating and retrieving payments within the platform. Payments are associated with specific orders and support various payment methods for transaction management.
 

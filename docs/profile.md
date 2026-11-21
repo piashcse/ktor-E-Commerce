@@ -1,4 +1,4 @@
-# Profile API
+# Profile
 
 This documentation provides comprehensive details for the Profile API endpoints. The API supports retrieving user profile information, updating profile details, and uploading profile images for authenticated users.
 

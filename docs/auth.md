@@ -1,4 +1,4 @@
-# Authentication API
+# Authentication
 
 This documentation provides comprehensive details for the Authentication API endpoints. The API supports user registration, login, password management, token refresh, email verification, and account security features.
 
