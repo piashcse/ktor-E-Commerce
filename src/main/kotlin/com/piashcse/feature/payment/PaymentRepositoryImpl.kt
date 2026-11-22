@@ -6,7 +6,6 @@ import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RiskDecision
 import com.piashcse.database.entities.*
-import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
@@ -20,25 +19,21 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.FraudBlockedException
 import com.piashcse.utils.validator.ValidationException
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
-import org.jetbrains.exposed.v1.core.less
-import org.jetbrains.exposed.v1.jdbc.update
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Payment ledger.
@@ -68,36 +63,6 @@ class PaymentRepositoryImpl(
             digitalDelivery,
             gatewayBreaker,
         )
-
-    /**
-     * Serializes payment creation per order inside this process. The database
-     * re-validation still protects against cross-instance races; a distributed
-     * lock/advisory lock is the next step for multi-instance deployments.
-     */
-    private val orderLocks = ConcurrentHashMap<String, Mutex>()
-    private val orderLockRefs = ConcurrentHashMap<String, AtomicInteger>()
-
-    private suspend fun <T> withOrderLock(
-        orderId: String,
-        block: suspend () -> T,
-    ): T {
-        val mutex = orderLocks.computeIfAbsent(orderId) { Mutex() }
-        orderLockRefs.computeIfAbsent(orderId) { AtomicInteger() }.incrementAndGet()
-        return try {
-            mutex.withLock { block() }
-        } finally {
-            if (orderLockRefs.computeIfAbsent(orderId) { AtomicInteger() }.decrementAndGet() <= 0) {
-                orderLocks.remove(orderId, mutex)
-                orderLockRefs.remove(orderId)
-            }
-        }
-    }
-
-    private fun Throwable.isUniqueViolation(): Boolean =
-        generateSequence(this) { it.cause }.any { t ->
-            val msg = (t.message ?: "").lowercase()
-            "duplicate" in msg || "unique" in msg || "23505" in msg
-        }
 
     private fun PaymentDAO.isPayable(): Boolean = status in listOf(PaymentStatus.PENDING, PaymentStatus.FAILED)
 
@@ -187,60 +152,15 @@ class PaymentRepositoryImpl(
         ipAddress: String?,
     ): PaymentResponse {
         val leaseOwner = UUID.randomUUID().toString()
-        if (!acquireChargeLock(paymentRequest.orderId, leaseOwner)) {
+        if (!PaymentChargeLocks.acquire(paymentRequest.orderId, leaseOwner)) {
             throw ConflictException("A payment for this order is already being processed")
         }
         return try {
-            withOrderLock(paymentRequest.orderId) {
+            PaymentChargeLocks.withLock(paymentRequest.orderId) {
                 createPaymentLocked(paymentRequest, callerUserId, ipAddress)
             }
         } finally {
-            runCatching { releaseChargeLock(paymentRequest.orderId, leaseOwner) }
-        }
-    }
-
-    private suspend fun acquireChargeLock(
-        orderId: String,
-        owner: String,
-    ): Boolean {
-        val existing = query { PaymentChargeLockDAO.find { PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable) }.firstOrNull() }
-        if (existing == null) {
-            return try {
-                query {
-                    PaymentChargeLockDAO.new {
-                        this.orderId = orderId.entityID(OrderTable)
-                        this.owner = owner
-                        this.lockedUntil = currentUtc().plusMinutes(5)
-                    }
-                }
-                true
-            } catch (e: Exception) {
-                if (e.isUniqueViolation()) false else throw e
-            }
-        }
-        if (existing.lockedUntil.isAfter(currentUtc())) return false
-        return query {
-            PaymentChargeLockTable.update(
-                {
-                    (PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable)) and
-                        (PaymentChargeLockTable.lockedUntil less currentUtc())
-                },
-            ) {
-                it[PaymentChargeLockTable.owner] = owner
-                it[PaymentChargeLockTable.lockedUntil] = currentUtc().plusMinutes(5)
-            } > 0
-        }
-    }
-
-    private suspend fun releaseChargeLock(
-        orderId: String,
-        owner: String,
-    ) {
-        query {
-            PaymentChargeLockDAO.find {
-                (PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable)) and
-                    (PaymentChargeLockTable.owner eq owner)
-            }.forEach { it.delete() }
+            runCatching { PaymentChargeLocks.release(paymentRequest.orderId, leaseOwner) }
         }
     }
 
