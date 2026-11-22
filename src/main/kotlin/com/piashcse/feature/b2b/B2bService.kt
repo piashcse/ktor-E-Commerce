@@ -31,6 +31,7 @@ import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.SendEmailEvent
@@ -758,7 +759,7 @@ class B2bService {
                     }
                     DigitalDeliveryService().grantForOrderTx(order)
                     OutboxPublisher.enqueueTx(
-                        "PAYMENT",
+                        OutboxAggregate.PAYMENT,
                         payment.id.value,
                         PaymentCompletedEvent(
                             paymentId = payment.id.value,
@@ -800,7 +801,7 @@ class B2bService {
                 invoice.nextReminderAt = now.plusDays(7)
                 UserDAO.findById(invoice.buyerUserId.value)?.email?.takeIf { it.isNotBlank() }?.let { email ->
                     OutboxPublisher.enqueueTx(
-                        "B2B_INVOICE",
+                        OutboxAggregate.B2B_INVOICE,
                         invoice.id.value,
                         SendEmailEvent(
                             to = email,

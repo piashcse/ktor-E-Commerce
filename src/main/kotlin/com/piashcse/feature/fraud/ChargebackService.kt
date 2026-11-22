@@ -1,10 +1,13 @@
 package com.piashcse.feature.fraud
 
 import com.piashcse.constants.ChargebackStatus
+import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.ChargebackDAO
 import com.piashcse.database.entities.ChargebackTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.SellerBalanceAdjustmentDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.base.currentUtc
@@ -156,15 +159,15 @@ class ChargebackService {
                 // A lost dispute is a realised loss. Reverse the seller ledger
                 // and mark the payment so another refund cannot pay it twice.
                 PaymentDAO.findById(chargeback.paymentId.value)?.let { payment ->
-                    payment.status = com.piashcse.constants.PaymentStatus.REFUNDED
+                    payment.status = PaymentStatus.REFUNDED
                     payment.providerStatus = "chargeback-lost"
                 }
                 SellerPayoutDAO.find {
                     SellerPayoutTable.orderId eq chargeback.orderId
                 }.forEach { payout ->
-                    val alreadyPaid = payout.status == com.piashcse.constants.PayoutStatus.PAID.name
+                    val alreadyPaid = payout.status == PayoutStatus.PAID.name
                     if (alreadyPaid) {
-                        com.piashcse.database.entities.SellerBalanceAdjustmentDAO.new {
+                        SellerBalanceAdjustmentDAO.new {
                             this.sellerId = payout.sellerId
                             this.orderId = payout.orderId
                             amount = payout.payoutAmount.negate()
@@ -174,11 +177,11 @@ class ChargebackService {
                     } else {
                         payout.payoutAmount = java.math.BigDecimal.ZERO.setScale(2)
                         payout.commissionAmount = java.math.BigDecimal.ZERO.setScale(2)
-                        payout.status = com.piashcse.constants.PayoutStatus.REFUNDED.name
+                        payout.status = PayoutStatus.REFUNDED.name
                     }
                 }
                 OrderDAO.findById(chargeback.orderId.value)?.let { order ->
-                    order.paymentStatus = com.piashcse.constants.PaymentStatus.REFUNDED
+                    order.paymentStatus = PaymentStatus.REFUNDED
                 }
             }
             chargeback.toResponse()

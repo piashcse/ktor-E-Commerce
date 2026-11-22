@@ -18,6 +18,7 @@ import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.ProductReviewCreatedEvent
 import com.piashcse.event.ReviewReplyEvent
@@ -192,7 +193,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                     recalculateProductRating(reviewRating.productId)
                     val created = review.toResponseWithImages()
                     OutboxPublisher.enqueueTx(
-                        "PRODUCT",
+                        OutboxAggregate.PRODUCT,
                         created.productId,
                         ProductReviewCreatedEvent(
                             created.id,
@@ -315,7 +316,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 val response = review.toResponseWithImages()
                 response.userId?.let {
                     OutboxPublisher.enqueueTx(
-                        "PRODUCT",
+                        OutboxAggregate.PRODUCT,
                         response.productId,
                         ReviewReplyEvent(response.id, it, response.sellerReply.orEmpty()),
                     )

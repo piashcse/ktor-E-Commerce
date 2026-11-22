@@ -4,7 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
-import com.piashcse.event.OrderStatusChangedEvent
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.feature.config.StorefrontSettings
 import com.piashcse.feature.coupon.CouponLine
@@ -1001,7 +1001,7 @@ class OrderRepositoryImpl(
             logStatusChange(it.id.value, it.status, "Order placed", userId)
             // Durable: outbox row commits atomically; OutboxPoller relays (no ghost on rollback/retry).
             OutboxPublisher.enqueueTx(
-                "ORDER",
+                OutboxAggregate.ORDER,
                 it.id.value,
                 OrderPlacedEvent(
                     orderId = it.id.value,
@@ -1474,7 +1474,7 @@ class OrderRepositoryImpl(
                     logStatusChange(order.id.value, status, "Status updated by user", userId)
                 }
                 if (status in setOf(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.RECEIVED, OrderStatus.CANCELED)) {
-                    enqueueStatusChanged(order, fromStatus, status, order.trackingNumber)
+                    OrderEvents.statusChangedTx(order, fromStatus, status, order.trackingNumber)
                 }
                 order.toOrderResponse(
                     OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
@@ -1508,7 +1508,7 @@ class OrderRepositoryImpl(
 
                 val fromStatus = order.status
                 applyOrderCancellation(order, notes = reason, changedBy = userId)
-                enqueueStatusChanged(order, fromStatus, OrderStatus.CANCELED)
+                OrderEvents.statusChangedTx(order, fromStatus, OrderStatus.CANCELED)
                 order.toOrderResponse(
                     OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                     includeSensitive = userType == UserType.CUSTOMER,
@@ -1545,7 +1545,7 @@ class OrderRepositoryImpl(
                 order.shippingDate = currentUtc()
                 order.trackingNumber = trackingNumber
                 logStatusChange(order.id.value, OrderStatus.SHIPPED, "Shipped via $trackingNumber", userId)
-                enqueueStatusChanged(order, fromStatus, OrderStatus.SHIPPED, trackingNumber)
+                OrderEvents.statusChangedTx(order, fromStatus, OrderStatus.SHIPPED, trackingNumber)
                 order.toOrderResponse(
                     OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                     includeSensitive = false,
@@ -1560,28 +1560,6 @@ class OrderRepositoryImpl(
         notes: String?,
         changedBy: String?,
     ) = OrderCancellation.cancel(order, notes, changedBy)
-
-    private fun enqueueStatusChanged(
-        order: OrderDAO,
-        from: OrderStatus,
-        to: OrderStatus,
-        trackingNumber: String? = null,
-    ) {
-        if (from == to) return
-        OutboxPublisher.enqueueTx(
-            "ORDER",
-            order.id.value,
-            OrderStatusChangedEvent(
-                orderId = order.id.value,
-                userId = order.userId.value,
-                email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                orderNumber = order.orderNumber,
-                fromStatus = from.name,
-                toStatus = to.name,
-                trackingNumber = trackingNumber,
-            ),
-        )
-    }
 
     override suspend fun getSellerOrders(
         userId: String,

@@ -7,6 +7,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.constants.defaultPermissions
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.common.ApiErrorCode
 import com.piashcse.utils.validator.ForbiddenException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -15,6 +16,21 @@ import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.path
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+
+private suspend fun ApplicationCall.respondAuthError(
+    status: HttpStatusCode,
+    message: String,
+) {
+    respond(
+        status,
+        ApiError.of(
+            message = message,
+            code = if (status == HttpStatusCode.Unauthorized) ApiErrorCode.UNAUTHORIZED else ApiErrorCode.FORBIDDEN,
+            status = status,
+            requestId = requestId(),
+        ),
+    )
+}
 
 val RoleAuthorizationPlugin =
     createRouteScopedPlugin(
@@ -30,15 +46,7 @@ val RoleAuthorizationPlugin =
 
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ApiError.of(
-                        message = "Missing or invalid token",
-                        code = "UNAUTHORIZED",
-                        status = HttpStatusCode.Unauthorized,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Unauthorized, "Missing or invalid token")
                 return@on
             }
 
@@ -47,15 +55,7 @@ val RoleAuthorizationPlugin =
                 // "any API key". There is no route permission to compare the
                 // key's scopes against here, so fail closed.
                 if (principal.isApiKey) {
-                    call.respond(
-                        HttpStatusCode.Forbidden,
-                        ApiError.of(
-                            message = "API keys cannot access this session route",
-                            code = "FORBIDDEN",
-                            status = HttpStatusCode.Forbidden,
-                            requestId = call.requestId(),
-                        ),
-                    )
+                    call.respondAuthError(HttpStatusCode.Forbidden, "API keys cannot access this session route")
                 }
                 return@on
             }
@@ -78,15 +78,7 @@ val RoleAuthorizationPlugin =
                     }
                 }
             if (!hasAccess) {
-                call.respond(
-                    HttpStatusCode.Forbidden,
-                    ApiError.of(
-                        message = "Permission Denied: Insufficient privileges",
-                        code = "FORBIDDEN",
-                        status = HttpStatusCode.Forbidden,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Forbidden, "Permission Denied: Insufficient privileges")
                 return@on
             }
         }
@@ -109,28 +101,12 @@ val PermissionAuthorizationPlugin =
             if (call.response.isCommitted) return@on
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ApiError.of(
-                        message = "Missing or invalid token",
-                        code = "UNAUTHORIZED",
-                        status = HttpStatusCode.Unauthorized,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Unauthorized, "Missing or invalid token")
                 return@on
             }
             if (required.isNotEmpty() && required.none { principal.hasPermission(it) }) {
                 val message = "Permission Denied: missing ${required.joinToString { it.name }}"
-                call.respond(
-                    HttpStatusCode.Forbidden,
-                    ApiError.of(
-                        message = message,
-                        code = "FORBIDDEN",
-                        status = HttpStatusCode.Forbidden,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Forbidden, message)
             }
         }
     }
@@ -233,15 +209,7 @@ val ShopMemberAuthorizationPlugin =
             if (call.response.isCommitted) return@on
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(
-                    HttpStatusCode.Unauthorized,
-                    ApiError.of(
-                        message = "Missing or invalid token",
-                        code = "UNAUTHORIZED",
-                        status = HttpStatusCode.Unauthorized,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Unauthorized, "Missing or invalid token")
                 return@on
             }
             val membershipKey = "shopmember:${principal.userId}"
@@ -258,15 +226,7 @@ val ShopMemberAuthorizationPlugin =
             val scopeOk =
                 !principal.isApiKey || sellerScopeFor(call.request.path())?.let { principal.hasPermission(it) } != false
             if (!allowed || !scopeOk) {
-                call.respond(
-                    HttpStatusCode.Forbidden,
-                    ApiError.of(
-                        message = "Permission Denied: seller access required",
-                        code = "FORBIDDEN",
-                        status = HttpStatusCode.Forbidden,
-                        requestId = call.requestId(),
-                    ),
-                )
+                call.respondAuthError(HttpStatusCode.Forbidden, "Permission Denied: seller access required")
             }
         }
     }

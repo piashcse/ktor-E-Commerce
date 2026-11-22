@@ -10,8 +10,10 @@ import com.piashcse.constants.RmaType
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RmaStatusChangedEvent
+import com.piashcse.feature.order.OrderSearch
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -91,7 +93,7 @@ class RmaService {
     ) {
         if (fromStatus == toStatus) return
         OutboxPublisher.enqueueTx(
-            "RMA",
+            OutboxAggregate.RMA,
             rma.id.value,
             RmaStatusChangedEvent(
                 rmaId = rma.id.value,
@@ -210,17 +212,10 @@ class RmaService {
         from: java.time.Instant?,
         to: java.time.Instant?,
     ): PaginatedResponse<RmaResponse> =
-        query {
-            val matchingOrderIds =
-                search?.takeIf { it.isNotBlank() }?.let { term ->
-                    val pattern = "%${term.trim().lowercase()}%"
-                    OrderDAO.find {
-                        (OrderTable.orderNumber.lowerCase() like pattern) or
-                            (OrderTable.contactEmail.lowerCase() like pattern)
-                    }.map { it.id }
-                }
+        readQuery {
+            val matchingOrderIds = OrderSearch.matchingOrderIdsTx(search)
             if (matchingOrderIds != null && matchingOrderIds.isEmpty()) {
-                return@query com.piashcse.utils.common.emptyPage(limit, offset)
+                return@readQuery com.piashcse.utils.common.emptyPage(limit, offset)
             }
             val query = RmaTable.selectAll()
             status?.let { query.andWhere { RmaTable.status eq it } }

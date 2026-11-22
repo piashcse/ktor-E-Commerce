@@ -9,10 +9,12 @@ import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
+import com.piashcse.feature.order.OrderSearch
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.promotion.PromotionService
@@ -68,7 +70,7 @@ class RefundRequestRepositoryImpl(
         toStatus: String,
     ) {
         OutboxPublisher.enqueueTx(
-            "REFUND",
+            OutboxAggregate.REFUND,
             refund.id.value,
             RefundStatusChangedEvent(
                 refundId = refund.id.value,
@@ -775,17 +777,10 @@ class RefundRequestRepositoryImpl(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<RefundRequestResponse> =
-        query {
-            val matchingOrderIds =
-                search?.takeIf { it.isNotBlank() }?.let { term ->
-                    val pattern = "%${term.trim().lowercase()}%"
-                    OrderDAO.find {
-                        (OrderTable.orderNumber.lowerCase() like pattern) or
-                            (OrderTable.contactEmail.lowerCase() like pattern)
-                    }.map { it.id }
-                }
+        readQuery {
+            val matchingOrderIds = OrderSearch.matchingOrderIdsTx(search)
             if (matchingOrderIds != null && matchingOrderIds.isEmpty()) {
-                return@query emptyPage(limit, offset)
+                return@readQuery emptyPage(limit, offset)
             }
             RefundRequestTable.selectAll()
                 .also { q ->

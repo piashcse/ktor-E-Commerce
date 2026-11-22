@@ -260,17 +260,28 @@ class TaxService {
     fun apply(
         amount: BigDecimal,
         quote: TaxQuote,
-    ): TaxAmounts {
-        if (quote.exempt || quote.rate <= BigDecimal.ZERO || amount <= BigDecimal.ZERO) {
-            return TaxAmounts(amount, BigDecimal.ZERO.setScale(2), amount)
-        }
-        return if (quote.inclusive) {
-            val net = amount.divide(BigDecimal.ONE.add(quote.rate), 2, RoundingMode.HALF_UP)
-            val tax = amount.subtract(net).max(BigDecimal.ZERO)
-            TaxAmounts(net, Money.scale2(tax), amount)
-        } else {
-            val tax = Money.scale2(amount.multiply(quote.rate))
-            TaxAmounts(amount, tax, amount.add(tax))
+    ): TaxAmounts = applyTax(amount, quote)
+
+    companion object {
+        /**
+         * Pure tax calculation shared by [apply] and preview/quote builders.
+         * Keep this DB-free so it can be unit-tested without a database.
+         */
+        fun applyTax(
+            amount: BigDecimal,
+            quote: TaxQuote,
+        ): TaxAmounts {
+            if (quote.exempt || quote.rate <= BigDecimal.ZERO || amount <= BigDecimal.ZERO) {
+                return TaxAmounts(amount, BigDecimal.ZERO.setScale(2), amount)
+            }
+            return if (quote.inclusive) {
+                val net = amount.divide(BigDecimal.ONE.add(quote.rate), 2, RoundingMode.HALF_UP)
+                val tax = amount.subtract(net).max(BigDecimal.ZERO)
+                TaxAmounts(net, Money.scale2(tax), amount)
+            } else {
+                val tax = Money.scale2(amount.multiply(quote.rate))
+                TaxAmounts(amount, tax, amount.add(tax))
+            }
         }
     }
 

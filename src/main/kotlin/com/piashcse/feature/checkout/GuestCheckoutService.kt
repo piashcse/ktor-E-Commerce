@@ -28,6 +28,7 @@ import com.piashcse.feature.coupon.toSnapshot
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.tax.TaxTotals
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.GuestCheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
@@ -123,9 +124,7 @@ class GuestCheckoutService(
 
             var subtotalUsd = BigDecimal.ZERO
             var subTotal = BigDecimal.ZERO
-            var tax = BigDecimal.ZERO
-            var exclusiveTax = BigDecimal.ZERO
-            var taxInclusive = false
+            var taxTotals = TaxTotals()
             var itemCount = 0
             val shopsWithShipping = mutableSetOf<String>()
             val shopIds = mutableSetOf<String>()
@@ -194,10 +193,7 @@ class GuestCheckoutService(
                         categoryId = product.categoryId.value,
                         taxClassId = product.taxClassId?.value,
                     )
-                val amounts = taxService.apply(line, taxQuote)
-                taxInclusive = taxInclusive || taxQuote.inclusive
-                tax = tax.add(amounts.tax)
-                if (!taxQuote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+                taxTotals = taxTotals.add(line, taxQuote)
             }
 
             var shipping =
@@ -228,9 +224,7 @@ class GuestCheckoutService(
             // discounted line so the quote matches placeOrder (which does the
             // same in OrderRepositoryImpl.recalculateTaxes).
             if (discount > BigDecimal.ZERO && subTotal > BigDecimal.ZERO) {
-                tax = BigDecimal.ZERO
-                exclusiveTax = BigDecimal.ZERO
-                taxInclusive = false
+                taxTotals = TaxTotals()
                 request.items.forEach { item ->
                     val product = products[item.productId] ?: return@forEach
                     val variant =
@@ -245,26 +239,24 @@ class GuestCheckoutService(
                             categoryId = product.categoryId.value,
                             taxClassId = product.taxClassId?.value,
                         )
-                    val amounts = taxService.apply(line.subtract(share).max(BigDecimal.ZERO), quote)
-                    taxInclusive = taxInclusive || quote.inclusive
-                    tax = tax.add(amounts.tax)
-                    if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+                    taxTotals = taxTotals.add(line.subtract(share).max(BigDecimal.ZERO), quote)
                 }
             }
 
+            val totals = taxTotals.normalized()
             val total =
                 Money.scale2(
-                    subTotal.add(shipping).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
+                    subTotal.add(shipping).add(totals.exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
                 )
             CheckoutSummaryResponse(
                 subTotal = subTotal.toPlainString(),
                 shippingCost = shipping.toPlainString(),
-                taxAmount = tax.toPlainString(),
+                taxAmount = totals.tax.toPlainString(),
                 discountAmount = discount.toPlainString(),
                 total = total.toPlainString(),
                 itemCount = itemCount,
                 currency = currency,
-                taxInclusive = taxInclusive,
+                taxInclusive = totals.inclusive,
                 couponCode = couponCode,
                 couponValid = couponCode?.let { couponError == null },
                 couponError = couponError,

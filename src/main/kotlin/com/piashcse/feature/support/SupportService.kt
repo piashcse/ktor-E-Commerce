@@ -16,6 +16,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.service.AppMetrics
@@ -176,7 +177,7 @@ class SupportService {
                 }
             AppMetrics.supportTicketsOpened.increment()
             OutboxPublisher.enqueueTx(
-                "SUPPORT",
+                OutboxAggregate.SUPPORT,
                 ticket.id.value,
                 SendEmailEvent(
                     to = DotEnvConfig.supportEmail,
@@ -240,7 +241,7 @@ class SupportService {
             }
             ticket.lastMessageAt = now
             OutboxPublisher.enqueueTx(
-                "SUPPORT",
+                OutboxAggregate.SUPPORT,
                 ticket.id.value,
                 SendEmailEvent(
                     to = DotEnvConfig.supportEmail,
@@ -416,7 +417,7 @@ class SupportService {
             if (!request.isInternal) {
                 UserDAO.findById(ticket.userId.value)?.email?.takeIf { it.isNotBlank() }?.let { email ->
                     OutboxPublisher.enqueueTx(
-                        "SUPPORT",
+                        OutboxAggregate.SUPPORT,
                         ticket.id.value,
                         SendEmailEvent(
                             to = email,

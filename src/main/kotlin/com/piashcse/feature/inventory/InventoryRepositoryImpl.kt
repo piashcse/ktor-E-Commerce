@@ -5,6 +5,7 @@ import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.event.BackInStockEvent
 import com.piashcse.event.LowStockEvent
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
@@ -86,7 +87,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         newStock: Int,
     ) {
         if (previousStock <= 0 && newStock > 0) {
-            OutboxPublisher.enqueueTx("PRODUCT", productId, BackInStockEvent(productId, variantId))
+            OutboxPublisher.enqueueTx(OutboxAggregate.PRODUCT, productId, BackInStockEvent(productId, variantId))
         }
     }
 
@@ -152,7 +153,7 @@ class InventoryRepositoryImpl : InventoryRepository {
             val previousStatus = InventoryStatus.fromStockLevel(previousStock, inventory.minimumStockLevel)
             if (inventory.status.needsAttention && inventory.status != previousStatus) {
                 OutboxPublisher.enqueueTx(
-                    "PRODUCT",
+                    OutboxAggregate.PRODUCT,
                     product.id.value,
                     LowStockEvent(
                         product.id.value,
@@ -247,7 +248,7 @@ class InventoryRepositoryImpl : InventoryRepository {
             val previousStatus = InventoryStatus.fromStockLevel(previousStock, inventory.minimumStockLevel)
             if (inventory.status.needsAttention && inventory.status != previousStatus) {
                 OutboxPublisher.enqueueTx(
-                    "PRODUCT",
+                    OutboxAggregate.PRODUCT,
                     product.id.value,
                     LowStockEvent(
                         product.id.value,

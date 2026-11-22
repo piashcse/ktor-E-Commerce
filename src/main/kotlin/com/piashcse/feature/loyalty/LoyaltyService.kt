@@ -148,7 +148,7 @@ class LoyaltyService {
             WalletLedgerDAO.find {
                 (WalletLedgerTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
                     (WalletLedgerTable.type eq WalletEntryType.POINTS_EARN) and
-                    (WalletLedgerTable.referenceType eq "ORDER") and
+                    (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                     (WalletLedgerTable.referenceId eq orderId)
             }.any()
         if (!alreadyAwarded) {
@@ -165,7 +165,7 @@ class LoyaltyService {
                     this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
                     this.type = WalletEntryType.POINTS_EARN
                     this.pointsDelta = points
-                    this.referenceType = "ORDER"
+                    this.referenceType = WalletReferenceType.ORDER
                     this.referenceId = orderId
                     this.note = "Points earned on order $orderId"
                 }
@@ -215,7 +215,7 @@ class LoyaltyService {
         val alreadyReversed =
             WalletLedgerDAO.find {
                 (WalletLedgerTable.userId eq user) and
-                    (WalletLedgerTable.referenceType eq "ORDER") and
+                    (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                     (WalletLedgerTable.referenceId eq orderId) and
                     (WalletLedgerTable.type inList listOf(WalletEntryType.POINTS_REVERSAL, WalletEntryType.CREDIT_REVERSAL))
             }.any()
@@ -225,7 +225,7 @@ class LoyaltyService {
         val entries =
             WalletLedgerDAO.find {
                 (WalletLedgerTable.userId eq user) and
-                    (WalletLedgerTable.referenceType eq "ORDER") and
+                    (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                     (WalletLedgerTable.referenceId eq orderId)
             }.toList()
         var pointsToRestore = 0
@@ -245,7 +245,7 @@ class LoyaltyService {
         val alreadyRestored =
             WalletLedgerDAO.find {
                 (WalletLedgerTable.userId eq user) and
-                    (WalletLedgerTable.referenceType eq "ORDER_PARTIAL") and
+                    (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER_PARTIAL) and
                     (WalletLedgerTable.referenceId eq orderId)
             }.toList()
         pointsToRestore =
@@ -268,7 +268,7 @@ class LoyaltyService {
                 this.userId = user
                 this.type = WalletEntryType.POINTS_REVERSAL
                 this.pointsDelta = pointsToRestore
-                this.referenceType = "ORDER"
+                this.referenceType = WalletReferenceType.ORDER
                 this.referenceId = orderId
                 this.note = "Points restored after order reversal"
             }
@@ -279,7 +279,7 @@ class LoyaltyService {
                 this.userId = user
                 this.type = WalletEntryType.CREDIT_REVERSAL
                 this.creditDelta = creditToRestore
-                this.referenceType = "ORDER"
+                this.referenceType = WalletReferenceType.ORDER
                 this.referenceId = orderId
                 this.note = "Store credit restored after order reversal"
             }
@@ -290,7 +290,7 @@ class LoyaltyService {
                 this.userId = user
                 this.type = WalletEntryType.POINTS_REVERSAL
                 this.pointsDelta = 0
-                this.referenceType = "ORDER"
+                this.referenceType = WalletReferenceType.ORDER
                 this.referenceId = orderId
                 this.note = "Order reversal marker"
             }
@@ -333,7 +333,7 @@ class LoyaltyService {
             val orderEntries =
                 WalletLedgerDAO.find {
                     (WalletLedgerTable.userId eq user) and
-                        (WalletLedgerTable.referenceType eq "ORDER") and
+                        (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                         (WalletLedgerTable.referenceId eq orderId)
                 }.toList()
             val pointsUsd =
@@ -347,7 +347,7 @@ class LoyaltyService {
                 val alreadyRestored =
                     WalletLedgerDAO.find {
                         (WalletLedgerTable.userId eq user) and
-                            (WalletLedgerTable.referenceType eq "ORDER_PARTIAL") and
+                            (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER_PARTIAL) and
                             (WalletLedgerTable.referenceId eq orderId)
                     }.toList()
                 val pointsAlready =
@@ -371,7 +371,7 @@ class LoyaltyService {
                         this.userId = user
                         type = WalletEntryType.POINTS_REVERSAL
                         pointsDelta = points
-                        referenceType = "ORDER_PARTIAL"
+                        referenceType = WalletReferenceType.ORDER_PARTIAL
                         this.referenceId = orderId
                         note = "Partial refund $refundId"
                     }
@@ -382,7 +382,7 @@ class LoyaltyService {
                         this.userId = user
                         type = WalletEntryType.CREDIT_REVERSAL
                         creditDelta = credit
-                        referenceType = "ORDER_PARTIAL"
+                        referenceType = WalletReferenceType.ORDER_PARTIAL
                         this.referenceId = orderId
                         note = "Partial refund $refundId"
                     }
@@ -493,7 +493,7 @@ class LoyaltyService {
             this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
             this.type = WalletEntryType.POINTS_REDEEM
             this.pointsDelta = -points
-            this.referenceType = "ORDER"
+            this.referenceType = WalletReferenceType.ORDER
             this.referenceId = referenceId
             this.note = "Redeemed $points points"
         }
@@ -517,7 +517,7 @@ class LoyaltyService {
             this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
             this.type = WalletEntryType.CREDIT_REDEEM
             this.creditDelta = amountUsd.negate()
-            this.referenceType = "ORDER"
+            this.referenceType = WalletReferenceType.ORDER
             this.referenceId = referenceId
             this.note = "Store credit used at checkout"
         }
@@ -666,7 +666,7 @@ class LoyaltyService {
                 this.userId = account.userId
                 this.type = WalletEntryType.REFERRAL_BONUS
                 this.pointsDelta = referral.rewardPoints
-                this.referenceType = "REFERRAL"
+                this.referenceType = WalletReferenceType.REFERRAL
                 this.referenceId = referral.id.value
                 this.note = "Referral bonus"
             }
@@ -683,7 +683,7 @@ class LoyaltyService {
         WalletLedgerDAO.find {
             (WalletLedgerTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
                 (WalletLedgerTable.type eq type) and
-                (WalletLedgerTable.referenceType eq "ORDER") and
+                (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                 (WalletLedgerTable.referenceId eq referenceId)
         }.any()
 

@@ -10,6 +10,7 @@ import com.piashcse.database.entities.ReservationStatus
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
@@ -49,7 +50,7 @@ object OrderCompletion {
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.FINALIZED }
         OutboxPublisher.enqueueTx(
-            "PAYMENT",
+            OutboxAggregate.PAYMENT,
             payment.id.value,
             PaymentCompletedEvent(
                 paymentId = payment.id.value,

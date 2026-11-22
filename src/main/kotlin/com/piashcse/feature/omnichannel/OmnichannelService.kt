@@ -1,11 +1,17 @@
 package com.piashcse.feature.omnichannel
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PickupStatus
 import com.piashcse.constants.PosSessionStatus
+import com.piashcse.constants.ProductStatus
+import com.piashcse.constants.ScaStatus
+import com.piashcse.constants.ShopStatus
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
@@ -19,7 +25,9 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.database.entities.ProductVariantTable
+import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.TaxClassTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.WarehouseDAO
@@ -29,10 +37,12 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.database.entities.decrementStockAt
 import com.piashcse.database.entities.decrementStockFor
-import com.piashcse.event.OrderStatusChangedEvent
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderEvents
+import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderResponse
@@ -172,8 +182,8 @@ class OmnichannelService(
     ): List<StoreResponse> =
         query {
             val approvedShops =
-                com.piashcse.database.entities.ShopDAO.find {
-                    ShopTable.status eq com.piashcse.constants.ShopStatus.APPROVED
+                ShopDAO.find {
+                    ShopTable.status eq ShopStatus.APPROVED
                 }.map { it.id }.toSet()
             val rows =
                 WarehouseDAO.find {
@@ -196,7 +206,7 @@ class OmnichannelService(
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
             OrderTable.selectAll()
                 .andWhere {
-                    (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
+                    (OrderTable.shopId eq shopId.entityID(ShopTable)) and
                         (OrderTable.fulfillmentType eq FulfillmentType.PICKUP)
                 }
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
@@ -264,7 +274,7 @@ class OmnichannelService(
                 digitalDelivery.grantForOrderTx(order)
                 payment?.let {
                     OutboxPublisher.enqueueTx(
-                        "PAYMENT",
+                        OutboxAggregate.PAYMENT,
                         it.id.value,
                         PaymentCompletedEvent(
                             paymentId = it.id.value,
@@ -282,26 +292,15 @@ class OmnichannelService(
                 notes = "Pickup completed"
                 changedBy = sellerUserId.entityID(UserTable)
             }
-            OutboxPublisher.enqueueTx(
-                "ORDER",
-                order.id.value,
-                OrderStatusChangedEvent(
-                    orderId = order.id.value,
-                    userId = order.userId.value,
-                    email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                    orderNumber = order.orderNumber,
-                    fromStatus = fromStatus.name,
-                    toStatus = OrderStatus.RECEIVED.name,
-                ),
-            )
+            OrderEvents.statusChangedTx(order, fromStatus, OrderStatus.RECEIVED)
             order.toOrderResponse(includeSensitive = false)
         }
 
     private fun requireOperationalShop(shopId: String) {
         val shop =
-            com.piashcse.database.entities.ShopDAO.findById(shopId)
+            ShopDAO.findById(shopId)
                 ?: throw ValidationException("Shop not found")
-        if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+        if (shop.status != ShopStatus.APPROVED) {
             throw ForbiddenException("Shop is not operational")
         }
     }
@@ -341,7 +340,7 @@ class OmnichannelService(
     ): OrderDAO? =
         posIdempotencyKey(shopId, key)?.let { namespaced ->
             OrderDAO.find {
-                (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
+                (OrderTable.shopId eq shopId.entityID(ShopTable)) and
                     (OrderTable.fulfillmentType eq FulfillmentType.POS) and
                     (OrderTable.idempotencyKey eq namespaced)
             }.firstOrNull()
@@ -355,7 +354,7 @@ class OmnichannelService(
             val row =
                 PosSessionDAO.find {
                     (PosSessionTable.id eq it.entityID(PosSessionTable)) and
-                        (PosSessionTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable))
+                        (PosSessionTable.shopId eq shopId.entityID(ShopTable))
                 }.forUpdate().firstOrNull() ?: throw ValidationException("POS session not found")
             if (row.status != PosSessionStatus.OPEN) throw ValidationException("POS session is closed")
             row
@@ -390,7 +389,7 @@ class OmnichannelService(
             throw ValidationException("All POS items must belong to the seller's shop")
         }
         if (products.values.any {
-                it.deletedAt != null || it.status != com.piashcse.constants.ProductStatus.ACTIVE
+                it.deletedAt != null || it.status != ProductStatus.ACTIVE
             }
         ) {
             throw ValidationException("Cannot sell an inactive product in POS")
@@ -410,7 +409,7 @@ class OmnichannelService(
                 if (variant.productId.value != item.productId) {
                     throw ValidationException("Variant does not belong to product ${item.productId}")
                 }
-                if (variant.status != com.piashcse.constants.ProductStatus.ACTIVE) {
+                if (variant.status != ProductStatus.ACTIVE) {
                     throw ValidationException("Cannot sell an inactive variant in POS")
                 }
             }
@@ -422,17 +421,17 @@ class OmnichannelService(
         val email = customerEmail?.takeIf { it.isNotBlank() }?.trim()?.lowercase()
         return email?.let {
             UserDAO.find {
-                (UserTable.email eq it) and (UserTable.userType eq com.piashcse.constants.UserType.CUSTOMER)
+                (UserTable.email eq it) and (UserTable.userType eq UserType.CUSTOMER)
             }.firstOrNull()
         } ?: UserDAO.new {
             this.email = email ?: "pos-${UUID.randomUUID()}@local"
-            userType = com.piashcse.constants.UserType.CUSTOMER
+            userType = UserType.CUSTOMER
             // Never auto-verify an email supplied at the counter: doing so
             // would block the real owner from registering. The row is a guest
             // account that can later be claimed through registration/OTP.
             password =
                 at.favre.lib.crypto.bcrypt.BCrypt.withDefaults().hashToString(
-                    com.piashcse.constants.AppConstants.BCRYPT_COST,
+                    AppConstants.BCRYPT_COST,
                     UUID.randomUUID().toString().toCharArray(),
                 )
             isVerified = false
@@ -458,7 +457,7 @@ class OmnichannelService(
         val order =
             OrderDAO.new {
                 userId = customer.id
-                this.shopId = shopId.entityID(com.piashcse.database.entities.ShopTable)
+                this.shopId = shopId.entityID(ShopTable)
                 this.orderNumber = orderNumber
                 idempotencyKey = posIdempotencyKey(shopId, request.idempotencyKey)
                 status = OrderStatus.PAID
@@ -520,7 +519,7 @@ class OmnichannelService(
                 it[taxAmount] = amounts.tax
                 it[taxRate] = quote.rate
                 it[taxInclusive] = quote.inclusive
-                it[taxClassId] = quote.taxClassId?.entityID(com.piashcse.database.entities.TaxClassTable)
+                it[taxClassId] = quote.taxClassId?.entityID(TaxClassTable)
             }
         }
         order.subTotal = Money.scale2(subtotal)
@@ -536,9 +535,9 @@ class OmnichannelService(
                 status = PaymentStatus.COMPLETED
                 paymentMethod = request.paymentMethod
                 transactionId = "POS-${order.id.value}"
-                provider = com.piashcse.constants.PaymentProvider.MANUAL
+                provider = PaymentProvider.MANUAL
                 providerStatus = "pos"
-                scaStatus = com.piashcse.constants.ScaStatus.NOT_REQUIRED
+                scaStatus = ScaStatus.NOT_REQUIRED
             }
         session?.let {
             if (request.paymentMethod == PaymentMethod.COD) {
@@ -547,10 +546,10 @@ class OmnichannelService(
                 it.cardSales = Money.scale2(it.cardSales.add(order.total))
             }
         }
-        com.piashcse.feature.seller.SellerTotals.applyOrderTx(order)
+        SellerTotals.applyOrderTx(order)
         loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
         OutboxPublisher.enqueueTx(
-            "PAYMENT",
+            OutboxAggregate.PAYMENT,
             payment.id.value,
             PaymentCompletedEvent(
                 paymentId = payment.id.value,
@@ -752,7 +751,7 @@ class OmnichannelService(
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
             OrderTable.selectAll()
                 .andWhere {
-                    (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
+                    (OrderTable.shopId eq shopId.entityID(ShopTable)) and
                         (OrderTable.fulfillmentType eq FulfillmentType.POS)
                 }
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)

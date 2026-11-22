@@ -17,8 +17,7 @@ import com.piashcse.database.entities.ShipmentTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
-import com.piashcse.event.OrderStatusChangedEvent
-import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.order.OrderEvents
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -250,7 +249,7 @@ class ShipmentService(
                     order.status = OrderStatus.SHIPPED
                     order.shippingDate = now
                     label.trackingNumber?.let { order.trackingNumber = it }
-                    enqueueStatusChanged(order, from, OrderStatus.SHIPPED, order.trackingNumber)
+                    OrderEvents.statusChangedTx(order, from, OrderStatus.SHIPPED, order.trackingNumber)
                 } else {
                     label.trackingNumber?.let { order.trackingNumber = it }
                 }
@@ -429,7 +428,7 @@ class ShipmentService(
                 val from = order.status
                 order.status = OrderStatus.DELIVERED
                 order.deliveredDate = currentUtc()
-                enqueueStatusChanged(order, from, OrderStatus.DELIVERED, order.trackingNumber)
+                OrderEvents.statusChangedTx(order, from, OrderStatus.DELIVERED, order.trackingNumber)
             }
         }
         return true
@@ -516,28 +515,6 @@ class ShipmentService(
     ) {
         val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
         requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
-    }
-
-    private fun enqueueStatusChanged(
-        order: OrderDAO,
-        from: OrderStatus,
-        to: OrderStatus,
-        trackingNumber: String?,
-    ) {
-        if (from == to) return
-        OutboxPublisher.enqueueTx(
-            "ORDER",
-            order.id.value,
-            OrderStatusChangedEvent(
-                orderId = order.id.value,
-                userId = order.userId.value,
-                email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                orderNumber = order.orderNumber,
-                fromStatus = from.name,
-                toStatus = to.name,
-                trackingNumber = trackingNumber,
-            ),
-        )
     }
 
     private fun ShipmentDAO.toResponse(items: List<Allocation>? = null): ShipmentResponse {

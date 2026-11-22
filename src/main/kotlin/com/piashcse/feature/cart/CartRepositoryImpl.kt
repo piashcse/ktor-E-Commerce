@@ -4,6 +4,7 @@ import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.feature.config.StorefrontSettings
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.tax.TaxTotals
 import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
@@ -273,8 +274,7 @@ class CartRepositoryImpl : CartRepository {
                 ShippingAddressDAO.find { ShippingAddressTable.userId eq userId.entityID(UserTable) }
                     .orderBy(ShippingAddressTable.isDefault to SortOrder.DESC)
                     .firstOrNull()
-            var tax = BigDecimal.ZERO
-            var exclusiveTax = BigDecimal.ZERO
+            var taxTotals = TaxTotals()
             cartItems.forEach { cartItem ->
                 val product = products[cartItem.productId.value] ?: return@forEach
                 val variant = cartItem.variantId?.value?.let { variantsById[it] }
@@ -288,12 +288,9 @@ class CartRepositoryImpl : CartRepository {
                         taxClassId = product.taxClassId?.value,
                         userId = userId,
                     )
-                val amounts = taxService.apply(lineTotal, quote)
-                tax = tax.add(amounts.tax)
-                if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+                taxTotals = taxTotals.add(lineTotal, quote)
             }
-            tax = Money.scale2(tax)
-            exclusiveTax = Money.scale2(exclusiveTax)
+            val taxTotalsNormalized = taxTotals.normalized()
 
             // Shipping estimate: cheapest method × number of shops that still
             // need shipping, waived once the platform threshold is reached.
@@ -316,7 +313,7 @@ class CartRepositoryImpl : CartRepository {
                 } else {
                     Money.scale2(cheapestMethod.price.multiply(BigDecimal(physicalShops)))
                 }
-            val total = Money.scale2(subtotal.add(exclusiveTax).add(shippingUsd))
+            val total = Money.scale2(subtotal.add(taxTotalsNormalized.exclusiveTax).add(shippingUsd))
 
             val shopSummaries =
                 items
@@ -338,7 +335,7 @@ class CartRepositoryImpl : CartRepository {
             CartSummaryResponse(
                 items = items,
                 subtotal = subtotal.toPlainString(),
-                estimatedTax = tax.toPlainString(),
+                estimatedTax = taxTotalsNormalized.tax.toPlainString(),
                 itemCount = cartItems.sumOf { it.quantity },
                 total = total.toPlainString(),
                 estimatedShipping = shippingUsd.toPlainString(),

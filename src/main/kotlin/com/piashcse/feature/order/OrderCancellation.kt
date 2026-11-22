@@ -4,6 +4,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.CouponDAO
+import com.piashcse.database.entities.CouponUsageDAO
 import com.piashcse.database.entities.CouponUsageTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
@@ -129,7 +130,7 @@ object OrderCancellation {
 
     /** Releases coupon redemption rows for an order (used by cancellation and full refund). */
     fun reverseCouponUsageForOrder(orderId: String) {
-        com.piashcse.database.entities.CouponUsageDAO.find {
+        CouponUsageDAO.find {
             CouponUsageTable.orderId eq orderId.entityID(OrderTable)
         }.forEach { usage ->
             CouponDAO.findById(usage.couponId.value)?.let { coupon ->
