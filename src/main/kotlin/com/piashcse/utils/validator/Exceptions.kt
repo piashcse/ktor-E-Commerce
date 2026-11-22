@@ -1,6 +1,7 @@
 package com.piashcse.utils.validator
 
 import com.piashcse.constants.Message
+import com.piashcse.utils.common.ApiErrorCode
 import io.ktor.http.*
 
 // ============================================================================
@@ -12,7 +13,7 @@ open class AppException(
     message: String,
     val code: HttpStatusCode = HttpStatusCode.BadRequest,
     /** Machine-readable error code (Stripe-style `code`). */
-    open val errorCode: String = "BAD_REQUEST",
+    open val errorCode: String = ApiErrorCode.BAD_REQUEST,
 ) : Exception(message)
 
 /** Field-level validation failure that maps directly to `ApiError.errors`. */
@@ -24,11 +25,11 @@ data class FieldViolation(
 class FieldValidationException(
     val violations: List<FieldViolation>,
     message: String = "Validation failed",
-) : AppException(message, HttpStatusCode.BadRequest, "VALIDATION_FAILED")
+) : AppException(message, HttpStatusCode.BadRequest, ApiErrorCode.VALIDATION_FAILED)
 
 // ─── 400 Bad Request ───────────────────────────────────────────────────────
 
-class ValidationException(message: String, override val errorCode: String = "VALIDATION_FAILED") : AppException(
+class ValidationException(message: String, override val errorCode: String = ApiErrorCode.VALIDATION_FAILED) : AppException(
     message,
     HttpStatusCode.BadRequest,
     errorCode,
@@ -47,7 +48,7 @@ class MissingParameterException(val parameterName: String) :
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────
 
 class UnauthorizedException(message: String = Message.Errors.UNAUTHORIZED) :
-    AppException(message, HttpStatusCode.Unauthorized, "UNAUTHORIZED")
+    AppException(message, HttpStatusCode.Unauthorized, ApiErrorCode.UNAUTHORIZED)
 
 class InvalidCredentialsException(
     remainingAttempts: Int? = null,
@@ -84,16 +85,16 @@ class FraudBlockedException(message: String = "Payment blocked by fraud rules") 
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN) :
-    AppException(message, HttpStatusCode.Forbidden, "FORBIDDEN")
+    AppException(message, HttpStatusCode.Forbidden, ApiErrorCode.FORBIDDEN)
 
 // ─── 404 Not Found ─────────────────────────────────────────────────────────
 
 class NotFoundException(message: String = Message.Errors.NOT_FOUND) :
-    AppException(message, HttpStatusCode.NotFound, "NOT_FOUND")
+    AppException(message, HttpStatusCode.NotFound, ApiErrorCode.NOT_FOUND)
 
 // ─── 409 Conflict ──────────────────────────────────────────────────────────
 
-class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict, "CONFLICT")
+class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict, ApiErrorCode.CONFLICT)
 
 // ─── 429 Too Many Requests ─────────────────────────────────────────────────
 

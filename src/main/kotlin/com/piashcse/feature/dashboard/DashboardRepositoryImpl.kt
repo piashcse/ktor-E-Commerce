@@ -12,6 +12,7 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -196,38 +197,52 @@ class DashboardRepositoryImpl : DashboardRepository {
             )
         }
 
+    /**
+     * Net product revenue (line total − seller discount) converted to USD.
+     * One implementation for platform-wide and seller-scoped top products.
+     */
+    private fun productRevenueByProduct(
+        productIds: List<EntityID<String>>,
+        shopIds: List<EntityID<String>>? = null,
+    ): Map<String, BigDecimal> {
+        if (productIds.isEmpty()) return emptyMap()
+        var condition: Op<Boolean> =
+            (OrderItemTable.productId inList productIds) and
+                (OrderTable.status neq OrderStatus.CANCELED) and
+                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
+        if (shopIds != null) {
+            condition = condition and (OrderTable.shopId inList shopIds)
+        }
+        return (OrderItemTable innerJoin OrderTable)
+            .select(
+                OrderItemTable.productId,
+                OrderItemTable.total,
+                OrderItemTable.discountAmount,
+                OrderTable.fxRate,
+            )
+            .where { condition }
+            .toList()
+            .groupBy { it[OrderItemTable.productId].value }
+            .mapValues { (_, rows) ->
+                rows.fold(BigDecimal.ZERO) { acc, row ->
+                    val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
+                    acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
+                }
+            }
+    }
+
     override suspend fun getTopProducts(limit: Int?) =
-        query {
+        readQuery {
             val maxResults = (limit ?: 10).coerceIn(1, 50)
             val topProducts =
                 ProductDAO.find { (ProductTable.status eq ProductStatus.ACTIVE) and (ProductTable.deletedAt.isNull()) }
                     .orderBy(ProductTable.totalSales to SortOrder.DESC)
                     .limit(maxResults)
                     .toList()
-            if (topProducts.isEmpty()) return@query emptyList<TopProductResponse>()
+            if (topProducts.isEmpty()) return@readQuery emptyList<TopProductResponse>()
 
             val productIds = topProducts.map { it.id }
-            val revenueByProduct =
-                (OrderItemTable innerJoin OrderTable)
-                    .select(
-                        OrderItemTable.productId,
-                        OrderItemTable.total,
-                        OrderItemTable.discountAmount,
-                        OrderTable.fxRate,
-                    )
-                    .where {
-                        (OrderItemTable.productId inList productIds) and
-                            (OrderTable.status neq OrderStatus.CANCELED) and
-                            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
-                    }
-                    .toList()
-                    .groupBy { it[OrderItemTable.productId].value }
-                    .mapValues { (_, rows) ->
-                        rows.fold(BigDecimal.ZERO) { acc, row ->
-                            val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
-                            acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
-                        }
-                    }
+            val revenueByProduct = productRevenueByProduct(productIds)
 
             val inventoryMap =
                 if (productIds.isNotEmpty()) {
@@ -308,32 +323,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         ProductTable.deletedAt.isNull()
                 }.orderBy(ProductTable.totalSales to SortOrder.DESC).limit(5).toList()
             val sellerProductIds = sellerTopProducts.map { it.id }
-            val sellerRevenueByProduct =
-                if (sellerProductIds.isEmpty()) {
-                    emptyMap()
-                } else {
-                    (OrderItemTable innerJoin OrderTable)
-                        .select(
-                            OrderItemTable.productId,
-                            OrderItemTable.total,
-                            OrderItemTable.discountAmount,
-                            OrderTable.fxRate,
-                        )
-                        .where {
-                            (OrderItemTable.productId inList sellerProductIds) and
-                                (OrderTable.shopId inList sellerShopIds) and
-                                (OrderTable.status neq OrderStatus.CANCELED) and
-                                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
-                        }
-                        .toList()
-                        .groupBy { it[OrderItemTable.productId].value }
-                        .mapValues { (_, rows) ->
-                            rows.fold(BigDecimal.ZERO) { acc, row ->
-                                val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
-                                acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
-                            }
-                        }
-                }
+            val sellerRevenueByProduct = productRevenueByProduct(sellerProductIds, sellerShopIds)
             val sellerStock =
                 if (sellerProductIds.isEmpty()) {
                     emptyMap()
