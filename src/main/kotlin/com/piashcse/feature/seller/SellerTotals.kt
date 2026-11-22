@@ -76,4 +76,14 @@ object SellerTotals {
         seller.totalSales = seller.totalSales.subtract(net).max(BigDecimal.ZERO)
         seller.totalCommission = seller.totalCommission.subtract(seller.calcCommission(net)).max(BigDecimal.ZERO)
     }
+
+    /** Reverses an already-computed partial refund share (line-level refunds). */
+    fun reversePartialTx(
+        seller: SellerDAO,
+        salesAmount: BigDecimal,
+        commissionAmount: BigDecimal,
+    ) {
+        seller.totalSales = seller.totalSales.subtract(salesAmount).max(BigDecimal.ZERO)
+        seller.totalCommission = seller.totalCommission.subtract(commissionAmount).max(BigDecimal.ZERO)
+    }
 }

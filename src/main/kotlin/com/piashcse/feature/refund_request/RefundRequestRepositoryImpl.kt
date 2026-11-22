@@ -19,6 +19,7 @@ import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.seller.CommissionService
+import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
@@ -303,8 +304,7 @@ class RefundRequestRepositoryImpl(
                 }
                 totalCommissionReversed = totalCommissionReversed.add(commissionShare)
             }
-            seller.totalSales = seller.totalSales.subtract(sellerRefundAmount).max(BigDecimal.ZERO)
-            seller.totalCommission = seller.totalCommission.subtract(totalCommissionReversed).max(BigDecimal.ZERO)
+            SellerTotals.reversePartialTx(seller, sellerRefundAmount, totalCommissionReversed)
         }
 
         // Refund ledger entry so the original payment is no longer the last word.
