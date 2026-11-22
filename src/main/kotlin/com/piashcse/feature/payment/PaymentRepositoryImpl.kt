@@ -33,15 +33,12 @@ import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.or
-import org.jetbrains.exposed.v1.jdbc.andWhere
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
@@ -830,52 +827,18 @@ class PaymentRepositoryImpl(
     override suspend fun getPaymentById(
         paymentId: String,
         callerUserId: String,
-    ): PaymentResponse =
-        query {
-            val payment =
-                PaymentDAO.find { PaymentTable.id eq paymentId.entityID(PaymentTable) }
-                    .firstOrNull()
-                    ?: paymentId.throwNotFound("Payment")
-            val order = OrderDAO.findById(payment.orderId.value)
-            if (order == null || order.userId.value != callerUserId) {
-                throw ForbiddenException(Message.Errors.FORBIDDEN)
-            }
-            payment.toPaymentResponse()
-        }
+    ): PaymentResponse = PaymentQueries.getPaymentById(paymentId, callerUserId)
 
     override suspend fun getPaymentsByOrderId(
         orderId: String,
         callerUserId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<PaymentResponse> =
-        query {
-            val order =
-                OrderDAO.findById(orderId)
-                    ?: orderId.throwNotFound("Order")
-            if (order.userId.value != callerUserId) {
-                throw ForbiddenException(Message.Errors.FORBIDDEN)
-            }
-            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq orderId.entityID(OrderTable) }
-                .orderBy(PaymentTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    // Lists omit the client secret; it is only returned by create/get-by-id.
-                    PaymentDAO.wrapRow(it).toPaymentResponse().copy(clientSecret = null)
-                }
-        }
+    ): PaginatedResponse<PaymentResponse> = PaymentQueries.getPaymentsByOrderId(orderId, callerUserId, limit, offset)
 
     override suspend fun listPayments(
         status: PaymentStatus?,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<PaymentResponse> =
-        query {
-            PaymentTable.selectAll()
-                .also { query ->
-                    status?.let { query.andWhere { PaymentTable.status eq it } }
-                }.orderBy(PaymentTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    PaymentDAO.wrapRow(it).toPaymentResponse().copy(clientSecret = null)
-                }
-        }
+    ): PaginatedResponse<PaymentResponse> = PaymentQueries.listPayments(status, limit, offset)
 }
