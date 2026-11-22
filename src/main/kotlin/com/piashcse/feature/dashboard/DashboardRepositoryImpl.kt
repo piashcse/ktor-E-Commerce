@@ -446,51 +446,27 @@ class DashboardRepositoryImpl : DashboardRepository {
                 revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
                 orders =
                     mapOf(
-                        "total" to OrderTable.selectAll().where { OrderTable.shopId inList sellerShopIds }.count(),
-                        "today" to
-                            OrderTable.selectAll().where {
-                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today)
-                            }.count(),
-                        "pending" to
-                            OrderTable.selectAll().where {
-                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PENDING)
-                            }.count(),
-                        "canceled" to
-                            OrderTable.selectAll().where {
-                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.CANCELED)
-                            }.count(),
+                        "total" to sellerOrderTotal,
+                        "today" to sellerOrderToday,
+                        "pending" to sellerOrderPending,
+                        "canceled" to sellerOrderCanceled,
                     ),
                 users =
                     mapOf(
                         "total" to customers.size.toLong(),
                         "today" to todayCustomers.size.toLong(),
-                        "sellers" to SellerDAO.find { SellerTable.shopId inList sellerShopIds }.count(),
+                        "sellers" to sellerIdList.size.toLong(),
                     ),
                 products =
                     mapOf(
-                        "total" to
-                            ProductTable.selectAll().where {
-                                (ProductTable.shopId inList sellerShopIds) and ProductTable.deletedAt.isNull()
-                            }.count(),
-                        "outOfStock" to
-                            ProductTable.selectAll().where {
-                                (ProductTable.shopId inList sellerShopIds) and
-                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK) and
-                                    ProductTable.deletedAt.isNull()
-                            }.count(),
-                        "lowStock" to
-                            InventoryTable.selectAll().where {
-                                (InventoryTable.shopId inList sellerShopIds) and
-                                    (InventoryTable.status eq InventoryStatus.LOW_STOCK)
-                            }.count(),
+                        "total" to sellerProductTotal,
+                        "outOfStock" to sellerOutOfStock,
+                        "lowStock" to sellerLowStock,
                     ),
                 shops =
                     mapOf(
                         "total" to shopIds.size.toLong(),
-                        "pendingApproval" to
-                            ShopTable.selectAll().where {
-                                (ShopTable.id inList sellerShopIds) and (ShopTable.status eq ShopStatus.PENDING)
-                            }.count(),
+                        "pendingApproval" to pendingSellerShops,
                     ),
                 topProducts = sellerTopResponses,
                 revenueStats = DashboardRevenueStats(Money.str(totalRevenue), Money.str(todayRevenue)),
