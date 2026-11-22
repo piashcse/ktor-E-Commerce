@@ -9,6 +9,7 @@ import com.piashcse.database.entities.*
 import com.piashcse.event.EventBus
 import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.fraud.RiskAssessment
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.mapper.toPaymentResponse
@@ -141,33 +142,49 @@ class PaymentIntentService(
         }
     }
 
-    @Suppress("LongMethod") // payment intent lifecycle kept in one atomic flow
     suspend fun createPaymentLocked(
         paymentRequest: PaymentRequest,
         callerUserId: String,
         ipAddress: String?,
     ): PaymentResponse {
-        val replay =
-            query {
-                paymentRequest.idempotencyKey?.let { key ->
-                    findExistingByIdempotencyKey(key, callerUserId)?.let { existing ->
-                        if (existing.orderId.value != paymentRequest.orderId) {
-                            throw ValidationException("Idempotency key is already bound to another order")
-                        }
-                        return@query existing.toPaymentResponse()
-                    }
-                }
-                paymentRequest.transactionId?.let { txId ->
-                    findPaymentByTxForCaller(txId, callerUserId)?.let { existing ->
-                        return@query existing.toPaymentResponse()
-                    }
-                }
-                null
-            }
-        if (replay != null) return replay
+        findReplay(paymentRequest, callerUserId)?.let { return it }
+        findExistingIntent(paymentRequest, callerUserId)?.let { return it }
 
+        val authorized = authorizeCharge(paymentRequest, callerUserId, ipAddress)
+        return try {
+            persistCharge(paymentRequest, callerUserId, authorized.risk, authorized.charge)
+        } catch (e: Exception) {
+            compensateCharge(paymentRequest, authorized.payable.currency, authorized.charge)
+            throw e
+        }
+    }
+
+    private suspend fun findReplay(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+    ): PaymentResponse? =
+        query {
+            paymentRequest.idempotencyKey?.let { key ->
+                findExistingByIdempotencyKey(key, callerUserId)?.let { existing ->
+                    if (existing.orderId.value != paymentRequest.orderId) {
+                        throw ValidationException("Idempotency key is already bound to another order")
+                    }
+                    return@query existing.toPaymentResponse()
+                }
+            }
+            paymentRequest.transactionId?.let { txId ->
+                findPaymentByTxForCaller(txId, callerUserId)?.let { existing ->
+                    return@query existing.toPaymentResponse()
+                }
+            }
+            null
+        }
+
+    private suspend fun findExistingIntent(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+    ): PaymentResponse? {
         // Offline orders already have a server-created PENDING payment row.
-        // Return it instead of creating a duplicate COD/bank-transfer row.
         val offlinePayment =
             query {
                 PaymentDAO.find {
@@ -179,26 +196,32 @@ class PaymentIntentService(
             }
         if (offlinePayment != null) return offlinePayment.toPaymentResponse()
 
-        // Never leave two live provider intents for the same order: a second
-        // confirmed intent would capture extra money that is never refunded.
+        // Never leave two live provider intents for the same order.
         val openIntent =
             query {
                 PaymentDAO.find {
                     (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
-                        // Never expose another caller's intent/client secret. The
-                        // order-ownership check still runs below for non-replay paths.
                         (PaymentTable.userId eq callerUserId.entityID(UserTable)) and
                         (PaymentTable.status eq PaymentStatus.PENDING) and
                         (PaymentTable.providerReference.isNotNull())
                 }.firstOrNull()
             }
-        if (openIntent != null) {
-            if (openIntent.amount.compareTo(paymentRequest.amount) == 0) {
-                return openIntent.toPaymentResponse()
-            }
-            throw ConflictException("A payment intent for this order is already open")
-        }
+        if (openIntent == null) return null
+        if (openIntent.amount.compareTo(paymentRequest.amount) == 0) return openIntent.toPaymentResponse()
+        throw ConflictException("A payment intent for this order is already open")
+    }
 
+    private data class AuthorizedCharge(
+        val payable: PaymentOrderSnapshot,
+        val risk: RiskAssessment,
+        val charge: GatewayChargeResult,
+    )
+
+    private suspend fun authorizeCharge(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+        ipAddress: String?,
+    ): AuthorizedCharge {
         // Validate before charging so an invalid order never reaches the provider.
         val (payable, risk) =
             query {
@@ -228,8 +251,6 @@ class PaymentIntentService(
                     paymentMethod = paymentRequest.paymentMethod,
                     transactionId = paymentRequest.transactionId,
                     returnUrl = paymentRequest.returnUrl,
-                    // Namespace client keys per caller so one user cannot collide
-                    // with another user's provider idempotency key.
                     idempotencyKey =
                         paymentRequest.idempotencyKey
                             ?.let { "u:$callerUserId:$it" }
@@ -243,76 +264,84 @@ class PaymentIntentService(
         if (!charge.success) {
             throw ValidationException(charge.message ?: Message.Payments.GATEWAY_FAILED)
         }
+        return AuthorizedCharge(payable, risk, charge)
+    }
 
-        return try {
-            retryQuery {
-                // Re-lock and re-validate: the order may have changed while the gateway ran.
-                val snapshot = loadPayableOrder(paymentRequest, callerUserId, forUpdate = true)
-                val order =
-                    OrderDAO.find { OrderTable.id eq snapshot.orderId }.firstOrNull()
-                        ?: paymentRequest.orderId.throwNotFound("Order")
+    private suspend fun persistCharge(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+        risk: RiskAssessment,
+        charge: GatewayChargeResult,
+    ): PaymentResponse =
+        retryQuery {
+            // Re-lock and re-validate: the order may have changed while the gateway ran.
+            val snapshot = loadPayableOrder(paymentRequest, callerUserId, forUpdate = true)
+            val order =
+                OrderDAO.find { OrderTable.id eq snapshot.orderId }.firstOrNull()
+                    ?: paymentRequest.orderId.throwNotFound("Order")
 
-                val payment =
-                    try {
-                        PaymentDAO.new {
-                            this.orderId = order.id
-                            this.userId = order.userId
-                            this.amount = paymentRequest.amount
-                            this.currency = order.currency
-                            this.paymentMethod = paymentRequest.paymentMethod
-                            this.transactionId = charge.gatewayTransactionId ?: paymentRequest.transactionId
-                            this.idempotencyKey = paymentRequest.idempotencyKey
-                            this.provider = gateway.provider
-                            this.providerReference = charge.gatewayTransactionId
-                            this.clientSecret = charge.clientSecret
-                            this.nextActionUrl = charge.nextActionUrl
-                            this.scaStatus = charge.scaStatus
-                            this.providerStatus = charge.providerStatus
-                            this.status = if (charge.captured) PaymentStatus.COMPLETED else PaymentStatus.PENDING
-                        }
-                    } catch (e: Exception) {
-                        // Idempotency / transaction-id race: return the winner idempotently.
-                        if (e.isUniqueViolation()) {
-                            paymentRequest.idempotencyKey
-                                ?.let { key -> findExistingByIdempotencyKey(key, callerUserId) }
-                                ?.let { return@retryQuery it.toPaymentResponse() }
-                            paymentRequest.transactionId
-                                ?.let { tx -> findPaymentByTxForCaller(tx, callerUserId) }
-                                ?.let { return@retryQuery it.toPaymentResponse() }
-                        }
-                        throw e
+            val payment =
+                try {
+                    PaymentDAO.new {
+                        this.orderId = order.id
+                        this.userId = order.userId
+                        this.amount = paymentRequest.amount
+                        this.currency = order.currency
+                        this.paymentMethod = paymentRequest.paymentMethod
+                        this.transactionId = charge.gatewayTransactionId ?: paymentRequest.transactionId
+                        this.idempotencyKey = paymentRequest.idempotencyKey
+                        this.provider = gateway.provider
+                        this.providerReference = charge.gatewayTransactionId
+                        this.clientSecret = charge.clientSecret
+                        this.nextActionUrl = charge.nextActionUrl
+                        this.scaStatus = charge.scaStatus
+                        this.providerStatus = charge.providerStatus
+                        this.status = if (charge.captured) PaymentStatus.COMPLETED else PaymentStatus.PENDING
                     }
-                fraudService.recordRisk(
-                    payment,
-                    risk.copy(avsStatus = charge.avsStatus, cvvStatus = charge.cvvStatus),
+                } catch (e: Exception) {
+                    // Idempotency / transaction-id race: return the winner idempotently.
+                    if (e.isUniqueViolation()) {
+                        paymentRequest.idempotencyKey
+                            ?.let { key -> findExistingByIdempotencyKey(key, callerUserId) }
+                            ?.let { return@retryQuery it.toPaymentResponse() }
+                        paymentRequest.transactionId
+                            ?.let { tx -> findPaymentByTxForCaller(tx, callerUserId) }
+                            ?.let { return@retryQuery it.toPaymentResponse() }
+                    }
+                    throw e
+                }
+            fraudService.recordRisk(
+                payment,
+                risk.copy(avsStatus = charge.avsStatus, cvvStatus = charge.cvvStatus),
+            )
+
+            AppMetrics.paymentsCreated.increment()
+            if (payment.status == PaymentStatus.COMPLETED) {
+                PaymentCompletion.completeIfFullyPaid(order, payment, loyaltyService, digitalDelivery)
+            }
+            payment.toPaymentResponse()
+        }
+
+    private suspend fun compensateCharge(
+        paymentRequest: PaymentRequest,
+        currency: String,
+        charge: GatewayChargeResult,
+    ) {
+        // The gateway has already captured money. If the post-charge transaction
+        // fails, compensating the charge is the only way to avoid an orphan payment.
+        val reference = charge.gatewayTransactionId ?: return
+        if (!charge.captured) return
+        runCatching {
+            gatewayBreaker.execute {
+                gateway.refund(
+                    providerReference = reference,
+                    amount = paymentRequest.amount,
+                    currency = currency,
+                    idempotencyKey = "compensate:${paymentRequest.orderId}:$reference",
                 )
-
-                AppMetrics.paymentsCreated.increment()
-                if (payment.status == PaymentStatus.COMPLETED) {
-                    PaymentCompletion.completeIfFullyPaid(order, payment, loyaltyService, digitalDelivery)
-                }
-                payment.toPaymentResponse()
             }
-        } catch (e: Exception) {
-            // The gateway has already captured money. If the post-charge
-            // transaction fails (order changed, stock, DB race), compensating the
-            // charge is the only way to avoid an orphan payment.
-            val reference = charge.gatewayTransactionId
-            if (charge.captured && reference != null) {
-                runCatching {
-                    gatewayBreaker.execute {
-                        gateway.refund(
-                            providerReference = reference,
-                            amount = paymentRequest.amount,
-                            currency = payable.currency,
-                            idempotencyKey = "compensate:${paymentRequest.orderId}:$reference",
-                        )
-                    }
-                }.onFailure {
-                    log.error("Failed to compensate charge $reference for order ${paymentRequest.orderId}", it)
-                }
-            }
-            throw e
+        }.onFailure {
+            log.error("Failed to compensate charge $reference for order ${paymentRequest.orderId}", it)
         }
     }
 
