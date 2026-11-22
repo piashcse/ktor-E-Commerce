@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.BillingInterval
 import com.piashcse.constants.InvoiceStatus
 import com.piashcse.constants.SubscriptionStatus
@@ -16,7 +17,7 @@ object SubscriptionPlanTable : BaseIdTable("subscription_plan") {
     val productId = reference("product_id", ProductTable.id).index()
     val interval = enumerationByName("interval", 20, BillingInterval::class).default(BillingInterval.MONTH)
     val price = decimal("price", 10, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val trialDays = integer("trial_days").default(0)
     val isActive = bool("is_active").default(true)
 }
@@ -69,7 +70,7 @@ class SubscriptionDAO(id: EntityID<String>) : BaseEntity(id, SubscriptionTable) 
 object SubscriptionInvoiceTable : BaseIdTable("subscription_invoice") {
     val subscriptionId = reference("subscription_id", SubscriptionTable.id).index()
     val amount = decimal("amount", 10, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = enumerationByName("status", 20, InvoiceStatus::class).default(InvoiceStatus.PENDING)
     val periodStart = datetime("period_start")
     val periodEnd = datetime("period_end")

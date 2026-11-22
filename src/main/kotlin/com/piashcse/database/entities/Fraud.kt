@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.AvsResult
 import com.piashcse.constants.BlocklistType
 import com.piashcse.constants.ChargebackStatus
@@ -90,7 +91,7 @@ object ChargebackTable : BaseIdTable("chargeback") {
     val orderId = reference("order_id", OrderTable.id).index()
     val providerDisputeId = varchar("provider_dispute_id", 150).nullable()
     val amount = decimal("amount", 10, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status =
         enumerationByName("status", 30, ChargebackStatus::class)
             .default(ChargebackStatus.OPEN)

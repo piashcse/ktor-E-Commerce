@@ -78,7 +78,7 @@ data class ReferralResponse(
 @Serializable
 data class GiftCardIssueRequest(
     @Contextual val amount: BigDecimal,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val code: String? = null,
     val expiresAt: String? = null,
 )
@@ -536,7 +536,7 @@ class LoyaltyService {
             GiftCardDAO.find { GiftCardTable.code eq code.trim().uppercase() }.forUpdate().firstOrNull()
                 ?: throw ValidationException("Gift card not found")
         if (!card.isUsable()) throw ValidationException("Gift card is not active or has expired")
-        if (card.currency != "USD") throw ValidationException("Only USD gift cards are supported")
+        if (card.currency != AppConstants.DEFAULT_CURRENCY) throw ValidationException("Only USD gift cards are supported")
         val amount = amountUsd.min(card.balance).setScale(2, RoundingMode.HALF_UP)
         card.balance = card.balance.subtract(amount).setScale(2, RoundingMode.HALF_UP)
         if (card.balance <= BigDecimal.ZERO) card.status = GiftCardStatus.REDEEMED
@@ -565,7 +565,7 @@ class LoyaltyService {
             if (request.amount <= BigDecimal.ZERO) {
                 throw FieldValidationException(listOf(FieldViolation("amount", "Amount must be positive")))
             }
-            if (!request.currency.equals("USD", ignoreCase = true)) {
+            if (!request.currency.equals(AppConstants.DEFAULT_CURRENCY, ignoreCase = true)) {
                 throw ValidationException("Only USD gift cards are supported")
             }
             val code = request.code?.trim()?.uppercase()?.takeIf { it.isNotBlank() } ?: uniqueGiftCardCode()

@@ -1,5 +1,6 @@
 package com.piashcse.feature.payout
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.KycStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PayoutStatus
@@ -184,7 +185,7 @@ class PayoutRepositoryImpl : PayoutRepository {
             val primaryCurrency =
                 byCurrency.keys.firstOrNull()
                     ?: pendingByCurrency.keys.firstOrNull()
-                    ?: "USD"
+                    ?: AppConstants.DEFAULT_CURRENCY
             PayoutBalanceResponse(
                 available = byCurrency[primaryCurrency] ?: "0.00",
                 currency = primaryCurrency,
@@ -224,7 +225,7 @@ class PayoutRepositoryImpl : PayoutRepository {
             val selectedCurrency =
                 currency?.takeIf { it.isNotBlank() }?.uppercase()
                     ?: allPayouts.firstOrNull()?.currency
-                    ?: "USD"
+                    ?: AppConstants.DEFAULT_CURRENCY
             val payouts = allPayouts.filter { it.currency.equals(selectedCurrency, ignoreCase = true) }
 
             val taxQuery =
@@ -629,7 +630,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                         "Multiple currencies available (${currencies.joinToString()}); specify a currency",
                     )
                 }
-                val currency = currencies.firstOrNull() ?: normalizedCurrency ?: "USD"
+                val currency = currencies.firstOrNull() ?: normalizedCurrency ?: AppConstants.DEFAULT_CURRENCY
 
                 val balance = claimable.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
                 if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")

@@ -1,5 +1,6 @@
 package com.piashcse.feature.b2b
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.B2bAccountStatus
 import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
@@ -345,7 +346,7 @@ class B2bService {
                     this.sellerId = seller.id
                     this.shopId = shopId?.entityID(ShopTable)
                     this.status = B2bQuoteStatus.REQUESTED
-                    this.currency = "USD"
+                    this.currency = AppConstants.DEFAULT_CURRENCY
                     this.notes = request.notes
                     this.validUntil = currentUtc().plusDays(request.validDays.toLong())
                 }

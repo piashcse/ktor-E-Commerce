@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -13,7 +14,7 @@ object SellerPayoutTable : BaseIdTable("seller_payout") {
     val commissionAmount = decimal("commission_amount", 12, 2)
     val commissionRate = decimal("commission_rate", 5, 2).nullable()
     val payoutAmount = decimal("payout_amount", 12, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = varchar("status", 20).default("PENDING").index()
     val paidAt = datetime("paid_at").nullable()
     val payoutRequestId = reference("payout_request_id", PayoutRequestTable.id).nullable().index()

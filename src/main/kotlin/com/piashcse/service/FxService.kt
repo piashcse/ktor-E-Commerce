@@ -1,6 +1,7 @@
 package com.piashcse.service
 
 import com.piashcse.config.DotEnv
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.FxRateDAO
 import com.piashcse.database.entities.FxRateTable
 import com.piashcse.database.entities.SupportedCurrencies
@@ -20,7 +21,7 @@ class FxService {
     suspend fun rateTo(targetCurrency: String): BigDecimal =
         query {
             SupportedCurrencies.requireValid(targetCurrency)
-            if (targetCurrency.uppercase() == "USD") return@query BigDecimal.ONE
+            if (targetCurrency.uppercase() == AppConstants.DEFAULT_CURRENCY) return@query BigDecimal.ONE
             val rate =
                 FxRateDAO.find { FxRateTable.targetCurrency eq targetCurrency.uppercase() }
                     .firstOrNull() ?: throw ValidationException("FX rate unavailable for ${targetCurrency.uppercase()}")
@@ -65,14 +66,14 @@ class FxService {
             val target = targetCurrency.uppercase()
             val existing =
                 FxRateDAO.find {
-                    (FxRateTable.baseCurrency eq "USD") and (FxRateTable.targetCurrency eq target)
+                    (FxRateTable.baseCurrency eq AppConstants.DEFAULT_CURRENCY) and (FxRateTable.targetCurrency eq target)
                 }.firstOrNull()
             val dao =
                 existing?.apply {
                     this.rate = rate
                     effectiveAt = currentUtc()
                 } ?: FxRateDAO.new {
-                    baseCurrency = "USD"
+                    baseCurrency = AppConstants.DEFAULT_CURRENCY
                     this.targetCurrency = target
                     this.rate = rate
                     effectiveAt = currentUtc()

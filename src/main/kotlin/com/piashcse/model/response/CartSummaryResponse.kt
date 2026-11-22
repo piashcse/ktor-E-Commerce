@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,7 +11,7 @@ data class CartSummaryResponse(
     val itemCount: Int,
     /** Subtotal + estimated shipping + exclusive tax. */
     val total: String = subtotal,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     /** Cheapest available shipping for the whole cart (already multiplied by shop count). */
     val estimatedShipping: String = "0.00",
     val freeShippingThreshold: String = "75.00",

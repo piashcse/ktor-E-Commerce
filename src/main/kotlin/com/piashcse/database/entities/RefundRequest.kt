@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
 import com.piashcse.database.entities.base.BaseEntity
@@ -19,7 +20,7 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     /** Seller/admin decision note shown to the customer and support. */
     val decisionReason = text("decision_reason").nullable()
     val status = enumerationByName("status", 20, RefundStatus::class).default(RefundStatus.PENDING)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val quantity = integer("quantity").default(1)
     val refundAmount = decimal("refund_amount", 10, 2).nullable()
     val shippingRefund = decimal("shipping_refund", 10, 2).default(java.math.BigDecimal("0.00"))

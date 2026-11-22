@@ -1,5 +1,6 @@
 package com.piashcse.feature.subscription
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.BillingInterval
 import com.piashcse.constants.InvoiceStatus
 import com.piashcse.constants.SubscriptionStatus
@@ -43,7 +44,7 @@ data class SubscriptionPlanRequest(
     val productId: String,
     val interval: BillingInterval = BillingInterval.MONTH,
     @Contextual val price: BigDecimal,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val trialDays: Int = 0,
     val isActive: Boolean = true,
 ) {

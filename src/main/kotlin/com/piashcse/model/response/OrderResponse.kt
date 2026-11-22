@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
@@ -20,7 +21,7 @@ data class OrderResponse(
     val taxAmount: String = "0.00",
     val discountAmount: String = "0.00",
     val total: String,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val status: OrderStatus,
     val allowedActions: List<String> = emptyList(),
     val nextStatuses: List<String> = emptyList(),

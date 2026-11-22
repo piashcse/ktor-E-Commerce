@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.Localization
 import com.piashcse.constants.PaymentMethod
@@ -26,7 +27,7 @@ data class CheckoutRequest(
     val notes: String? = null,
     val idempotencyKey: String? = null,
     val couponCode: String? = null,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     /** Business tax id used to look up a B2B exemption. */
     val businessTaxId: String? = null,
     /** Loyalty points to redeem; 100 points = 1 USD. */

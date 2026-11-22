@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -8,7 +9,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 
 object FxRateTable : BaseIdTable("fx_rate") {
-    val baseCurrency = varchar("base_currency", 3).default("USD")
+    val baseCurrency = varchar("base_currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val targetCurrency = varchar("target_currency", 3).index()
     val rate = decimal("rate", 18, 6)
     val effectiveAt = datetime("effective_at")
@@ -25,7 +26,7 @@ class FxRateDAO(id: EntityID<String>) : BaseEntity(id, FxRateTable) {
 
 /** Supported currencies — checkout validates against this allowlist (USD base). */
 object SupportedCurrencies {
-    val ALL = setOf("USD", "EUR", "GBP", "BDT", "INR")
+    val ALL = setOf(AppConstants.DEFAULT_CURRENCY, "EUR", "GBP", "BDT", "INR")
 
     fun requireValid(code: String) {
         if (code.uppercase() !in ALL) {

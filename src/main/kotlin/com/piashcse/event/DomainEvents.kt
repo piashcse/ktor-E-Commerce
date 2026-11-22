@@ -1,5 +1,6 @@
 package com.piashcse.event
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.currentUtc
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -191,7 +192,7 @@ data class PayoutStatusChangedEvent(
     val userId: String,
     val status: String,
     val amount: @Contextual BigDecimal,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val reason: String? = null,
     override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,

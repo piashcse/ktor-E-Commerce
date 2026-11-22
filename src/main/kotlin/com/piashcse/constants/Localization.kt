@@ -13,7 +13,7 @@ object Localization {
 
     val LOCALES =
         listOf(
-            LocaleOption("en", "English", "USD", "English"),
+            LocaleOption("en", "English", AppConstants.DEFAULT_CURRENCY, "English"),
             LocaleOption("es", "Español", "EUR", "Spanish"),
             LocaleOption("fr", "Français", "EUR", "French"),
             LocaleOption("bn", "বাংলা", "BDT", "Bengali"),

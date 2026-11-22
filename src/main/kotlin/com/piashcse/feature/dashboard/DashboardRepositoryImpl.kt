@@ -1,6 +1,7 @@
 package com.piashcse.feature.dashboard
 
 import com.piashcse.constants.*
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.model.response.*
@@ -509,7 +510,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         kycStatus = sellerRecord?.kycStatus?.name,
                         shopStatus = shopRecord?.status?.name,
                         availablePayout = Money.str(availablePayout),
-                        payoutCurrency = payoutRows.firstOrNull()?.currency ?: "USD",
+                        payoutCurrency = payoutRows.firstOrNull()?.currency ?: AppConstants.DEFAULT_CURRENCY,
                         pendingRefunds = pendingRefunds,
                         pendingRmas = pendingRmas,
                         activeReviews = unreadReviews,
@@ -705,7 +706,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         else -> null
                     },
                 availablePayout = Money.str(available),
-                currency = payoutRows.firstOrNull()?.currency ?: "USD",
+                currency = payoutRows.firstOrNull()?.currency ?: AppConstants.DEFAULT_CURRENCY,
                 missingRequirements = missing.distinct(),
                 nextAction = nextAction,
                 shopRejectionReason = shop?.rejectionReason,

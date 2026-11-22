@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import kotlinx.serialization.Serializable
 
 @Serializable data class DashboardStatsResponse(
@@ -40,7 +41,7 @@ data class SellerDashboardExtras(
     val kycStatus: String? = null,
     val shopStatus: String? = null,
     val availablePayout: String = "0.00",
-    val payoutCurrency: String = "USD",
+    val payoutCurrency: String = AppConstants.DEFAULT_CURRENCY,
     val pendingRefunds: Long = 0,
     val pendingRmas: Long = 0,
     val activeReviews: Long = 0,
@@ -52,7 +53,7 @@ data class SellerDashboardExtras(
     val totalOrders: Long,
     val averageOrderValue: String,
     val dailyRevenue: List<Map<String, String>>,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
 )
 
 @Serializable data class OrderStatsResponse(val statusDistribution: Map<String, Long>, val recentOrders: List<Map<String, String>>)
@@ -104,7 +105,7 @@ data class SellerReadinessResponse(
     val payoutEligible: Boolean,
     val payoutBlockedReason: String? = null,
     val availablePayout: String = "0.00",
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val missingRequirements: List<String> = emptyList(),
     val nextAction: String? = null,
     val shopRejectionReason: String? = null,

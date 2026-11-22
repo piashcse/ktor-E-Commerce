@@ -1,6 +1,7 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.*
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
@@ -299,7 +300,7 @@ class OrderRepositoryImpl(
         val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
         val currency = checkoutRequest.currency.uppercase()
         // Fail closed: non-USD checkout requires a stored FX rate (no silent USD-under-foreign-label).
-        val fxRate = if (currency != "USD") fxService.rateTo(currency) else BigDecimal.ONE
+        val fxRate = if (currency != AppConstants.DEFAULT_CURRENCY) fxService.rateTo(currency) else BigDecimal.ONE
         val idempotencyKey = checkoutRequest.idempotencyKey
         if (idempotencyKey != null && idempotencyKey.length > 60) {
             throw ValidationException("Idempotency-Key must be at most 60 characters")
@@ -1241,7 +1242,7 @@ class OrderRepositoryImpl(
         checkoutRequest: CheckoutRequest,
     ): CheckoutSummaryResponse {
         val currency = checkoutRequest.currency.uppercase()
-        val fxRate = if (currency != "USD") fxService.rateTo(currency) else BigDecimal.ONE
+        val fxRate = if (currency != AppConstants.DEFAULT_CURRENCY) fxService.rateTo(currency) else BigDecimal.ONE
         return query {
             val context = loadCheckoutContext(userId, checkoutRequest)
             val subUsd = checkoutSubtotalUsd(context)

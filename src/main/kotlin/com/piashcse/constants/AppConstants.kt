@@ -9,6 +9,7 @@ package com.piashcse.constants
 object AppConstants {
     const val APP_VERSION = "1.0.0"
     const val DEFAULT_TAX_PERCENTAGE = 0.05
+    const val DEFAULT_CURRENCY = "USD"
 
     const val LOYALTY_POINTS_PER_USD = 1
     const val LOYALTY_POINTS_PER_USD_REDEEM = 100

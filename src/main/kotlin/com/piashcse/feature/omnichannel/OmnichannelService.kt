@@ -468,7 +468,7 @@ class OmnichannelService(
                 shippingCost = BigDecimal.ZERO
                 taxAmount = BigDecimal.ZERO
                 this.total = BigDecimal.ZERO
-                currency = "USD"
+                currency = AppConstants.DEFAULT_CURRENCY
                 fxRate = BigDecimal.ONE
                 shippingMethod = "POS"
                 fulfillmentType = FulfillmentType.POS
@@ -533,7 +533,7 @@ class OmnichannelService(
                 this.orderId = order.id
                 this.userId = customer.id
                 amount = order.total
-                currency = "USD"
+                currency = AppConstants.DEFAULT_CURRENCY
                 status = PaymentStatus.COMPLETED
                 paymentMethod = request.paymentMethod
                 transactionId = "POS-${order.id.value}"
