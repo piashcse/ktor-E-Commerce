@@ -14,7 +14,6 @@ import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
-import com.piashcse.feature.order.OrderSearch
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.promotion.PromotionService
@@ -30,7 +29,6 @@ import com.piashcse.service.AppMetrics
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.emptyPage
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
@@ -40,8 +38,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNotNull
-import org.jetbrains.exposed.v1.jdbc.andWhere
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
 class RefundRequestRepositoryImpl(
@@ -152,47 +148,13 @@ class RefundRequestRepositoryImpl(
         userType: UserType,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<RefundRequestResponse> =
-        query {
-            val order =
-                OrderDAO.findById(orderId)
-                    ?: throw ValidationException(Message.Orders.NOT_FOUND)
-
-            requireRefundAccess(order.userId.value, order.shopId?.value, userId, userType)
-
-            RefundRequestTable.selectAll()
-                .andWhere { RefundRequestTable.orderId eq orderId.entityID(OrderTable) }
-                .orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
-                }.let { enrichRefundPage(it) }
-        }
+    ): PaginatedResponse<RefundRequestResponse> = RefundQueries.getRefundsByOrderId(orderId, userId, userType, limit, offset)
 
     override suspend fun getRefundById(
         refundId: String,
         userId: String,
         userType: UserType,
-    ): RefundRequestResponse? =
-        query {
-            val refundRequest = RefundRequestDAO.findById(refundId) ?: return@query null
-
-            val order = OrderDAO.findById(refundRequest.orderId.value)
-            val item = OrderItemDAO.findById(refundRequest.orderItemId.value)
-            val customer = UserDAO.findById(refundRequest.userId.value)
-            requireRefundAccess(
-                order?.userId?.value ?: refundRequest.userId.value,
-                order?.shopId?.value,
-                userId,
-                userType,
-            )
-
-            refundRequest.toRefundRequestResponse(
-                orderNumber = order?.orderNumber,
-                shopId = order?.shopId?.value,
-                customerEmail = customer?.email,
-                productName = item?.productName,
-            )
-        }
+    ): RefundRequestResponse? = RefundQueries.getRefundById(refundId, userId, userType)
 
     private fun maxRefundableAmount(
         order: OrderDAO,
@@ -726,26 +688,7 @@ class RefundRequestRepositoryImpl(
         to: java.time.Instant?,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<RefundRequestResponse> =
-        readQuery {
-            val seller = requireSellerByUserId(sellerUserId)
-            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
-            val orderIds =
-                OrderSearch.matchingOrderIdsTx(search, shopId.value)
-                    ?: OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
-            if (orderIds.isEmpty()) {
-                return@readQuery emptyPage(limit, offset)
-            }
-            RefundRequestTable.selectAll()
-                .where { RefundRequestTable.orderId inList orderIds }
-                .also { q ->
-                    status?.let { q.andWhere { RefundRequestTable.status eq it } }
-                    q.applyCreatedRange(RefundRequestTable.createdAt, from, to)
-                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
-                }.let { enrichRefundPage(it) }
-        }
+    ): PaginatedResponse<RefundRequestResponse> = RefundQueries.listForSeller(sellerUserId, status, search, from, to, limit, offset)
 
     override suspend fun listAll(
         status: RefundStatus?,
@@ -754,46 +697,5 @@ class RefundRequestRepositoryImpl(
         to: java.time.Instant?,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<RefundRequestResponse> =
-        readQuery {
-            val matchingOrderIds = OrderSearch.matchingOrderIdsTx(search)
-            if (matchingOrderIds != null && matchingOrderIds.isEmpty()) {
-                return@readQuery emptyPage(limit, offset)
-            }
-            RefundRequestTable.selectAll()
-                .also { q ->
-                    status?.let { q.andWhere { RefundRequestTable.status eq it } }
-                    matchingOrderIds?.let { q.andWhere { RefundRequestTable.orderId inList it } }
-                    q.applyCreatedRange(RefundRequestTable.createdAt, from, to)
-                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
-                }.let { enrichRefundPage(it) }
-        }
-
-    private fun enrichRefundPage(page: PaginatedResponse<RefundRequestResponse>): PaginatedResponse<RefundRequestResponse> {
-        if (page.data.isEmpty()) return page
-        val orders =
-            OrderDAO.find { OrderTable.id inList page.data.map { it.orderId }.distinct().map { it.entityID(OrderTable) } }
-                .associateBy { it.id.value }
-        val items =
-            OrderItemDAO.find {
-                OrderItemTable.id inList page.data.map { it.orderItemId }.distinct().map { it.entityID(OrderItemTable) }
-            }.associateBy { it.id.value }
-        val users =
-            UserDAO.find { UserTable.id inList page.data.map { it.userId }.distinct().map { it.entityID(UserTable) } }
-                .associateBy { it.id.value }
-        return page.copy(
-            data =
-                page.data.map { refund ->
-                    val order = orders[refund.orderId]
-                    refund.copy(
-                        orderNumber = order?.orderNumber,
-                        shopId = order?.shopId?.value,
-                        customerEmail = users[refund.userId]?.email,
-                        productName = items[refund.orderItemId]?.productName,
-                    )
-                },
-        )
-    }
+    ): PaginatedResponse<RefundRequestResponse> = RefundQueries.listAll(status, search, from, to, limit, offset)
 }
