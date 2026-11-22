@@ -198,7 +198,20 @@ class CommissionService {
                 throw com.piashcse.utils.validator.ForbiddenException("Order belongs to another shop")
             }
             val commission = commissionForOrderTx(order, seller)
-            val net = order.subTotal.subtract(order.discountAmount).max(BigDecimal.ZERO)
+            val sellerFundedDiscount =
+                order.discountAmount
+                    .subtract(order.walletDiscount)
+                    .subtract(order.giftCardDiscount)
+                    .max(BigDecimal.ZERO)
+            val inclusiveTax =
+                OrderItemDAO.itemsForOrder(order.id)
+                    .filter { it.taxInclusive }
+                    .fold(BigDecimal.ZERO) { acc, item -> acc.add(item.taxAmount) }
+            val net =
+                order.subTotal
+                    .subtract(sellerFundedDiscount)
+                    .subtract(inclusiveTax)
+                    .max(BigDecimal.ZERO)
             val payout = net.subtract(commission).max(BigDecimal.ZERO)
             val rate =
                 if (net > BigDecimal.ZERO) {

@@ -179,6 +179,11 @@ fun Application.configureRoute() {
                             transaction {
                                 exec("SELECT 1")
                             }
+                            // Reads are routed to the replica when configured;
+                            // readiness must fail if it is unreachable.
+                            com.piashcse.database.getReadDatabase()?.let { replica ->
+                                transaction(replica) { exec("SELECT 1") }
+                            }
                         }
                     }
                 }.isSuccess

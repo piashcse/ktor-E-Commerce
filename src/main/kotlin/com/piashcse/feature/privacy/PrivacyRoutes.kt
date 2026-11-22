@@ -2,6 +2,7 @@
 
 package com.piashcse.feature.privacy
 
+import com.piashcse.plugin.requireJwtSession
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondDeleted
@@ -20,6 +21,7 @@ fun Route.privacyRoutes() {
          * Export all personal data held for the authenticated user
          */
         get("export") {
+            call.requireJwtSession()
             call.respondOk(privacyService.export(call.currentUserId))
         }.describe { summary = "Export all personal data held for the authenticated user" }
 
@@ -27,6 +29,7 @@ fun Route.privacyRoutes() {
          * Erase/anonymize the authenticated account (password required)
          */
         post("erase") {
+            call.requireJwtSession()
             val body = call.receive<EraseAccountRequest>()
             privacyService.erase(call.currentUserId, body.password)
             call.respondDeleted("Account erased and anonymized")

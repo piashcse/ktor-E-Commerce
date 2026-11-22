@@ -126,6 +126,20 @@ class DigitalDeliveryService(
         }
     }
 
+    /** Keep access through the dunning grace window instead of ending at period end. */
+    fun extendSubscriptionGraceTx(
+        subscriptionId: String,
+        until: java.time.LocalDateTime,
+    ) {
+        DigitalEntitlementDAO.find {
+            DigitalEntitlementTable.subscriptionId eq subscriptionId.entityID(com.piashcse.database.entities.SubscriptionTable)
+        }.forEach { entitlement ->
+            if (entitlement.expiresAt == null || entitlement.expiresAt!!.isBefore(until)) {
+                entitlement.expiresAt = until
+            }
+        }
+    }
+
     /** Revokes subscription-based digital access after cancellation/expiry/dunning failure. */
     fun revokeSubscriptionTx(subscriptionId: String) {
         DigitalEntitlementDAO.find {

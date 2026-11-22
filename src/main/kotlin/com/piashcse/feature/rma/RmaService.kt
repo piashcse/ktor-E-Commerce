@@ -292,6 +292,7 @@ class RmaService {
             rma.toResponse()
         }
 
+    @Suppress("LongMethod")
     suspend fun updateStatus(
         rmaId: String,
         request: RmaStatusUpdateRequest,
@@ -299,7 +300,11 @@ class RmaService {
         actorType: UserType,
     ): RmaResponse =
         query {
-            val rma = RmaDAO.findById(rmaId) ?: rmaId.throwNotFound("RMA")
+            val rma =
+                RmaDAO.find { RmaTable.id eq rmaId.entityID(RmaTable) }
+                    .forUpdate()
+                    .firstOrNull()
+                    ?: rmaId.throwNotFound("RMA")
             val isAdmin = actorType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
             if (!isAdmin) {
                 val seller = requireSellerByUserId(actorUserId)
@@ -382,6 +387,11 @@ class RmaService {
                                 "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
                             )
                         }
+                        if (existingRefund.quantity < rma.quantity) {
+                            throw ValidationException(
+                                "Refund ${existingRefund.id.value} covers fewer units than this RMA",
+                            )
+                        }
                         rma.refundRequestId = existingRefund.id
                     } else {
                         val replacementId =
@@ -400,7 +410,9 @@ class RmaService {
                             OrderItemDAO.findById(rma.orderItemId.value)
                                 ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
                         ProductDAO.findById(item.productId.value)?.let { product ->
-                            product.restoreStockFor(item.variantId?.value, rma.quantity)
+                            if (!product.isDigital) {
+                                product.restoreStockFor(item.variantId?.value, rma.quantity)
+                            }
                             product.removeSales(rma.quantity)
                         }
                         rma.replacementOrderId = replacement.id

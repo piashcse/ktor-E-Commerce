@@ -1,6 +1,5 @@
 package com.piashcse.feature.tax
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.TaxClassDAO
@@ -253,7 +252,9 @@ class TaxService {
             return TaxQuote(taxClass.rate, taxClass.isInclusive, taxClass.id.value)
         }
 
-        return TaxQuote(Money.of(AppConstants.DEFAULT_TAX_PERCENTAGE), false, classId)
+        // No nexus/rule configured means no tax. A hardcoded 5% fallback
+        // silently taxed destinations where the merchant had no obligation.
+        return TaxQuote(BigDecimal.ZERO.setScale(2), false, classId)
     }
 
     fun apply(

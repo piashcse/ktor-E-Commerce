@@ -170,8 +170,9 @@ class ProductRepositoryImpl : ProductRepository {
                 discountPrice = productRequest.discountPrice?.let { Money.scale2(it) }
                 discountPercentage = calcDiscountPct(productRequest.price, productRequest.discountPrice)
                 videoLink = productRequest.videoLink
-                hotDeal = productRequest.hotDeal
-                featured = productRequest.featured
+                // Merchandising flags are admin-curated, not seller self-service.
+                hotDeal = false
+                featured = false
                 bestSeller = false
                 newProduct = true
                 freeShipping = productRequest.freeShipping
@@ -181,22 +182,26 @@ class ProductRepositoryImpl : ProductRepository {
                 status = productRequest.status ?: ProductStatus.ACTIVE
             }.let { product ->
                 product.setImages(productRequest.images)
-                val warehouse =
-                    WarehouseDAO.find { WarehouseTable.shopId eq resolvedShopId.entityID(ShopTable) }
-                        .firstOrNull()
-                        ?: WarehouseDAO.new {
-                            this.shopId = resolvedShopId.entityID(ShopTable)
-                            name = "Default"
-                            code = "DEFAULT"
-                        }
-                InventoryDAO.new {
-                    productId = product.id
-                    this.shopId = resolvedShopId.entityID(ShopTable)
-                    warehouseId = warehouse.id
-                    stockQuantity = productRequest.stockQuantity
-                    minimumStockLevel = 10
-                    maximumStockLevel = 1000
-                    status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
+                if (!productRequest.isDigital) {
+                    val warehouse =
+                        WarehouseDAO.find {
+                            (WarehouseTable.shopId eq resolvedShopId.entityID(ShopTable)) and
+                                (WarehouseTable.isActive eq true)
+                        }.firstOrNull()
+                            ?: WarehouseDAO.new {
+                                this.shopId = resolvedShopId.entityID(ShopTable)
+                                name = "Default"
+                                code = "DEFAULT"
+                            }
+                    InventoryDAO.new {
+                        productId = product.id
+                        this.shopId = resolvedShopId.entityID(ShopTable)
+                        warehouseId = warehouse.id
+                        stockQuantity = productRequest.stockQuantity
+                        minimumStockLevel = 10
+                        maximumStockLevel = 1000
+                        status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
+                    }
                 }
                 product.toProductResponse(stockQuantity = productRequest.stockQuantity)
             }
@@ -225,18 +230,22 @@ class ProductRepositoryImpl : ProductRepository {
                 updateProduct.weight?.let { weight = BigDecimal.valueOf(it) }
                 updateProduct.dimensions?.let { dimensions = it.takeIf { value -> value.isNotBlank() } }
                 updateProduct.minOrderQuantity?.let { minOrderQuantity = it.coerceAtLeast(1) }
-                price = updateProduct.price?.let { Money.scale2(it) } ?: price
-                discountPrice =
+                val effectivePrice = updateProduct.price?.let { Money.scale2(it) } ?: price
+                val effectiveDiscount =
                     when {
                         updateProduct.clearDiscountPrice -> null
                         updateProduct.discountPrice != null -> Money.scale2(updateProduct.discountPrice)
                         else -> discountPrice
                     }
+                if (effectiveDiscount != null && effectiveDiscount >= effectivePrice) {
+                    throw ValidationException("Discount price must be lower than the regular price")
+                }
+                price = effectivePrice
+                discountPrice = effectiveDiscount
                 status = updateProduct.status ?: status
                 discountPercentage = Money.discountPercent(price, discountPrice)
                 videoLink = updateProduct.videoLink ?: videoLink
-                hotDeal = updateProduct.hotDeal ?: hotDeal
-                featured = updateProduct.featured ?: featured
+                // hotDeal/featured are admin-curated; seller updates cannot change them.
                 freeShipping = updateProduct.freeShipping ?: freeShipping
                 isDigital = updateProduct.isDigital ?: isDigital
                 updateProduct.digitalAssetUrl?.let { digitalAssetUrl = it.takeIf { value -> value.isNotBlank() } }
@@ -249,24 +258,21 @@ class ProductRepositoryImpl : ProductRepository {
 
     override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
         readQuery {
-            val approvedShops = approvedShopIds()
-            if (approvedShops.isEmpty()) {
-                return@readQuery emptyPage(productQuery.limit, productQuery.offset)
-            }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
                     (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
                         ProductTable.deletedAt.isNull() and
-                        (ProductTable.shopId inList approvedShops)
+                        (ProductTable.shopId inSubQuery approvedShopIdsQuery())
                 }.applyProductFilters(productQuery),
                 productQuery.limit,
                 productQuery.offset,
             )
         }
 
-    private fun approvedShopIds(): List<String> =
-        ShopDAO.find { ShopTable.status eq com.piashcse.constants.ShopStatus.APPROVED }
-            .map { it.id.value }
+    private fun approvedShopIdsQuery() =
+        ShopTable.select(ShopTable.id).where {
+            ShopTable.status eq com.piashcse.constants.ShopStatus.APPROVED
+        }
 
     override suspend fun getProductsByShop(
         shopId: String,
@@ -437,6 +443,9 @@ class ProductRepositoryImpl : ProductRepository {
         if (request.inStockOnly == true) {
             whereClauses.add("p.status = ?")
             whereParams.add(ProductStatus.ACTIVE.name)
+            whereClauses.add(
+                "EXISTS (SELECT 1 FROM inventory i WHERE i.product_id = p.id AND i.stock_quantity > 0)",
+            )
         } else {
             whereClauses.add("p.status IN (?, ?)")
             whereParams.add(ProductStatus.ACTIVE.name)
@@ -652,15 +661,11 @@ class ProductRepositoryImpl : ProductRepository {
         limit: Int? = null,
     ): PaginatedResponse<ProductResponse> =
         query {
-            val approvedShops = approvedShopIds()
-            if (approvedShops.isEmpty()) {
-                return@query emptyPage(limit ?: 0)
-            }
             val statusCondition =
                 condition and
                     (ProductTable.status eq ProductStatus.ACTIVE) and
                     ProductTable.deletedAt.isNull() and
-                    (ProductTable.shopId inList approvedShops)
+                    (ProductTable.shopId inSubQuery approvedShopIdsQuery())
             val count = ProductDAO.count(statusCondition)
             val products =
                 ProductDAO.find(statusCondition)

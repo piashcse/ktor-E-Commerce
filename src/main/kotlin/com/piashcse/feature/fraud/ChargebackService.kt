@@ -3,7 +3,10 @@ package com.piashcse.feature.fraud
 import com.piashcse.constants.ChargebackStatus
 import com.piashcse.database.entities.ChargebackDAO
 import com.piashcse.database.entities.ChargebackTable
+import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.SellerPayoutDAO
+import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.isResolved
 import com.piashcse.utils.common.DateTimes
@@ -148,6 +151,24 @@ class ChargebackService {
             request.reason?.let { chargeback.reason = it }
             if (request.status in listOf(ChargebackStatus.WON, ChargebackStatus.LOST, ChargebackStatus.CLOSED)) {
                 chargeback.resolvedAt = currentUtc()
+            }
+            if (request.status == ChargebackStatus.LOST) {
+                // A lost dispute is a realised loss. Reverse the seller ledger
+                // and mark the payment so another refund cannot pay it twice.
+                PaymentDAO.findById(chargeback.paymentId.value)?.let { payment ->
+                    payment.status = com.piashcse.constants.PaymentStatus.REFUNDED
+                    payment.providerStatus = "chargeback-lost"
+                }
+                SellerPayoutDAO.find {
+                    SellerPayoutTable.orderId eq chargeback.orderId
+                }.forEach { payout ->
+                    payout.payoutAmount = java.math.BigDecimal.ZERO.setScale(2)
+                    payout.commissionAmount = java.math.BigDecimal.ZERO.setScale(2)
+                    payout.status = com.piashcse.constants.PayoutStatus.REFUNDED.name
+                }
+                OrderDAO.findById(chargeback.orderId.value)?.let { order ->
+                    order.paymentStatus = com.piashcse.constants.PaymentStatus.REFUNDED
+                }
             }
             chargeback.toResponse()
         }

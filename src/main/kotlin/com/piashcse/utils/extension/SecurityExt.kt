@@ -1,13 +1,20 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.constants.MembershipStatus
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
+import com.piashcse.database.entities.ShopMemberTable
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inSubQuery
+import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.jdbc.select
 
 /**
  * Verifies that the resource is owned by the specified user ID.
@@ -24,8 +31,22 @@ fun <T : BaseEntity> T.verifyOwnership(
     return this
 }
 
-/** Finds the seller record for a given user ID. */
-fun findSellerByUserId(userId: String): SellerDAO? = SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
+/**
+ * Finds the seller record for a user. Shop staff are not sellers themselves;
+ * for an accepted invitation, resolve the inviting shop's seller record so the
+ * existing seller-scoped repositories work for members too.
+ */
+fun findSellerByUserId(userId: String): SellerDAO? =
+    SellerDAO.find {
+        (SellerTable.userId eq userId) or
+            (
+                SellerTable.shopId inSubQuery
+                    ShopMemberTable.select(ShopMemberTable.shopId).where {
+                        (ShopMemberTable.userId eq userId.entityID(UserTable)) and
+                            (ShopMemberTable.status eq MembershipStatus.ACTIVE)
+                    }
+            )
+    }.firstOrNull()
 
 /** Finds the seller record for a given user ID or throws ForbiddenException. */
 fun requireSellerByUserId(userId: String): SellerDAO =

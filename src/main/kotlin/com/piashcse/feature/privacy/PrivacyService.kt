@@ -207,6 +207,23 @@ class PrivacyService {
                     )
                 },
             )
+            put(
+                "seller",
+                SellerDAO.find { SellerTable.userId eq user.id }.map {
+                    mapOf(
+                        "sellerId" to it.id.value,
+                        "shopId" to (it.shopId?.value ?: ""),
+                        "businessName" to (it.businessName ?: ""),
+                        "businessRegistrationNumber" to (it.businessRegistrationNumber ?: ""),
+                        "taxId" to (it.taxId ?: ""),
+                        "bankName" to (it.bankName ?: ""),
+                        "bankAccountNumber" to (it.bankAccountNumber ?: ""),
+                        "bankRoutingNumber" to (it.bankRoutingNumber ?: ""),
+                        "kycStatus" to it.kycStatus.name,
+                        "kycDocumentUrl" to (it.kycDocumentUrl ?: ""),
+                    )
+                },
+            )
         }
 
     suspend fun erase(
@@ -293,6 +310,22 @@ class PrivacyService {
         SupportTicketDAO.find { SupportTicketTable.userId eq user.id }.forEach { it.delete() }
         DigitalEntitlementDAO.find { DigitalEntitlementTable.userId eq user.id }.forEach { it.delete() }
         AnalyticsEventDAO.find { AnalyticsEventTable.userId eq user.id }.forEach { it.delete() }
+        // Seller KYC/bank/tax identifiers are the highest-risk PII in the
+        // system and must not survive an erasure request.
+        SellerDAO.find { SellerTable.userId eq user.id }.forEach { seller ->
+            seller.businessName = null
+            seller.businessRegistrationNumber = null
+            seller.taxId = null
+            seller.bankAccountNumber = null
+            seller.bankName = null
+            seller.bankRoutingNumber = null
+            seller.kycDocumentUrl = null
+            seller.kycStatus = com.piashcse.constants.KycStatus.NOT_SUBMITTED
+            seller.kycSubmittedAt = null
+            seller.kycVerifiedAt = null
+            seller.kycRejectionReason = null
+            KycStatusHistoryDAO.find { KycStatusHistoryTable.sellerId eq seller.id }.forEach { it.delete() }
+        }
         WalletLedgerDAO.find { WalletLedgerTable.userId eq user.id }.forEach { it.delete() }
         WalletAccountDAO.find { WalletAccountTable.userId eq user.id }.forEach { it.delete() }
         SellerReviewDAO.find { SellerReviewTable.userId eq user.id }.forEach { it.delete() }

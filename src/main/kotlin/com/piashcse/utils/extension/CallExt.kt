@@ -37,8 +37,10 @@ val ApplicationCall.clientIp: String
     get() {
         val trustProxy = runCatching { DotEnv.getBoolean("TRUST_PROXY", false) }.getOrDefault(false)
         if (trustProxy) {
+            // Use the hop appended by the nearest trusted proxy; the leftmost
+            // value is client-controlled when the proxy appends.
             request.headers[HttpHeaders.XForwardedFor]
-                ?.substringBefore(',')
+                ?.substringAfterLast(',')
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { return it }

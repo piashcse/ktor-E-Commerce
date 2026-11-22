@@ -26,9 +26,14 @@ suspend fun ApplicationCall.receiveSingleImage(
     publicUrl: (String) -> String,
 ): String {
     var imageUrl: String? = null
+    var fileParts = 0
     receiveMultipart().forEachPart { part ->
         try {
             if (part is PartData.FileItem) {
+                fileParts++
+                if (fileParts > 1) {
+                    throw ValidationException("Exactly one file part is allowed")
+                }
                 val bytes = UploadService.readAndValidateImagePart(part, purpose)
                 imageUrl = publicUrl(upload(part, bytes))
             }

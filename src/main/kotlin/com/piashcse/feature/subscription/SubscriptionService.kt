@@ -166,6 +166,23 @@ class SubscriptionService(
         query {
             ProductDAO.findById(request.productId) ?: request.productId.throwNotFound("Product")
             val plan = SubscriptionPlanDAO.findById(id) ?: id.throwNotFound("Subscription plan")
+            val hasLiveSubscribers =
+                SubscriptionDAO.find {
+                    (SubscriptionTable.planId eq plan.id) and
+                        (
+                            SubscriptionTable.status inList
+                                listOf(
+                                    SubscriptionStatus.PENDING,
+                                    SubscriptionStatus.ACTIVE,
+                                    SubscriptionStatus.PAST_DUE,
+                                )
+                        )
+                }.any()
+            if (hasLiveSubscribers) {
+                throw ValidationException(
+                    "Plan terms cannot be changed while it has pending/active subscribers",
+                )
+            }
             plan.apply {
                 name = request.name
                 description = request.description
@@ -296,10 +313,17 @@ class SubscriptionService(
         query {
             val subscription = SubscriptionDAO.findById(subscriptionId) ?: subscriptionId.throwNotFound("Subscription")
             if (subscription.userId.value != userId) throw ValidationException("Subscription not found")
-            if (subscription.status !in listOf(SubscriptionStatus.ACTIVE, SubscriptionStatus.PAST_DUE)) {
+            if (subscription.status !in
+                listOf(SubscriptionStatus.PENDING, SubscriptionStatus.ACTIVE, SubscriptionStatus.PAST_DUE)
+            ) {
                 throw ValidationException("Subscription cannot be canceled from ${subscription.status}")
             }
-            subscription.cancelAtPeriodEnd = true
+            if (subscription.status == SubscriptionStatus.PENDING) {
+                subscription.status = SubscriptionStatus.CANCELED
+                subscription.cancelAtPeriodEnd = false
+            } else {
+                subscription.cancelAtPeriodEnd = true
+            }
             subscription.toResponse(SubscriptionPlanDAO.findById(subscription.planId.value))
         }
 

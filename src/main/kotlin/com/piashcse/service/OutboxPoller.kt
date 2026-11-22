@@ -21,7 +21,10 @@ import org.slf4j.LoggerFactory
 object OutboxPoller {
     private val log = LoggerFactory.getLogger(OutboxPoller::class.java)
     private var job: Job? = null
-    private const val MAX_ATTEMPTS = 10
+
+    // At the 5s poll interval this is ~8 minutes of retries instead of ~50s,
+    // covering short DB/SMTP outages without dead-lettering live events.
+    private const val MAX_ATTEMPTS = 100
 
     fun start(
         scope: CoroutineScope,
@@ -75,7 +78,8 @@ object OutboxPoller {
         // the transaction because it waits for subscribers; a crashed instance's
         // claim expires after five minutes.
         // Must exceed the worst-case batch drain (batchSize * publish timeout).
-        val claimCutoff = currentUtc().minusMinutes(15)
+        // Must exceed the worst-case batch drain (batchSize * publish timeout).
+        val claimCutoff = currentUtc().minusMinutes(60)
         val pending =
             query {
                 OutboxDAO.find {

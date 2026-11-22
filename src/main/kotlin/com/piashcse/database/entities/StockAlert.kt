@@ -12,9 +12,9 @@ object StockAlertTable : BaseIdTable("stock_alert") {
     val variantId = reference("variant_id", ProductVariantTable.id).nullable()
     val notifiedAt = datetime("notified_at").nullable()
 
-    init {
-        uniqueIndex(customIndexName = "stock_alert_user_product_unique", userId, productId)
-    }
+    // Partial per-variant uniqueness is created by V57 in Flyway. Do not
+    // declare the obsolete (user, product) index here: schema tooling would
+    // recreate it and block alerts for a second variant.
 }
 
 class StockAlertDAO(id: EntityID<String>) : BaseEntity(id, StockAlertTable) {

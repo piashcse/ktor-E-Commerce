@@ -84,7 +84,7 @@ fun Route.giftCardAdminRoutes() {
 
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            if (!loyalty.voidGiftCard(id)) {
+            if (!loyalty.voidGiftCard(call.currentUserId, id)) {
                 throw com.piashcse.utils.validator.NotFoundException("Gift card not found")
             }
             call.respondMessage("Gift card voided")

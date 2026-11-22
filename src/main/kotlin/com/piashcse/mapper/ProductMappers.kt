@@ -41,6 +41,6 @@ fun ProductDAO.toProductResponse(
     totalReviews = totalReviews,
     totalSales = totalSales,
     stockQuantity = stockQuantity ?: 0,
-    inStock = stockQuantity?.let { it > 0 } ?: (status != ProductStatus.OUT_OF_STOCK),
+    inStock = if (isDigital) status == ProductStatus.ACTIVE else (stockQuantity ?: 0) > 0 && status == ProductStatus.ACTIVE,
     variants = variants,
 )

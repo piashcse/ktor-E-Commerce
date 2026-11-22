@@ -174,6 +174,12 @@ class ShipmentService(
             if (replay != null && replay.status != ShipmentStatus.FAILED) {
                 return query { replay.toResponse() }
             }
+            if (replay != null && replay.status == ShipmentStatus.FAILED) {
+                // Retry the carrier with the same key: remove the failed row so
+                // the unique (order_id, idempotency_key) index does not return
+                // the old failure as a 201 success.
+                query { replay.delete() }
+            }
         }
 
         // Reserve the allocation before calling the carrier. A PENDING shipment

@@ -312,7 +312,6 @@ fun Route.orderSellerRoutes() {
 
     writeRateLimit {
         post("{id}/shipping") {
-            OrderStatusPolicy.assertSeller(call.requireUserType())
             val body = call.receive<ShipOrderRequest>()
             call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
         }.describe {
@@ -320,7 +319,6 @@ fun Route.orderSellerRoutes() {
             requestBody { jsonBody<ShipOrderRequest>() }
         }
         post("{id}/cancel") {
-            OrderStatusPolicy.assertSeller(call.requireUserType())
             call.respondOk(
                 orderRepo.cancelOrder(
                     call.requirePathParameter("id"),

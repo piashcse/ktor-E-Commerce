@@ -16,7 +16,9 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.inSubQuery
 import org.jetbrains.exposed.v1.javatime.datetime
+import org.jetbrains.exposed.v1.jdbc.select
 import java.math.BigDecimal
 
 /** All inventory rows (warehouses) for a product in its shop, with optional row locking. */
@@ -168,6 +170,11 @@ private fun ProductDAO.syncProductStatus(stock: Int) {
     status = if (stock <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
 }
 
+/** Re-derive product availability after an inventory write (restocks included). */
+fun ProductDAO.refreshProductStatus() {
+    syncProductStatus(inventories().sumOf { it.stockQuantity })
+}
+
 /** Restores stock to the oldest (default) warehouse after cancellation. */
 fun ProductDAO.restoreStock(quantity: Int) = restoreStockFor(null, quantity)
 
@@ -240,25 +247,23 @@ class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
  * Aggregated availability for many products in a single query. Used by catalog
  * cards so stock badges never trigger an N+1 query per row.
  */
+private fun activeWarehouseIds() = WarehouseTable.select(WarehouseTable.id).where { WarehouseTable.isActive eq true }
+
 fun stockByProductIds(productIds: Collection<String>): Map<String, Int> {
     if (productIds.isEmpty()) return emptyMap()
-    val rows =
-        InventoryDAO.find {
-            InventoryTable.productId inList productIds.distinct().map { it.entityID(ProductTable) }
-        }
-    return rows.groupBy { it.productId.value }.mapValues { (_, stockRows) ->
-        stockRows.sumOf { it.stockQuantity }
-    }
+    return InventoryDAO.find {
+        (InventoryTable.productId inList productIds.distinct().map { it.entityID(ProductTable) }) and
+            (InventoryTable.warehouseId inSubQuery activeWarehouseIds())
+    }.groupBy { it.productId.value }.mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
 }
 
 /** Aggregated availability per variant in a single query. */
 fun stockByVariantIds(variantIds: Collection<String>): Map<String, Int> {
     if (variantIds.isEmpty()) return emptyMap()
-    val rows =
-        InventoryDAO.find {
-            InventoryTable.variantId inList variantIds.distinct().map { it.entityID(ProductVariantTable) }
-        }
-    return rows
+    return InventoryDAO.find {
+        (InventoryTable.variantId inList variantIds.distinct().map { it.entityID(ProductVariantTable) }) and
+            (InventoryTable.warehouseId inSubQuery activeWarehouseIds())
+    }
         .mapNotNull { row -> row.variantId?.value?.let { it to row.stockQuantity } }
         .groupBy({ it.first }, { it.second })
         .mapValues { (_, quantities) -> quantities.sum() }

@@ -2,7 +2,6 @@ package com.piashcse.feature.product
 
 import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.InventoryDAO
-import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductOptionDAO
 import com.piashcse.database.entities.ProductOptionTable
@@ -15,6 +14,7 @@ import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.database.entities.WarehouseTable
 import com.piashcse.database.entities.optionResponses
+import com.piashcse.database.entities.stockByVariantIds
 import com.piashcse.database.entities.variantResponses
 import com.piashcse.model.response.ProductOptionResponse
 import com.piashcse.model.response.ProductOptionValueResponse
@@ -34,7 +34,6 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 
@@ -93,15 +92,13 @@ class ProductVariantService(
         query {
             requireProduct(productId)
             val variants =
-                ProductVariantDAO.find { ProductVariantTable.productId eq productId.entityID(ProductTable) }
+                ProductVariantDAO.find {
+                    (ProductVariantTable.productId eq productId.entityID(ProductTable)) and
+                        (ProductVariantTable.status eq ProductStatus.ACTIVE)
+                }
                     .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
                     .toList()
-            val stockByVariant =
-                InventoryDAO.find {
-                    (InventoryTable.productId eq productId.entityID(ProductTable)) and
-                        (InventoryTable.variantId.isNotNull())
-                }.groupBy { it.variantId!!.value }
-                    .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
+            val stockByVariant = stockByVariantIds(variants.map { it.id.value })
             variantResponses(variants, stockByVariant)
         }
 
@@ -287,8 +284,20 @@ class ProductVariantService(
         invalidateCatalog()
     }
 
-    private fun requireProduct(productId: String): ProductDAO =
-        ProductDAO.findById(productId)?.takeIf { it.deletedAt == null } ?: productId.throwNotFound("Product")
+    private fun requireProduct(productId: String): ProductDAO {
+        val product =
+            ProductDAO.findById(productId)?.takeIf { it.deletedAt == null }
+                ?: productId.throwNotFound("Product")
+        product.shopId?.value?.let { shopId ->
+            val shop =
+                com.piashcse.database.entities.ShopDAO.findById(shopId)
+                    ?: productId.throwNotFound("Product")
+            if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+                productId.throwNotFound("Product")
+            }
+        }
+        return product
+    }
 
     private fun requireOwnedProduct(
         actorUserId: String,

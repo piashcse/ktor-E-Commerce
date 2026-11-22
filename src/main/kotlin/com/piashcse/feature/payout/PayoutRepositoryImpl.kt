@@ -405,6 +405,15 @@ class PayoutRepositoryImpl : PayoutRepository {
                     SellerPayoutDAO.find { SellerPayoutTable.payoutRequestId eq request.id }
                         .forUpdate()
                         .toList()
+                // A request can be APPROVED while some of its rows have already
+                // been paid individually. Rejecting the request must never reset
+                // those rows to PENDING, or the same money becomes withdrawable
+                // twice.
+                if (target == PayoutStatus.REJECTED &&
+                    rows.any { it.status == PayoutStatus.PAID.name || it.status == PayoutStatus.REFUNDED.name }
+                ) {
+                    throw ConflictException("Payout request contains already-paid rows and cannot be rejected")
+                }
                 request.status = target.name
                 request.rejectionReason = if (target == PayoutStatus.REJECTED) reason?.takeIf { it.isNotBlank() } else null
                 rows.forEach { row ->

@@ -1,8 +1,9 @@
 package com.piashcse.plugin
 
-import com.piashcse.event.EventBus
+import com.piashcse.event.AdminAudit
 import com.piashcse.model.request.JwtTokenRequest
 import io.ktor.http.HttpMethod
+import io.ktor.http.isSuccess
 import io.ktor.server.application.createApplicationPlugin
 import io.ktor.server.application.hooks.CallFailed
 import io.ktor.server.application.hooks.ResponseSent
@@ -20,25 +21,26 @@ val AdminAuditPlugin =
             if (call.request.httpMethod == HttpMethod.Get) return@on
             val path = call.request.path()
             if (!path.startsWith("/api/v1/admin/")) return@on
+            if (call.response.status()?.isSuccess() != true) return@on
             val principal = call.principal<JwtTokenRequest>() ?: return@on
             val segments = path.removePrefix("/api/v1/admin/").split('/').filter { it.isNotBlank() }
-            EventBus.publishAdminAction(
-                Triple(principal.userId, principal.email, principal.getUserType()?.name ?: ""),
-                action = "${call.request.httpMethod.value} ${call.request.path()}",
-                resourceType = segments.firstOrNull() ?: "admin",
-                resourceId = segments.getOrNull(1),
+            AdminAudit.publish(
+                principal.userId,
+                "${call.request.httpMethod.value} ${call.request.path()}",
+                segments.firstOrNull() ?: "admin",
+                segments.getOrNull(1),
             )
         }
         on(CallFailed) { call, cause ->
             if (call.request.httpMethod == HttpMethod.Get) return@on
             if (!call.request.path().startsWith("/api/v1/admin/")) return@on
             val principal = call.principal<JwtTokenRequest>() ?: return@on
-            EventBus.publishAdminAction(
-                Triple(principal.userId, principal.email, principal.getUserType()?.name ?: ""),
-                action = "FAILED ${call.request.httpMethod.value} ${call.request.path()}",
-                resourceType = "admin",
-                resourceId = null,
-                details = cause.message,
+            AdminAudit.publish(
+                principal.userId,
+                "FAILED ${call.request.httpMethod.value} ${call.request.path()}",
+                "admin",
+                null,
+                cause.message,
             )
         }
     }

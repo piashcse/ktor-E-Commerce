@@ -85,7 +85,7 @@ class ProductVariantDAO(id: EntityID<String>) : BaseEntity(id, ProductVariantTab
         isDefault = isDefault,
         sortOrder = sortOrder,
         stockQuantity = stockQuantity ?: 0,
-        inStock = stockQuantity?.let { it > 0 } ?: (status == ProductStatus.ACTIVE),
+        inStock = status == ProductStatus.ACTIVE && (stockQuantity ?: 0) > 0,
         options = options,
     )
 }

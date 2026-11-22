@@ -253,6 +253,9 @@ class SupportService {
             if (ticket.status !in listOf(TicketStatus.RESOLVED, TicketStatus.CLOSED)) {
                 throw ValidationException("Only resolved or closed tickets can be rated")
             }
+            if (ticket.csatRatedAt != null) {
+                throw ValidationException("This ticket has already been rated")
+            }
             ticket.csatScore = request.score
             ticket.csatComment = request.comment?.trim()?.takeIf { it.isNotBlank() }
             ticket.csatRatedAt = currentUtc()

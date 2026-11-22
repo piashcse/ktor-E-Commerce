@@ -395,6 +395,7 @@ class NotificationSubscriber(
 
     private suspend fun notifyStockAlerts(event: BackInStockEvent) {
         val product = query { ProductDAO.findById(event.productId) } ?: return
+        if (product.deletedAt != null || product.status != com.piashcse.constants.ProductStatus.ACTIVE) return
         val alerts =
             query {
                 StockAlertDAO.find {

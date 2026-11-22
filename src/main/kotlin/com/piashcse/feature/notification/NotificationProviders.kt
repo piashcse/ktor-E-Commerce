@@ -47,7 +47,9 @@ class EmailNotificationProvider : NotificationProvider {
 
     override suspend fun send(message: NotificationMessage): Boolean {
         val to = message.email?.takeIf { it.isNotBlank() } ?: return false
-        EmailSender.send(to, message.title, message.body)
+        if (!EmailSender.send(to, message.title, message.body)) {
+            error("Email delivery was rate-limited for ${message.eventType}")
+        }
         return true
     }
 }

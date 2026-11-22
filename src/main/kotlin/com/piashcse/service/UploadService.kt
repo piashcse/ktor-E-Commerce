@@ -26,6 +26,7 @@ import java.util.*
  */
 object UploadService {
     private val log = LoggerFactory.getLogger(UploadService::class.java)
+    private val directoryLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
 
     // Upload configuration
     private val uploadBaseDir = DotEnvConfig.uploadDir
@@ -256,12 +257,14 @@ object UploadService {
                 throw ValidationException(Message.Upload.INVALID_FILE_PATH)
             }
 
-            val dirSize = targetDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
-            if (dirSize + bytes.size > MAX_STORAGE_PER_DIR) {
-                throw ValidationException(Message.Upload.storageQuotaExceeded(purpose))
+            val lock = directoryLocks.computeIfAbsent(targetDir.canonicalPath) { Any() }
+            synchronized(lock) {
+                val dirSize = targetDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                if (dirSize + bytes.size > MAX_STORAGE_PER_DIR) {
+                    throw ValidationException(Message.Upload.storageQuotaExceeded(purpose))
+                }
+                targetFile.writeBytes(bytes)
             }
-
-            targetFile.writeBytes(bytes)
             AsyncWorker.enqueue(BackgroundTask.ProcessImage(targetFile.absolutePath))
             fileName
         }

@@ -235,6 +235,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+            if (r.status != ReviewStatus.ACTIVE) reviewId.throwNotFound("Review")
             if (r.userId.value == userId) throw ValidationException("You cannot vote on your own review")
             val existingVote =
                 ReviewHelpfulVoteDAO.find {

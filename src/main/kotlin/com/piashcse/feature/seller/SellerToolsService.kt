@@ -212,7 +212,9 @@ class SellerToolsService {
                 (SellerReviewTable.sellerId eq sellerId.entityID(SellerTable)) and
                     (SellerReviewTable.status eq ReviewStatus.ACTIVE)
             }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
-            .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+            .toPaginatedResponse(limit, offset) {
+                SellerReviewDAO.wrapRow(it).toResponse(includePrivate = includePrivate)
+            }
 
     /** Public shop reviews, exposed so the storefront can show seller reputation. */
     suspend fun reviewsForShop(

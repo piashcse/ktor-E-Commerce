@@ -6,7 +6,6 @@ package com.piashcse.feature.config
 
 import com.piashcse.config.DotEnv
 import com.piashcse.constants.PaymentMethod
-import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.availablePaymentMethods
@@ -35,6 +34,7 @@ data class PublicConfigResponse(
 fun Route.configRoutes() {
     val featureFlags: FeatureFlags by inject()
     val gateway: PaymentGateway by inject()
+    val fxService: com.piashcse.service.FxService by inject()
 
     generalRateLimit {
         get {
@@ -44,7 +44,13 @@ fun Route.configRoutes() {
                     requirePolicyConsent =
                         DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false) ||
                             featureFlags.isEnabled("require_policy_consent"),
-                    supportedCurrencies = SupportedCurrencies.ALL.sorted(),
+                    supportedCurrencies =
+                        com.piashcse.service.CacheService.cache.get<List<String>>("config:currencies")
+                            ?: (
+                                listOf("USD") + fxService.listRates().map { it.targetCurrency }
+                            ).distinct().sorted().also {
+                                com.piashcse.service.CacheService.cache.set("config:currencies", it, 60)
+                            },
                     paymentMethods = gateway.availablePaymentMethods(),
                     paymentProvider = gateway.provider.name,
                     freeShippingThreshold = Money.str(StorefrontSettings.freeShippingThreshold),

@@ -307,6 +307,12 @@ class LoyaltyService {
             WalletAccountDAO.find { WalletAccountTable.referralCode eq normalized }.firstOrNull()
                 ?: throw ValidationException("Referral code not found")
         if (referrer.userId.value == userId) throw ValidationException("You cannot refer yourself")
+        val alreadyPurchased =
+            com.piashcse.database.entities.OrderDAO.find {
+                (com.piashcse.database.entities.OrderTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
+                    (com.piashcse.database.entities.OrderTable.paymentStatus eq com.piashcse.constants.PaymentStatus.COMPLETED)
+            }.any()
+        if (alreadyPurchased) throw ValidationException("Referral codes are only for new customers")
         if (ReferralDAO.find { ReferralTable.refereeUserId eq userId.entityID(com.piashcse.database.entities.UserTable) }.any()) {
             throw ValidationException("A referral has already been claimed")
         }
@@ -423,6 +429,9 @@ class LoyaltyService {
             if (request.amount <= BigDecimal.ZERO) {
                 throw FieldValidationException(listOf(FieldViolation("amount", "Amount must be positive")))
             }
+            if (!request.currency.equals("USD", ignoreCase = true)) {
+                throw ValidationException("Only USD gift cards are supported")
+            }
             val code = request.code?.trim()?.uppercase()?.takeIf { it.isNotBlank() } ?: uniqueGiftCardCode()
             if (GiftCardDAO.find { GiftCardTable.code eq code }.any()) {
                 throw ValidationException("Gift card code already exists")
@@ -435,6 +444,14 @@ class LoyaltyService {
                 this.status = GiftCardStatus.ACTIVE
                 this.issuedBy = issuedBy.entityID(com.piashcse.database.entities.UserTable)
                 this.expiresAt = DateTimes.parseFlexibleOrNull(request.expiresAt, "expiresAt")
+            }.also {
+                com.piashcse.event.AdminAudit.publish(
+                    issuedBy,
+                    "GIFT_CARD_ISSUED",
+                    "GIFT_CARD",
+                    it.id.value,
+                    "${it.initialBalance.toPlainString()} ${it.currency}",
+                )
             }.toGiftCardResponse()
         }
 
@@ -448,14 +465,33 @@ class LoyaltyService {
                 .toPaginatedResponse(limit, offset) { GiftCardDAO.wrapRow(it).toGiftCardResponse() }
         }
 
-    suspend fun voidGiftCard(id: String): Boolean =
+    suspend fun voidGiftCard(id: String): Boolean = voidGiftCard("system", id)
+
+    suspend fun voidGiftCard(
+        actorUserId: String,
+        id: String,
+    ): Boolean =
         query {
             val card = GiftCardDAO.findById(id) ?: return@query false
             card.status = GiftCardStatus.VOID
+            com.piashcse.event.AdminAudit.publish(
+                actorUserId,
+                "GIFT_CARD_VOIDED",
+                "GIFT_CARD",
+                id,
+                "Card voided",
+            )
             true
         }
 
+    /** Legacy/test call without an actor; audited as SYSTEM. */
     suspend fun adminCredit(
+        userId: String,
+        request: AdminCreditRequest,
+    ): WalletResponse = adminCredit("system", userId, request)
+
+    suspend fun adminCredit(
+        actorUserId: String,
         userId: String,
         request: AdminCreditRequest,
     ): WalletResponse =
@@ -469,6 +505,13 @@ class LoyaltyService {
                 this.creditDelta = request.amount
                 this.note = request.note ?: "Admin store-credit adjustment"
             }
+            com.piashcse.event.AdminAudit.publish(
+                actorUserId,
+                "WALLET_CREDITED",
+                "WALLET",
+                userId,
+                "Credit ${request.amount.toPlainString()}",
+            )
             account.toWalletResponse()
         }
 

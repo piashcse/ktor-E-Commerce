@@ -11,14 +11,12 @@ import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
 import com.piashcse.event.EventBus
-import com.piashcse.event.OutboxPublisher
-import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderCompletion
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
-import com.piashcse.feature.seller.PayoutLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.mapper.toPaymentResponse
@@ -145,38 +143,16 @@ class PaymentRepositoryImpl(
         // REVIEW payments must be explicitly released by an admin before the order is paid.
         if (payment.riskDecision != RiskDecision.ALLOW) return
         if (order.paymentStatus == PaymentStatus.COMPLETED) return
+        // A refunded order is terminal. A late/retried success webhook or an
+        // admin confirmation must never move it back to PAID.
+        if (order.paymentStatus == PaymentStatus.REFUNDED) return
         // Never resurrect an auto-canceled/received order. If the provider has
         // already captured money, the late payment needs an explicit refund.
         if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) return
         val paid = completedTotal(order.id, order.currency)
         if (paid < order.total) return
 
-        order.paymentStatus = PaymentStatus.COMPLETED
-        order.status = OrderStatus.PAID
-        val loyaltyTotalUsd =
-            if (order.fxRate > BigDecimal.ZERO) {
-                order.total.divide(order.fxRate, 2, java.math.RoundingMode.HALF_UP)
-            } else {
-                order.total
-            }
-        loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, loyaltyTotalUsd)
-        digitalDelivery.grantForOrderTx(order)
-        // Create the seller ledger inside the same transaction so an immediate
-        // refund/cancellation can reverse it deterministically.
-        PayoutLedger.createForOrderTx(order)
-        StockReservationDAO.find { StockReservationTable.orderId eq order.id }
-            .forEach { it.status = ReservationStatus.FINALIZED }
-        OutboxPublisher.enqueueTx(
-            "PAYMENT",
-            payment.id.value,
-            PaymentCompletedEvent(
-                paymentId = payment.id.value,
-                orderId = order.id.value,
-                userId = order.userId.value,
-                email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                amount = payment.amount,
-            ),
-        )
+        OrderCompletion.completeTx(order, payment, loyaltyService, digitalDelivery)
     }
 
     private data class PaymentOrderSnapshot(
@@ -216,6 +192,15 @@ class PaymentRepositoryImpl(
                     paymentRequest.amount.toPlainString(),
                     remaining.toPlainString(),
                 ),
+            )
+        }
+        // Partial card captures leave an order that can be neither cancelled
+        // (a captured payment exists) nor refunded (refund requires delivery).
+        // Until a deposit/partial-payment model exists, require settlement of
+        // the full remaining amount.
+        if (paymentRequest.amount.compareTo(remaining) != 0) {
+            throw ValidationException(
+                "Payment must settle the full remaining amount (${remaining.toPlainString()})",
             )
         }
         return PaymentOrderSnapshot(
@@ -317,12 +302,28 @@ class PaymentRepositoryImpl(
             }
         if (replay != null) return replay
 
+        // Offline orders already have a server-created PENDING payment row.
+        // Return it instead of creating a duplicate COD/bank-transfer row.
+        val offlinePayment =
+            query {
+                PaymentDAO.find {
+                    (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
+                        (PaymentTable.userId eq callerUserId.entityID(UserTable)) and
+                        (PaymentTable.status eq PaymentStatus.PENDING) and
+                        (PaymentTable.provider eq PaymentProvider.MANUAL)
+                }.firstOrNull()
+            }
+        if (offlinePayment != null) return offlinePayment.toPaymentResponse()
+
         // Never leave two live provider intents for the same order: a second
         // confirmed intent would capture extra money that is never refunded.
         val openIntent =
             query {
                 PaymentDAO.find {
                     (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
+                        // Never expose another caller's intent/client secret. The
+                        // order-ownership check still runs below for non-replay paths.
+                        (PaymentTable.userId eq callerUserId.entityID(UserTable)) and
                         (PaymentTable.status eq PaymentStatus.PENDING) and
                         (PaymentTable.providerReference.isNotNull())
                 }.firstOrNull()
@@ -363,9 +364,15 @@ class PaymentRepositoryImpl(
                     paymentMethod = paymentRequest.paymentMethod,
                     transactionId = paymentRequest.transactionId,
                     returnUrl = paymentRequest.returnUrl,
+                    // Namespace client keys per caller so one user cannot collide
+                    // with another user's provider idempotency key.
                     idempotencyKey =
                         paymentRequest.idempotencyKey
-                            ?: "charge:${paymentRequest.orderId}:${paymentRequest.amount.toPlainString()}:${paymentRequest.paymentMethod}",
+                            ?.let { "u:$callerUserId:$it" }
+                            ?: (
+                                "charge:$callerUserId:${paymentRequest.orderId}:" +
+                                    "${paymentRequest.amount.toPlainString()}:${paymentRequest.paymentMethod}"
+                            ),
                     require3ds = risk.requires3ds,
                 )
             }
@@ -493,8 +500,10 @@ class PaymentRepositoryImpl(
             if (!payment.isPayable()) {
                 throw ValidationException(Message.Payments.CANNOT_CONFIRM.format(payment.status))
             }
-            if (payment.status == PaymentStatus.FAILED && payment.provider != PaymentProvider.MANUAL) {
-                throw ValidationException("A failed provider payment must be retried through the gateway")
+            if (payment.provider != PaymentProvider.MANUAL) {
+                throw ValidationException(
+                    "Provider payments must be confirmed by a verified gateway webhook",
+                )
             }
 
             val order =
@@ -505,6 +514,9 @@ class PaymentRepositoryImpl(
 
             if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) {
                 throw ValidationException(Message.Payments.CANNOT_PAY_CANCELED)
+            }
+            if (order.paymentStatus == PaymentStatus.REFUNDED) {
+                throw ValidationException("Refunded orders cannot be paid again")
             }
 
             payment.status = PaymentStatus.COMPLETED
@@ -649,6 +661,9 @@ class PaymentRepositoryImpl(
                     (PaymentTable.providerReference eq reference) or (PaymentTable.transactionId eq reference)
                 }.firstOrNull { it.status != PaymentStatus.REFUNDED }
             } ?: return false
+        // Only refund a capture whose order is genuinely no longer payable.
+        val order = OrderDAO.findById(payment.orderId.value) ?: return false
+        if (order.status != OrderStatus.CANCELED && order.status != OrderStatus.RECEIVED) return false
         val providerReference = payment.providerReference ?: return false
         val refund =
             runCatching {
@@ -728,6 +743,10 @@ class PaymentRepositoryImpl(
                         if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) {
                             payment.providerStatus = "paid_on_canceled_order"
                             return null
+                        }
+                        if (order.paymentStatus == PaymentStatus.REFUNDED) {
+                            payment.providerStatus = "paid_on_refunded_order"
+                            return true
                         }
                         payment.status = PaymentStatus.COMPLETED
                         payment.scaStatus = ScaStatus.AUTHENTICATED

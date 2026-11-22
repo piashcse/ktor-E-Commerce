@@ -103,7 +103,7 @@ object EventBus {
      */
     suspend fun publishAndAwait(
         event: DomainEvent,
-        timeoutMs: Long = 10_000L,
+        timeoutMs: Long = 60_000L,
     ): Boolean {
         if (!isReady()) return false
         val ack = CompletableDeferred<Boolean>()

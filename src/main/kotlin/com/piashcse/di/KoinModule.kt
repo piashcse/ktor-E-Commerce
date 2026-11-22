@@ -130,7 +130,7 @@ val serviceModule =
         single { CmsService() }
         single { SupportService() }
         single { ProductTranslationService() }
-        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
+        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get(), get()) }
         single<CarrierGateway> {
             if (DotEnvConfig.shippingProvider == "shippo") {
                 require(DotEnvConfig.shippoApiToken.isNotBlank()) {
@@ -150,6 +150,9 @@ val serviceModule =
             if (DotEnvConfig.paymentProvider == "stripe") {
                 require(DotEnvConfig.stripeSecretKey.isNotBlank()) {
                     "STRIPE_SECRET_KEY must be set when PAYMENT_PROVIDER=stripe"
+                }
+                require(DotEnvConfig.stripeWebhookSecret.isNotBlank()) {
+                    "STRIPE_WEBHOOK_SECRET must be set when PAYMENT_PROVIDER=stripe"
                 }
                 StripePaymentGateway(
                     secretKey = DotEnvConfig.stripeSecretKey,

@@ -201,13 +201,23 @@ class RefundRequestRepositoryImpl(
         orderItem: OrderItemDAO,
         quantity: Int,
     ): BigDecimal {
-        val discountShare =
+        // Use the discount actually persisted on this line. Applying the whole
+        // order discount proportionally over-refunds ineligible lines and
+        // under-refunds discounted ones when a coupon is item-scoped. Wallet
+        // credit/gift-card amounts are payment instruments, not item discounts,
+        // so they are subtracted from the cash-refund cap separately.
+        val instrumentDiscount = order.walletDiscount.add(order.giftCardDiscount)
+        val instrumentShare =
             if (order.subTotal > BigDecimal.ZERO) {
-                Money.proportionalSplit(order.discountAmount, orderItem.total, order.subTotal)
+                Money.proportionalSplit(instrumentDiscount, orderItem.total, order.subTotal)
             } else {
                 BigDecimal.ZERO.setScale(2)
             }
-        val netItemTotal = orderItem.total.subtract(discountShare).max(BigDecimal.ZERO)
+        val netItemTotal =
+            orderItem.total
+                .subtract(orderItem.discountAmount)
+                .subtract(instrumentShare)
+                .max(BigDecimal.ZERO)
         val unitNet = netItemTotal.divide(BigDecimal(orderItem.quantity), 4, java.math.RoundingMode.HALF_UP)
         return unitNet.multiply(BigDecimal(quantity)).setScale(2, java.math.RoundingMode.HALF_UP)
     }
@@ -224,7 +234,7 @@ class RefundRequestRepositoryImpl(
         // Stock and sales counters. Restore each warehouse allocation that is
         // still outstanding for this order line; fall back to the pickup/first
         // warehouse for reservations created before allocation tracking.
-        ProductDAO.findById(orderItem.productId.value)?.let { product ->
+        ProductDAO.findById(orderItem.productId.value)?.takeUnless { it.isDigital }?.let { product ->
             val reservations =
                 StockReservationDAO.find { StockReservationTable.orderItemId eq orderItem.id }
                     .orderBy(StockReservationTable.createdAt to SortOrder.ASC)
@@ -249,17 +259,34 @@ class RefundRequestRepositoryImpl(
             product.removeSales(quantity)
         }
 
-        // Seller totals and payout ledger.
+        // Seller totals and payout ledger. Seller-funded merchandise is
+        // independent of how the customer paid (wallet/gift are platform
+        // instruments and must not be clawed back from the seller).
+        val inclusiveTaxShare =
+            if (orderItem.taxInclusive) {
+                orderItem.taxAmount
+                    .multiply(BigDecimal(quantity))
+                    .divide(BigDecimal(orderItem.quantity), 2, java.math.RoundingMode.HALF_UP)
+            } else {
+                BigDecimal.ZERO.setScale(2)
+            }
+        val sellerRefundAmount =
+            orderItem.total
+                .subtract(orderItem.discountAmount)
+                .subtract(inclusiveTaxShare)
+                .multiply(BigDecimal(quantity))
+                .divide(BigDecimal(orderItem.quantity), 2, java.math.RoundingMode.HALF_UP)
+                .max(BigDecimal.ZERO)
         SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull()?.let { seller ->
             val fallbackRate = CommissionService().resolveRateTx(seller, null)
             var totalCommissionReversed = BigDecimal.ZERO
             SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
                 // Use the rate snapshot from the original payout; current rules may have changed.
                 val rate = payout.commissionRate ?: fallbackRate
-                val commissionShare = Money.commission(refundAmount, rate)
+                val commissionShare = Money.commission(sellerRefundAmount, rate)
                 // The seller only loses the net share of the refunded item; the
                 // platform returns its commission on that portion.
-                val netRefund = refundAmount.subtract(commissionShare).max(BigDecimal.ZERO)
+                val netRefund = sellerRefundAmount.subtract(commissionShare).max(BigDecimal.ZERO)
                 payout.payoutAmount = payout.payoutAmount.subtract(netRefund).max(BigDecimal.ZERO)
                 payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
                 totalCommissionReversed = totalCommissionReversed.add(commissionShare)
@@ -267,7 +294,7 @@ class RefundRequestRepositoryImpl(
                     payout.status = PayoutStatus.REFUNDED.name
                 }
             }
-            seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
+            seller.totalSales = seller.totalSales.subtract(sellerRefundAmount).max(BigDecimal.ZERO)
             seller.totalCommission = seller.totalCommission.subtract(totalCommissionReversed).max(BigDecimal.ZERO)
         }
 
@@ -317,6 +344,14 @@ class RefundRequestRepositoryImpl(
                 val orderItem =
                     OrderItemDAO.findById(refund.orderItemId.value)
                         ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+                if (refund.status == RefundStatus.APPROVED &&
+                    !orderItem.isDigital &&
+                    !request.forceWithoutReturn
+                ) {
+                    throw ValidationException(
+                        "Mark the return as shipped before refunding, or set forceWithoutReturn for a kept/damaged item",
+                    )
+                }
                 val maxRefundAmount = maxRefundableAmount(order, orderItem, refund.quantity)
                 validateRefundAmounts(order, orderItem, refund.quantity, request, maxRefundAmount)
                 if (request.refundAmount == null && refund.refundAmount == null) {
@@ -337,6 +372,10 @@ class RefundRequestRepositoryImpl(
                     (request.refundAmount ?: refund.refundAmount ?: maxRefundAmount)
                         .add(request.refundShippingAmount ?: refund.shippingRefund)
                         .add(request.refundTaxAmount ?: refund.taxRefund)
+                // Mark the attempt before the network call. If the process/DB
+                // fails after money moves, a retry reuses the same gateway
+                // idempotency key.
+                refund.providerRefundStatus = "processing"
                 ProviderRefundPlan(
                     providerReference =
                         payment.providerReference
@@ -397,6 +436,15 @@ class RefundRequestRepositoryImpl(
                 val orderItem =
                     OrderItemDAO.findById(refundReq.orderItemId.value)
                         ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+                if (request.status == RefundStatus.REFUNDED &&
+                    refundReq.status == RefundStatus.APPROVED &&
+                    !orderItem.isDigital &&
+                    !request.forceWithoutReturn
+                ) {
+                    throw ValidationException(
+                        "Mark the return as shipped before refunding, or set forceWithoutReturn for a kept/damaged item",
+                    )
+                }
                 val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
                 validateRefundAmounts(order, orderItem, refundReq.quantity, request, maxRefundAmount)
                 if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
@@ -414,7 +462,16 @@ class RefundRequestRepositoryImpl(
                 request.refundTaxAmount?.let { refundReq.taxRefund = it }
                 request.refundMethod?.let { refundReq.refundMethod = it }
 
-                if (request.status == RefundStatus.REFUNDED) {
+                val providerPending =
+                    providerRefund != null &&
+                        providerRefund.status?.lowercase() !in setOf("succeeded", "refunded", "completed")
+                if (request.status == RefundStatus.REFUNDED && providerPending) {
+                    // The provider has accepted the refund but has not settled
+                    // it. Keep the local request open; the signed webhook
+                    // reconciles it to REFUNDED when the money actually moves.
+                    refundReq.status = fromStatus
+                    refundReq.resolvedAt = null
+                } else if (request.status == RefundStatus.REFUNDED) {
                     applyRefunded(refundReq, order, orderItem, maxRefundAmount)
                 }
                 providerRefund?.let {
@@ -422,7 +479,7 @@ class RefundRequestRepositoryImpl(
                     refundReq.providerRefundStatus = it.status
                 }
                 if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
-                eventFor(refundReq, fromStatus.name, request.status.name)
+                eventFor(refundReq, fromStatus.name, refundReq.status.name)
                 refundReq.toRefundRequestResponse()
             }
         CatalogCache.invalidate()
@@ -532,18 +589,24 @@ class RefundRequestRepositoryImpl(
             refund.taxRefund,
         )
 
-        // Full refund = item refunds + shipping/tax cover the whole order total.
-        val refundedTotal =
+        // Full refund is decided by quantities, not a cash sum. Wallet/gift
+        // payments make the cash total smaller than order.total even when every
+        // unit has been returned.
+        val refundedByItem =
             RefundRequestDAO.find {
-                (RefundRequestTable.orderId eq refund.orderId) and
+                (RefundRequestTable.orderId eq order.id) and
                     (RefundRequestTable.status eq RefundStatus.REFUNDED)
-            }.fold(BigDecimal.ZERO) { acc, row ->
-                acc.add(row.refundAmount ?: BigDecimal.ZERO)
-                    .add(row.shippingRefund)
-                    .add(row.taxRefund)
+            }.groupBy { it.orderItemId.value }
+                .mapValues { (_, rows) -> rows.sumOf { it.quantity } }
+        val fullyRefunded =
+            OrderItemDAO.itemsForOrder(order.id).all { item ->
+                (refundedByItem[item.id.value] ?: 0) >= item.quantity
             }
-        if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
+        if (order.paymentStatus == PaymentStatus.COMPLETED && fullyRefunded) {
             order.paymentStatus = PaymentStatus.REFUNDED
+            PaymentDAO.find {
+                (PaymentTable.orderId eq order.id) and (PaymentTable.status eq PaymentStatus.COMPLETED)
+            }.forEach { it.status = PaymentStatus.REFUNDED }
             OrderCancellation.reverseCouponUsageForOrder(order.id.value)
             PromotionService().reverseForOrderTx(order.id.value)
             LoyaltyService().reverseOrderTx(order.userId.value, order.id.value)

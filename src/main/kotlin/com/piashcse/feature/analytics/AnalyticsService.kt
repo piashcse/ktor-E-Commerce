@@ -76,7 +76,7 @@ object AnalyticsIngestPolicy {
     private val botPattern =
         Regex(
             "(?i)(bot|crawler|spider|slurp|bingpreview|facebookexternalhit|headlesschrome|" +
-                "python-requests|python-urllib|curl/|wget|scrapy|httpclient|okhttp)",
+                "python-requests|python-urllib|curl/|wget|scrapy)",
         )
 
     fun shouldIngest(
@@ -150,28 +150,43 @@ class AnalyticsService {
     ): AnalyticsIngestResponse =
         query {
             val now = currentUtc()
+            var accepted = 0
+            var rejected = 0
             events.forEach { event ->
+                // Do not let a public caller probe or insert dangling foreign
+                // keys: unknown product/order references are rejected quietly.
+                val productOk =
+                    event.productId == null ||
+                        ProductDAO.findById(event.productId) != null
+                val orderOk =
+                    event.orderId == null ||
+                        OrderDAO.findById(event.orderId) != null
+                if (!productOk || !orderOk || event.sessionId.length > 100) {
+                    rejected++
+                    return@forEach
+                }
                 AnalyticsEventDAO.new {
                     this.sessionId = event.sessionId
                     this.userId = userId?.entityID(UserTable)
                     this.eventType = event.eventType
                     this.productId = event.productId?.entityID(com.piashcse.database.entities.ProductTable)
                     this.orderId = event.orderId?.entityID(com.piashcse.database.entities.OrderTable)
-                    this.path = event.path
-                    this.referrer = event.referrer
-                    this.utmSource = event.utmSource
-                    this.utmMedium = event.utmMedium
-                    this.utmCampaign = event.utmCampaign
-                    this.utmTerm = event.utmTerm
-                    this.utmContent = event.utmContent
+                    this.path = event.path?.take(2_000)
+                    this.referrer = event.referrer?.take(2_000)
+                    this.utmSource = event.utmSource?.take(255)
+                    this.utmMedium = event.utmMedium?.take(255)
+                    this.utmCampaign = event.utmCampaign?.take(255)
+                    this.utmTerm = event.utmTerm?.take(255)
+                    this.utmContent = event.utmContent?.take(255)
                     this.locale = event.locale?.let { Localization.normalize(it) }
                     this.value = event.value
-                    this.currency = event.currency?.uppercase()
-                    this.metadata = event.metadata
+                    this.currency = event.currency?.uppercase()?.take(3)
+                    this.metadata = event.metadata?.take(10_000)
                     this.occurredAt = DateTimes.parseFlexibleOrNull(event.occurredAt, "occurredAt") ?: now
                 }
+                accepted++
             }
-            AnalyticsIngestResponse(accepted = events.size)
+            AnalyticsIngestResponse(accepted = accepted, rejected = rejected)
         }
 
     suspend fun funnel(
@@ -199,7 +214,20 @@ class AnalyticsService {
                     AnalyticsEventType.ADD_TO_CART to sessionsFor(AnalyticsEventType.ADD_TO_CART),
                     AnalyticsEventType.CHECKOUT_START to sessionsFor(AnalyticsEventType.CHECKOUT_START),
                 )
-            val trackedSessions = sessions.values.flatten().toSet()
+            // Ordered funnel: each stage must contain the prior stage's
+            // sessions. Independent sets can produce conversions above 100%.
+            val pageSessions = sessions.getValue(AnalyticsEventType.PAGE_VIEW)
+            val productSessions = sessions.getValue(AnalyticsEventType.PRODUCT_VIEW).intersect(pageSessions)
+            val cartSessions = sessions.getValue(AnalyticsEventType.ADD_TO_CART).intersect(productSessions)
+            val checkoutSessions = sessions.getValue(AnalyticsEventType.CHECKOUT_START).intersect(cartSessions)
+            val orderedSessions =
+                mapOf(
+                    AnalyticsEventType.PAGE_VIEW to pageSessions,
+                    AnalyticsEventType.PRODUCT_VIEW to productSessions,
+                    AnalyticsEventType.ADD_TO_CART to cartSessions,
+                    AnalyticsEventType.CHECKOUT_START to checkoutSessions,
+                )
+            val trackedSessions = orderedSessions.values.flatten().toSet()
             val purchases =
                 if (trackedSessions.isEmpty()) {
                     0L
@@ -219,10 +247,10 @@ class AnalyticsService {
 
             val counts =
                 listOf(
-                    "page_view" to sessions.getValue(AnalyticsEventType.PAGE_VIEW).size.toLong(),
-                    "product_view" to sessions.getValue(AnalyticsEventType.PRODUCT_VIEW).size.toLong(),
-                    "add_to_cart" to sessions.getValue(AnalyticsEventType.ADD_TO_CART).size.toLong(),
-                    "checkout_start" to sessions.getValue(AnalyticsEventType.CHECKOUT_START).size.toLong(),
+                    "page_view" to orderedSessions.getValue(AnalyticsEventType.PAGE_VIEW).size.toLong(),
+                    "product_view" to orderedSessions.getValue(AnalyticsEventType.PRODUCT_VIEW).size.toLong(),
+                    "add_to_cart" to orderedSessions.getValue(AnalyticsEventType.ADD_TO_CART).size.toLong(),
+                    "checkout_start" to orderedSessions.getValue(AnalyticsEventType.CHECKOUT_START).size.toLong(),
                     "purchase" to purchases,
                 )
             val stages =

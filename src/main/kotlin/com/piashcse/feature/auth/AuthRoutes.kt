@@ -18,6 +18,7 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.otpRateLimit
 import com.piashcse.plugin.refreshTokenRateLimit
+import com.piashcse.plugin.requireJwtSession
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.common.MessageResponse
@@ -107,6 +108,7 @@ fun Route.authRoutes() {
          * Logout authenticated user
          */
         post("logout") {
+            call.requireJwtSession()
             call.bearerToken()?.let { authRepo.blacklistToken(it) }
 
             // Body is optional — access token is already blacklisted above even if refresh token missing.
@@ -119,6 +121,7 @@ fun Route.authRoutes() {
          * Change password for authenticated user
          */
         put("change-password") {
+            call.requireJwtSession()
             if (authRepo.changePassword(
                     call.currentUserId,
                     call.receive<ChangePasswordRequest>().let {
@@ -139,10 +142,12 @@ fun Route.authRoutes() {
         }.describe { summary = "List my passkeys" }
 
         post("passkeys/register/options") {
+            call.requireJwtSession()
             call.respondOk(passkeyService.registerOptions(call.currentUserId))
         }.describe { summary = "Start passkey registration" }
 
         post("passkeys/register") {
+            call.requireJwtSession()
             call.respondOk(passkeyService.register(call.currentUserId, call.receive<PasskeyRegisterRequest>()))
         }.describe {
             summary = "Finish passkey registration"
@@ -150,6 +155,7 @@ fun Route.authRoutes() {
         }
 
         delete("passkeys/{id}") {
+            call.requireJwtSession()
             val id = call.requirePathParameter("id")
             if (!passkeyService.delete(call.currentUserId, id, call.receive<PasskeyDeleteRequest>())) {
                 throw com.piashcse.utils.validator.NotFoundException("Passkey not found")
@@ -176,6 +182,7 @@ private fun Route.mfaRoutes() {
          * Start MFA setup (authenticated + password re-authentication)
          */
         post("mfa/setup") {
+            call.requireJwtSession()
             val body = call.receive<MfaSetupRequest>()
             if (!authRepo.verifyUserPassword(call.currentUserId, body.password)) {
                 throw ValidationException("Invalid password")
@@ -193,6 +200,7 @@ private fun Route.mfaRoutes() {
          * stolen access token from enrolling an attacker-controlled authenticator.
          */
         post("mfa/enable") {
+            call.requireJwtSession()
             val body = call.receive<MfaCodeRequest>()
             val password = body.password?.takeIf { it.isNotBlank() } ?: throw ValidationException("Password is required")
             if (!authRepo.verifyUserPassword(call.currentUserId, password)) {
@@ -213,7 +221,15 @@ private fun Route.mfaRoutes() {
          * Disable MFA after verifying a TOTP code
          */
         post("mfa/disable") {
-            mfaService.disable(call.currentUserId, call.receive<MfaCodeRequest>().code)
+            call.requireJwtSession()
+            val body = call.receive<MfaCodeRequest>()
+            val password =
+                body.password?.takeIf { it.isNotBlank() }
+                    ?: throw ValidationException("Password is required")
+            if (!authRepo.verifyUserPassword(call.currentUserId, password)) {
+                throw ValidationException("Invalid password")
+            }
+            mfaService.disable(call.currentUserId, body.code)
             call.respondMessage("MFA disabled")
         }.describe {
             summary = "Disable MFA"

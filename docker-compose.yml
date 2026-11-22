@@ -36,6 +36,8 @@ services:
       EMAIL_USERNAME: ${EMAIL_USERNAME:-test@example.com}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:?EMAIL_PASSWORD must be set}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+      STOREFRONT_URL: ${STOREFRONT_URL:-http://localhost:3000}
       TRUST_PROXY: ${TRUST_PROXY:-false}
       METRICS_TOKEN: ${METRICS_TOKEN:-}
     ports:

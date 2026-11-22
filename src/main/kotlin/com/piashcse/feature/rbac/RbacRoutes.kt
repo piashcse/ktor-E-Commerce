@@ -8,6 +8,7 @@ import com.piashcse.plugin.created
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
+import com.piashcse.plugin.requireJwtSession
 import com.piashcse.plugin.requirePermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
@@ -160,6 +161,7 @@ fun Route.invitationRoutes() {
     val service: ShopMembershipService by inject()
     requireRole {
         post("accept") {
+            call.requireJwtSession()
             val body = call.receive<AcceptInvitationRequest>()
             call.respondOk(service.acceptInvitation(call.currentUserId, body.token))
         }.describe {
