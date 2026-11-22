@@ -34,9 +34,9 @@ import com.piashcse.database.entities.decrementStock
 import com.piashcse.event.AdminAudit
 import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
-import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.SendEmailEvent
-import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.order.OrderCancellation
+import com.piashcse.feature.order.OrderCompletion
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -670,7 +670,7 @@ class B2bService {
                     )
                 }
                 if (order != null) {
-                    com.piashcse.feature.order.OrderCancellation.cancel(
+                    OrderCancellation.cancel(
                         order,
                         "B2B invoice voided",
                         actorUserId,
@@ -754,22 +754,15 @@ class B2bService {
                             this.providerStatus = "b2b-invoice"
                             this.status = PaymentStatus.COMPLETED
                         }
-                    order.paymentStatus = PaymentStatus.COMPLETED
-                    if (order.status in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
-                        order.status = OrderStatus.PAID
+                    if (order.paymentStatus == PaymentStatus.COMPLETED) {
+                        if (order.status in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
+                            order.status = OrderStatus.PAID
+                        }
+                    } else {
+                        // Same completion effects as card/offline payments: loyalty,
+                        // payout ledger, digital delivery and reservation finalization.
+                        OrderCompletion.completeTx(order, payment)
                     }
-                    DigitalDeliveryService().grantForOrderTx(order)
-                    OutboxPublisher.enqueueTx(
-                        OutboxAggregate.PAYMENT,
-                        payment.id.value,
-                        PaymentCompletedEvent(
-                            paymentId = payment.id.value,
-                            orderId = order.id.value,
-                            userId = order.userId.value,
-                            email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                            amount = payment.amount,
-                        ),
-                    )
                 }
             }
             actorUserId?.let {
