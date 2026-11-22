@@ -49,6 +49,7 @@ object DotEnvConfig {
     val emailUsername: String get() = requireEnv("EMAIL_USERNAME")
     val emailPassword: String get() = requireEnv("EMAIL_PASSWORD")
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
+    val supportEmail: String get() = DotEnv.get("SUPPORT_EMAIL", emailUsername)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
 
     /** "manual" keeps COD-only behaviour; "stripe" enables card payments + webhooks. */

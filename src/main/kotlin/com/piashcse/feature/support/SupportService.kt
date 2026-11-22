@@ -1,5 +1,6 @@
 package com.piashcse.feature.support
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.SupportSenderRole
 import com.piashcse.constants.TicketCategory
 import com.piashcse.constants.TicketPriority
@@ -15,6 +16,8 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.SendEmailEvent
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
@@ -172,6 +175,15 @@ class SupportService {
                     isInternal = false
                 }
             AppMetrics.supportTicketsOpened.increment()
+            OutboxPublisher.enqueueTx(
+                "SUPPORT",
+                ticket.id.value,
+                SendEmailEvent(
+                    to = DotEnvConfig.supportEmail,
+                    subject = "New support ticket: ${ticket.subject}",
+                    body = "Ticket ${ticket.id.value} (${ticket.priority}) was opened by $userId.",
+                ),
+            )
             TicketResponse(ticket.toSummary(), listOf(message.toResponse()))
         }
 
@@ -227,6 +239,15 @@ class SupportService {
                 ticket.resolvedAt = null
             }
             ticket.lastMessageAt = now
+            OutboxPublisher.enqueueTx(
+                "SUPPORT",
+                ticket.id.value,
+                SendEmailEvent(
+                    to = DotEnvConfig.supportEmail,
+                    subject = "Customer replied to ticket ${ticket.id.value}",
+                    body = "Ticket ${ticket.id.value}: ${request.body.take(500)}",
+                ),
+            )
             myTicketTx(ticket)
         }
 
@@ -392,6 +413,19 @@ class SupportService {
                 "SUPPORT_TICKET",
                 ticket.id.value,
             )
+            if (!request.isInternal) {
+                UserDAO.findById(ticket.userId.value)?.email?.takeIf { it.isNotBlank() }?.let { email ->
+                    OutboxPublisher.enqueueTx(
+                        "SUPPORT",
+                        ticket.id.value,
+                        SendEmailEvent(
+                            to = email,
+                            subject = "Support reply: ${ticket.subject}",
+                            body = request.body,
+                        ),
+                    )
+                }
+            }
             adminTicketTx(ticket)
         }
 
