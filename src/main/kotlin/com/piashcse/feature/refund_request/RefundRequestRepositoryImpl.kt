@@ -37,13 +37,8 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNotNull
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.lowerCase
-import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -732,37 +727,20 @@ class RefundRequestRepositoryImpl(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<RefundRequestResponse> =
-        query {
+        readQuery {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
-            var orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
-            search?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
-                orderIds =
-                    OrderDAO.find {
-                        (OrderTable.id inList orderIds) and
-                            ((OrderTable.orderNumber.lowerCase() like pattern) or (OrderTable.contactEmail.lowerCase() like pattern))
-                    }.map { it.id }
-            }
+            val orderIds =
+                OrderSearch.matchingOrderIdsTx(search, shopId.value)
+                    ?: OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
             if (orderIds.isEmpty()) {
-                return@query emptyPage(limit, offset)
+                return@readQuery emptyPage(limit, offset)
             }
             RefundRequestTable.selectAll()
                 .where { RefundRequestTable.orderId inList orderIds }
                 .also { q ->
                     status?.let { q.andWhere { RefundRequestTable.status eq it } }
-                    from?.let { date ->
-                        q.andWhere {
-                            RefundRequestTable.createdAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    to?.let { date ->
-                        q.andWhere {
-                            RefundRequestTable.createdAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
+                    q.applyCreatedRange(RefundRequestTable.createdAt, from, to)
                 }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
                     RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
@@ -786,18 +764,7 @@ class RefundRequestRepositoryImpl(
                 .also { q ->
                     status?.let { q.andWhere { RefundRequestTable.status eq it } }
                     matchingOrderIds?.let { q.andWhere { RefundRequestTable.orderId inList it } }
-                    from?.let { date ->
-                        q.andWhere {
-                            RefundRequestTable.createdAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    to?.let { date ->
-                        q.andWhere {
-                            RefundRequestTable.createdAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
+                    q.applyCreatedRange(RefundRequestTable.createdAt, from, to)
                 }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
                     RefundRequestDAO.wrapRow(it).toRefundRequestResponse()

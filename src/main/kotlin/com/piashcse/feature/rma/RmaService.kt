@@ -24,12 +24,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.lowerCase
-import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -170,34 +165,17 @@ class RmaService {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<RmaResponse> =
-        query {
+        readQuery {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
-            var orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
-            search?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
-                orderIds =
-                    OrderDAO.find {
-                        (OrderTable.id inList orderIds) and
-                            ((OrderTable.orderNumber.lowerCase() like pattern) or (OrderTable.contactEmail.lowerCase() like pattern))
-                    }.map { it.id }
-            }
-            if (orderIds.isEmpty()) return@query com.piashcse.utils.common.emptyPage(limit, offset)
+            val orderIds =
+                OrderSearch.matchingOrderIdsTx(search, shopId)
+                    ?: OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
+            if (orderIds.isEmpty()) return@readQuery com.piashcse.utils.common.emptyPage(limit, offset)
             RmaTable.selectAll().andWhere { RmaTable.orderId inList orderIds }
                 .also { q ->
                     status?.let { q.andWhere { RmaTable.status eq it } }
-                    from?.let { date ->
-                        q.andWhere {
-                            RmaTable.createdAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    to?.let { date ->
-                        q.andWhere {
-                            RmaTable.createdAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
+                    q.applyCreatedRange(RmaTable.createdAt, from, to)
                 }
                 .orderBy(RmaTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
@@ -220,8 +198,7 @@ class RmaService {
             val query = RmaTable.selectAll()
             status?.let { query.andWhere { RmaTable.status eq it } }
             matchingOrderIds?.let { query.andWhere { RmaTable.orderId inList it } }
-            from?.let { query.andWhere { RmaTable.createdAt greaterEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
-            to?.let { query.andWhere { RmaTable.createdAt lessEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
+            query.applyCreatedRange(RmaTable.createdAt, from, to)
             query.orderBy(RmaTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
                 .let { enrichRmas(it) }

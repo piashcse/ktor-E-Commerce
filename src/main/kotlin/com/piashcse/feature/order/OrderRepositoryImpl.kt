@@ -45,7 +45,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -1350,7 +1349,7 @@ class OrderRepositoryImpl(
         from: Instant?,
         to: Instant?,
     ): PaginatedResponse<OrderResponse> =
-        query {
+        readQuery {
             val orders = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
@@ -1360,8 +1359,7 @@ class OrderRepositoryImpl(
                         (OrderTable.contactEmail.lowerCase() like pattern)
                 }
             }
-            from?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            to?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            orders.applyCreatedRange(OrderTable.createdAt, from, to)
             orders
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset, forCustomer = true)
@@ -1372,7 +1370,7 @@ class OrderRepositoryImpl(
         limit: Int,
         cursor: String?,
     ): CursorPage<OrderResponse> =
-        query {
+        readQuery {
             val page =
                 OrderTable.selectAll()
                     .andWhere { OrderTable.userId eq userId }
@@ -1391,12 +1389,12 @@ class OrderRepositoryImpl(
         orderNumber: String,
         email: String,
     ): OrderResponse? =
-        query {
+        readQuery {
             val order =
                 OrderDAO.find {
                     (OrderTable.orderNumber eq orderNumber) and
                         (OrderTable.contactEmail.lowerCase() eq email.trim().lowercase())
-                }.firstOrNull() ?: return@query null
+                }.firstOrNull() ?: return@readQuery null
             order.toOrderResponse(
                 OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                 includeSensitive = false,
@@ -1409,7 +1407,7 @@ class OrderRepositoryImpl(
         userId: String,
         userType: UserType,
     ): OrderResponse =
-        query {
+        readQuery {
             orderId.requireNotBlank("Order ID")
             val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
             requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
@@ -1570,7 +1568,7 @@ class OrderRepositoryImpl(
         from: Instant?,
         to: Instant?,
     ): PaginatedResponse<OrderResponse> =
-        query {
+        readQuery {
             val seller =
                 try {
                     requireSellerByUserId(userId)
@@ -1588,8 +1586,7 @@ class OrderRepositoryImpl(
                         (OrderTable.contactEmail.lowerCase() like pattern)
                 }
             }
-            from?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            to?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            orders.applyCreatedRange(OrderTable.createdAt, from, to)
             orders
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset, includeSensitive = false)
@@ -1603,11 +1600,10 @@ class OrderRepositoryImpl(
         endDate: Instant?,
         query: String?,
     ): PaginatedResponse<OrderResponse> =
-        query {
+        readQuery {
             val orders = OrderTable.selectAll()
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            startDate?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            endDate?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            orders.applyCreatedRange(OrderTable.createdAt, startDate, endDate)
             query?.takeIf { it.isNotBlank() }?.let { term ->
                 val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {

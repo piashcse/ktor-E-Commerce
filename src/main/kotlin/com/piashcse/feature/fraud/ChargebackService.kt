@@ -16,7 +16,9 @@ import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.applyCreatedRange
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
@@ -24,7 +26,6 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -73,7 +74,7 @@ class ChargebackService {
         openedFrom: java.time.Instant? = null,
         openedTo: java.time.Instant? = null,
     ): PaginatedResponse<ChargebackResponse> =
-        query {
+        readQuery {
             ChargebackTable.selectAll()
                 .also { query ->
                     status?.let { query.andWhere { ChargebackTable.status eq it } }
@@ -83,18 +84,7 @@ class ChargebackService {
                                 java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
                         }
                     }
-                    openedFrom?.let { date ->
-                        query.andWhere {
-                            ChargebackTable.openedAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    openedTo?.let { date ->
-                        query.andWhere {
-                            ChargebackTable.openedAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
+                    query.applyCreatedRange(ChargebackTable.openedAt, openedFrom, openedTo)
                 }
                 .orderBy(ChargebackTable.evidenceDueAt to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { ChargebackDAO.wrapRow(it).toResponse() }
