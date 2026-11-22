@@ -24,12 +24,13 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNull
-import java.security.MessageDigest
 import java.time.Instant
 import java.util.*
 
 @Suppress("TooManyFunctions")
 class AuthRepositoryImpl : AuthRepository {
+    private val tokens = AuthTokenService()
+
     private fun hashPassword(password: String) = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, password.toCharArray())
 
     private fun verifyPassword(
@@ -41,89 +42,22 @@ class AuthRepositoryImpl : AuthRepository {
 
     private fun normalizeEmail(value: String): String = value.trim().lowercase()
 
-    // ── Token helpers ─────────────────────────────────────────────────────
-
     override suspend fun generateTokenPair(
         userId: String,
         email: String,
         userType: String,
-    ): TokenPair =
-        query {
-            val tokenVersion = UserDAO.findById(userId)?.tokenVersion ?: 0
-            newTokenPair(userId, email, userType, tokenVersion)
-        }
-
-    private fun newTokenPair(
-        userId: String,
-        email: String,
-        userType: String,
-        tokenVersion: Int,
-    ): TokenPair {
-        val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType), tokenVersion)
-        return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 900)
-    }
-
-    private fun hashRefreshToken(token: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
-    }
-
-    /** OTPs are bearer secrets; only a keyed digest is persisted. */
-    private fun hashOtp(otp: String): String =
-        com.piashcse.utils.common.hmacSha256Hex(
-            com.piashcse.config.DotEnvConfig.jwtSecret,
-            "otp:$otp",
-        )
+    ): TokenPair = tokens.generateTokenPair(userId, email, userType)
 
     override suspend fun storeRefreshToken(
         userId: String,
         refreshToken: String,
-    ) = query {
-        storeRefreshTokenTx(userId, refreshToken)
-    }
+    ) = tokens.storeRefreshToken(userId, refreshToken)
 
-    private fun storeRefreshTokenTx(
-        userId: String,
-        refreshToken: String,
-    ) {
-        val tokenHash = hashRefreshToken(refreshToken)
-        val expiresAt = Instant.now().plusSeconds(AppConstants.Authentication.REFRESH_TOKEN_EXPIRY_SECONDS)
-        RefreshTokenDAO.new {
-            this.userId = userId.entityID(UserTable)
-            this.tokenHash = tokenHash
-            this.expiresAt = expiresAt
-        }
-    }
+    override suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? = tokens.getRefreshTokenByHash(tokenHash)
 
-    override suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? =
-        query {
-            RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
-        }
+    override suspend fun revokeRefreshToken(tokenHash: String): Boolean = tokens.revokeRefreshToken(tokenHash)
 
-    override suspend fun revokeRefreshToken(tokenHash: String): Boolean =
-        query {
-            RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
-                ?.let {
-                    it.revokedAt = Instant.now()
-                    true
-                } ?: false
-        }
-
-    override suspend fun revokeAllUserTokens(userId: String): Boolean =
-        query {
-            revokeAllUserTokensTx(userId)
-            true
-        }
-
-    private fun revokeAllUserTokensTx(userId: String) {
-        RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
-            .forEach { it.revokedAt = Instant.now() }
-        // Role changes, password resets and deactivation must invalidate API keys
-        // as well; otherwise an old key keeps the previous role's access.
-        ApiKeyDAO.find {
-            (ApiKeyTable.userId eq userId.entityID(UserTable)) and (ApiKeyTable.isActive eq true)
-        }.forEach { it.isActive = false }
-    }
+    override suspend fun revokeAllUserTokens(userId: String): Boolean = tokens.revokeAllUserTokens(userId)
 
     private fun registrationAttempt(
         userId: EntityID<String>,
@@ -251,7 +185,7 @@ class AuthRepositoryImpl : AuthRepository {
                     if (!mayReplacePassword) {
                         throw ValidationException(Message.Auth.USE_PASSWORD_RESET)
                     }
-                    existingUser.otpCode = hashOtp(otp)
+                    existingUser.otpCode = tokens.hashOtp(otp)
                     existingUser.otpExpiry = otpExpiryTime
                     existingUser.password = hashPassword(registerRequest.password)
                     Triple(
@@ -268,7 +202,7 @@ class AuthRepositoryImpl : AuthRepository {
                     val inserted =
                         UserDAO.new {
                             email = normalizedEmail
-                            otpCode = hashOtp(otp)
+                            otpCode = tokens.hashOtp(otp)
                             otpExpiry = otpExpiryTime
                             password = hashPassword(registerRequest.password)
                             userType = userTypeEnum
@@ -361,7 +295,7 @@ class AuthRepositoryImpl : AuthRepository {
             userEntity.password = hashPassword(changePassword.newPassword)
             userEntity.tokenVersion += 1
             // A password change must invalidate every existing session.
-            revokeAllUserTokensTx(userId)
+            tokens.revokeAllUserTokensTx(userId)
             true
         }
 
@@ -376,7 +310,7 @@ class AuthRepositoryImpl : AuthRepository {
                 entities.find { it.userType == type }
                     ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
             val otp = generateOTP()
-            user.resetOtpCode = hashOtp(otp)
+            user.resetOtpCode = tokens.hashOtp(otp)
             user.resetOtpExpiry = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
             otp
         }
@@ -397,7 +331,7 @@ class AuthRepositoryImpl : AuthRepository {
                 return@query ResetResult.InvalidOrExpiredOtp
             }
 
-            if (!constantTimeEquals(user.resetOtpCode.orEmpty(), hashOtp(resetPasswordRequest.verificationCode))) {
+            if (!constantTimeEquals(user.resetOtpCode.orEmpty(), tokens.hashOtp(resetPasswordRequest.verificationCode))) {
                 val attemptRecord =
                     if (otpAttempt != null) {
                         otpAttempt.attemptCount = otpAttempt.attemptCount + 1
@@ -432,7 +366,7 @@ class AuthRepositoryImpl : AuthRepository {
             user.password = hashPassword(resetPasswordRequest.newPassword)
             user.tokenVersion += 1
             // Password reset must invalidate every existing session.
-            revokeAllUserTokensTx(user.id.value)
+            tokens.revokeAllUserTokensTx(user.id.value)
             ResetResult.Success
         }
 
@@ -459,7 +393,7 @@ class AuthRepositoryImpl : AuthRepository {
                 attempt.lockedUntil = null
             }
             if (userEntity.otpExpiry?.isBefore(currentUtc()) != false ||
-                !constantTimeEquals(userEntity.otpCode.orEmpty(), hashOtp(otp))
+                !constantTimeEquals(userEntity.otpCode.orEmpty(), tokens.hashOtp(otp))
             ) {
                 recordLockedOtpFailure(userEntity, attempt)
                 return@query false
@@ -565,7 +499,7 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair =
         query {
-            val tokenHash = hashRefreshToken(request.refreshToken)
+            val tokenHash = tokens.hashRefreshToken(request.refreshToken)
             val storedToken =
                 RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
                     ?: throw UnauthorizedException(Message.Auth.INVALID_REFRESH_TOKEN)
@@ -577,7 +511,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             if (storedToken.isRevoked) {
                 UserDAO.findById(storedToken.userId.value)?.tokenVersion += 1
-                runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
+                runCatching { tokens.revokeAllUserTokensTx(storedToken.userId.value) }
                 throw UnauthorizedException(Message.Auth.TOKEN_EXPIRED)
             }
 
@@ -588,8 +522,8 @@ class AuthRepositoryImpl : AuthRepository {
             // Rotate old + persist replacement in the same transaction so a
             // concurrent password reset cannot leave a freshly minted token live.
             storedToken.revokedAt = Instant.now()
-            val newTokenPair = newTokenPair(user.id.value, user.email, user.userType.name, user.tokenVersion)
-            storeRefreshTokenTx(user.id.value, newTokenPair.refreshToken)
+            val newTokenPair = tokens.newTokenPair(user.id.value, user.email, user.userType.name, user.tokenVersion)
+            tokens.storeRefreshTokenTx(user.id.value, newTokenPair.refreshToken)
             newTokenPair
         }
 
@@ -600,7 +534,7 @@ class AuthRepositoryImpl : AuthRepository {
         refreshToken: String?,
     ): Boolean {
         if (!refreshToken.isNullOrBlank()) {
-            revokeRefreshToken(hashRefreshToken(refreshToken))
+            revokeRefreshToken(tokens.hashRefreshToken(refreshToken))
         } else {
             // Logging out a browser session must not deactivate machine API
             // keys; those are revoked by password/role changes or explicitly.
@@ -706,7 +640,7 @@ class AuthRepositoryImpl : AuthRepository {
                     }
                 }
                 targetUser.isActive = false
-                revokeAllUserTokensTx(targetUser.id.value)
+                tokens.revokeAllUserTokensTx(targetUser.id.value)
                 Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
             }
         EventBus.publishAdminAction(actor, "USER_DEACTIVATE", "USER", targetUserId)
