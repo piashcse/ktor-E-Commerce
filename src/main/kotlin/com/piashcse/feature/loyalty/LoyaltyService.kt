@@ -116,6 +116,7 @@ data class RedemptionPreview(
     val creditAvailable: BigDecimal,
 )
 
+@Suppress("TooManyFunctions")
 class LoyaltyService {
     private val random = SecureRandom()
 
@@ -241,6 +242,26 @@ class LoyaltyService {
                 else -> Unit
             }
         }
+        val alreadyRestored =
+            WalletLedgerDAO.find {
+                (WalletLedgerTable.userId eq user) and
+                    (WalletLedgerTable.referenceType eq "ORDER_PARTIAL") and
+                    (WalletLedgerTable.referenceId eq orderId)
+            }.toList()
+        pointsToRestore =
+            (
+                pointsToRestore -
+                    alreadyRestored.filter { it.type == WalletEntryType.POINTS_REVERSAL }.sumOf { it.pointsDelta }
+            )
+                .coerceAtLeast(0)
+        creditToRestore =
+            creditToRestore
+                .subtract(
+                    alreadyRestored.filter { it.type == WalletEntryType.CREDIT_REVERSAL }
+                        .fold(BigDecimal.ZERO) { acc, entry -> acc.add(entry.creditDelta) },
+                )
+                .max(BigDecimal.ZERO)
+
         if (pointsToRestore > 0) {
             account.pointsBalance += pointsToRestore
             WalletLedgerDAO.new {
@@ -291,6 +312,121 @@ class LoyaltyService {
                 }
             }
     }
+
+    /**
+     * Restore the wallet/gift share of one partially refunded item. Uses
+     * ORDER_PARTIAL ledger rows so a later full refund restores only the
+     * remaining instrument value.
+     */
+    fun restorePartialInstrumentsTx(
+        userId: String,
+        orderId: String,
+        walletUsd: BigDecimal,
+        giftUsd: BigDecimal,
+        refundId: String,
+    ) {
+        if (walletUsd <= BigDecimal.ZERO && giftUsd <= BigDecimal.ZERO) return
+        val user = userId.entityID(com.piashcse.database.entities.UserTable)
+        val account = accountFor(userId)
+
+        if (walletUsd > BigDecimal.ZERO) {
+            val orderEntries =
+                WalletLedgerDAO.find {
+                    (WalletLedgerTable.userId eq user) and
+                        (WalletLedgerTable.referenceType eq "ORDER") and
+                        (WalletLedgerTable.referenceId eq orderId)
+                }.toList()
+            val pointsUsd =
+                BigDecimal(orderEntries.filter { it.type == WalletEntryType.POINTS_REDEEM }.sumOf { -it.pointsDelta })
+                    .divide(BigDecimal(AppConstants.LOYALTY_POINTS_PER_USD_REDEEM), 2, RoundingMode.HALF_UP)
+            val creditUsd =
+                orderEntries.filter { it.type == WalletEntryType.CREDIT_REDEEM }
+                    .fold(BigDecimal.ZERO) { acc, entry -> acc.add(entry.creditDelta.negate()) }
+            val totalUsd = pointsUsd.add(creditUsd)
+            if (totalUsd > BigDecimal.ZERO) {
+                val alreadyRestored =
+                    WalletLedgerDAO.find {
+                        (WalletLedgerTable.userId eq user) and
+                            (WalletLedgerTable.referenceType eq "ORDER_PARTIAL") and
+                            (WalletLedgerTable.referenceId eq orderId)
+                    }.toList()
+                val pointsAlready =
+                    alreadyRestored.filter { it.type == WalletEntryType.POINTS_REVERSAL }.sumOf { it.pointsDelta }
+                val creditAlready =
+                    alreadyRestored.filter { it.type == WalletEntryType.CREDIT_REVERSAL }
+                        .fold(BigDecimal.ZERO) { acc, entry -> acc.add(entry.creditDelta) }
+                val remainingUsd =
+                    walletUsd.min(
+                        totalUsd.subtract(pointsAlreadyUsd(pointsAlready)).subtract(creditAlready).max(BigDecimal.ZERO),
+                    )
+                val pointsShare =
+                    remainingUsd.multiply(pointsUsd).divide(totalUsd, 2, RoundingMode.HALF_UP)
+                val points =
+                    pointsShare.multiply(BigDecimal(AppConstants.LOYALTY_POINTS_PER_USD_REDEEM))
+                        .setScale(0, RoundingMode.DOWN).toInt()
+                val credit = remainingUsd.subtract(pointsShare).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
+                if (points > 0) {
+                    account.pointsBalance += points
+                    WalletLedgerDAO.new {
+                        this.userId = user
+                        type = WalletEntryType.POINTS_REVERSAL
+                        pointsDelta = points
+                        referenceType = "ORDER_PARTIAL"
+                        this.referenceId = orderId
+                        note = "Partial refund $refundId"
+                    }
+                }
+                if (credit > BigDecimal.ZERO) {
+                    account.creditBalance = account.creditBalance.add(credit).setScale(2, RoundingMode.HALF_UP)
+                    WalletLedgerDAO.new {
+                        this.userId = user
+                        type = WalletEntryType.CREDIT_REVERSAL
+                        creditDelta = credit
+                        referenceType = "ORDER_PARTIAL"
+                        this.referenceId = orderId
+                        note = "Partial refund $refundId"
+                    }
+                }
+            }
+        }
+
+        if (giftUsd > BigDecimal.ZERO) {
+            // Negative redemption rows record the partial restoration and are
+            // netted by the final reverseOrderTx.
+            val remainingByCard =
+                GiftCardRedemptionDAO.find {
+                    GiftCardRedemptionTable.orderId eq orderId.entityID(com.piashcse.database.entities.OrderTable)
+                }.toList()
+                    .groupBy { it.giftCardId.value }
+                    .mapValues { (_, rows) -> rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.amount) } }
+                    .filterValues { it > BigDecimal.ZERO }
+                    .toMutableMap()
+            var remaining = giftUsd
+            remainingByCard.keys.forEach { cardId ->
+                if (remaining <= BigDecimal.ZERO) return@forEach
+                val take = remaining.min(remainingByCard[cardId] ?: BigDecimal.ZERO)
+                if (take <= BigDecimal.ZERO) return@forEach
+                val card =
+                    GiftCardDAO.find { GiftCardTable.id eq cardId.entityID(GiftCardTable) }
+                        .forUpdate()
+                        .firstOrNull() ?: return@forEach
+                card.balance = card.balance.add(take).setScale(2, RoundingMode.HALF_UP)
+                if (card.status == GiftCardStatus.REDEEMED && card.expiresAt?.isBefore(currentUtc()) != true) {
+                    card.status = GiftCardStatus.ACTIVE
+                }
+                GiftCardRedemptionDAO.new {
+                    this.giftCardId = card.id
+                    this.orderId = orderId.entityID(com.piashcse.database.entities.OrderTable)
+                    this.userId = user
+                    amount = take.negate()
+                }
+                remaining = remaining.subtract(take)
+            }
+        }
+    }
+
+    private fun pointsAlreadyUsd(points: Int): BigDecimal =
+        BigDecimal(points).divide(BigDecimal(AppConstants.LOYALTY_POINTS_PER_USD_REDEEM), 2, RoundingMode.HALF_UP)
 
     suspend fun claimReferral(
         userId: String,

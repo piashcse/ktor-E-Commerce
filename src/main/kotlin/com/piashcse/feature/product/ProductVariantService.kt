@@ -38,6 +38,29 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 
 @Serializable
+data class ProductVariantUpdateRequest(
+    val sku: String? = null,
+    val name: String? = null,
+    @Contextual val price: BigDecimal? = null,
+    @Contextual val discountPrice: BigDecimal? = null,
+    val clearDiscountPrice: Boolean = false,
+    val barcode: String? = null,
+    @Contextual val weight: BigDecimal? = null,
+    val dimensions: String? = null,
+    val imageUrl: String? = null,
+    val status: ProductStatus? = null,
+    val isDefault: Boolean? = null,
+    val sortOrder: Int? = null,
+) {
+    init {
+        price?.requirePositivePrice("Variant price")
+        validateDiscountPrice(price, discountPrice)
+        if (sku != null && sku.isBlank()) throw ValidationException("SKU cannot be blank")
+        if (name != null && name.isBlank()) throw ValidationException("Variant name cannot be blank")
+    }
+}
+
+@Serializable
 data class ProductVariantRequest(
     val sku: String,
     val name: String,
@@ -153,13 +176,36 @@ class ProductVariantService(
         actorUserId: String,
         productId: String,
         variantId: String,
-        request: ProductVariantRequest,
+        request: ProductVariantUpdateRequest,
     ): ProductVariantResponse =
         query {
             val product = requireOwnedProduct(actorUserId, productId)
             val variant = requireVariant(product.id.value, variantId)
-            if (request.isDefault && !variant.isDefault) clearDefault(product.id.value)
-            variant.applyRequest(request)
+            val price = request.price ?: variant.price
+            val discount =
+                when {
+                    request.clearDiscountPrice -> null
+                    request.discountPrice != null -> request.discountPrice
+                    else -> variant.discountPrice
+                }
+            if (discount != null && discount >= price) {
+                throw ValidationException("Discount price must be lower than the regular price")
+            }
+            if (request.isDefault == true && !variant.isDefault) clearDefault(product.id.value)
+            variant.apply {
+                request.sku?.let { sku = it }
+                request.name?.let { name = it }
+                this.price = price
+                discountPrice = discount
+                discountPercentage = discountPercentage(price, discount)
+                request.barcode?.let { barcode = it }
+                request.weight?.let { weight = it }
+                request.dimensions?.let { dimensions = it }
+                request.imageUrl?.let { imageUrl = it }
+                request.status?.let { status = it }
+                request.isDefault?.let { isDefault = it }
+                request.sortOrder?.let { sortOrder = it }
+            }
             variant.toResponse()
         }.also { invalidateCatalog() }
 

@@ -12,6 +12,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
+import io.ktor.server.request.path
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -205,6 +206,23 @@ private fun Route.authorized(
 // Convenience Scope Functions for drastically cleaner routing semantics
 
 /**
+ * Coarse scope for a seller API key. Seller accounts still have all role
+ * defaults; a scoped key is restricted to the matching subset.
+ */
+private fun sellerScopeFor(path: String): Permission? =
+    when (path.removePrefix("/api/v1/seller/").substringBefore('/')) {
+        "shops", "members", "kyc", "commission" -> Permission.SHOP_MANAGE
+        "products", "inventories", "warehouses" -> Permission.INVENTORY_MANAGE
+        "orders", "pickup-orders", "pos", "b2b" -> Permission.ORDER_MANAGE
+        "refund-requests", "rma-requests" -> Permission.REFUND_MANAGE
+        "payouts" -> Permission.PAYOUT_MANAGE
+        "dashboard", "readiness" -> Permission.DASHBOARD_VIEW
+        "notifications" -> Permission.NOTIFICATION_SEND
+        "coupons", "promotions", "shipping-methods", "reviews" -> Permission.ORDER_MANAGE
+        else -> null
+    }
+
+/**
  * Seller routes are available to seller accounts and to accepted shop staff.
  * The latter are CUSTOMER accounts with an active shop_member row; their
  * services resolve the inviting shop through findSellerByUserId().
@@ -237,7 +255,9 @@ val ShopMemberAuthorizationPlugin =
                     com.piashcse.service.CacheService.cache.set(membershipKey, isMember, 30)
                 }
             val allowed = principal.hasRole(UserType.SELLER) || isShopMember
-            if (!allowed) {
+            val scopeOk =
+                !principal.isApiKey || sellerScopeFor(call.request.path())?.let { principal.hasPermission(it) } != false
+            if (!allowed || !scopeOk) {
                 call.respond(
                     HttpStatusCode.Forbidden,
                     ApiError.of(

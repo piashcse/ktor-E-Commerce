@@ -287,12 +287,24 @@ class RefundRequestRepositoryImpl(
                 // The seller only loses the net share of the refunded item; the
                 // platform returns its commission on that portion.
                 val netRefund = sellerRefundAmount.subtract(commissionShare).max(BigDecimal.ZERO)
-                payout.payoutAmount = payout.payoutAmount.subtract(netRefund).max(BigDecimal.ZERO)
-                payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
-                totalCommissionReversed = totalCommissionReversed.add(commissionShare)
-                if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    payout.status = PayoutStatus.REFUNDED.name
+                if (payout.status == PayoutStatus.PAID.name) {
+                    // Money already left the platform; create a recoverable debt
+                    // instead of silently clamping the paid row to zero.
+                    SellerBalanceAdjustmentDAO.new {
+                        this.sellerId = seller.id
+                        this.orderId = order.id
+                        amount = netRefund.negate()
+                        currency = order.currency
+                        reason = "refund:${order.id.value}"
+                    }
+                } else {
+                    payout.payoutAmount = payout.payoutAmount.subtract(netRefund).max(BigDecimal.ZERO)
+                    payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
+                    if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
+                        payout.status = PayoutStatus.REFUNDED.name
+                    }
                 }
+                totalCommissionReversed = totalCommissionReversed.add(commissionShare)
             }
             seller.totalSales = seller.totalSales.subtract(sellerRefundAmount).max(BigDecimal.ZERO)
             seller.totalCommission = seller.totalCommission.subtract(totalCommissionReversed).max(BigDecimal.ZERO)
@@ -602,6 +614,31 @@ class RefundRequestRepositoryImpl(
             OrderItemDAO.itemsForOrder(order.id).all { item ->
                 (refundedByItem[item.id.value] ?: 0) >= item.quantity
             }
+        if (!fullyRefunded && order.subTotal > BigDecimal.ZERO && orderItem.quantity > 0) {
+            val valueRatio =
+                orderItem.total.divide(order.subTotal, 8, java.math.RoundingMode.HALF_UP)
+            val qtyRatio =
+                BigDecimal(refund.quantity)
+                    .divide(BigDecimal(orderItem.quantity), 8, java.math.RoundingMode.HALF_UP)
+            val fx = order.fxRate.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
+            val walletUsd =
+                order.walletDiscount
+                    .multiply(valueRatio)
+                    .multiply(qtyRatio)
+                    .divide(fx, 2, java.math.RoundingMode.HALF_UP)
+            val giftUsd =
+                order.giftCardDiscount
+                    .multiply(valueRatio)
+                    .multiply(qtyRatio)
+                    .divide(fx, 2, java.math.RoundingMode.HALF_UP)
+            LoyaltyService().restorePartialInstrumentsTx(
+                order.userId.value,
+                order.id.value,
+                walletUsd,
+                giftUsd,
+                refund.id.value,
+            )
+        }
         if (order.paymentStatus == PaymentStatus.COMPLETED && fullyRefunded) {
             order.paymentStatus = PaymentStatus.REFUNDED
             PaymentDAO.find {

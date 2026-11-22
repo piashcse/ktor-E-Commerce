@@ -18,6 +18,7 @@ import com.piashcse.service.SubscriptionBillingWorker
 import com.piashcse.service.configureOutboxPoller
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
+import io.ktor.server.engine.applicationEnvironment
 import io.ktor.server.netty.*
 import org.koin.ktor.ext.get
 
@@ -28,7 +29,22 @@ fun main() {
     // requests (30s grace target). If the Netty engine factory in use exposes a
     // shutdownTimeout/shutdownGracePeriod setting, wire 30s there; otherwise this relies on
     // Engine.stop grace plus the ApplicationStopped hook below for resource cleanup.
-    embeddedServer(Netty, port = port, host = host) {
+    val environment = applicationEnvironment { }
+    embeddedServer(
+        Netty,
+        environment = environment,
+        configure = {
+            connectors =
+                mutableListOf<io.ktor.server.engine.EngineConnectorConfig>(
+                    EngineConnectorBuilder().apply {
+                        this.host = host
+                        this.port = port
+                    },
+                )
+            shutdownGracePeriod = 30_000
+            shutdownTimeout = 30_000
+        },
+    ) {
         configureAll()
     }.start(wait = true)
 }

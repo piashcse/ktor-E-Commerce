@@ -8,6 +8,8 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PayoutRequestDAO
 import com.piashcse.database.entities.PayoutRequestTable
+import com.piashcse.database.entities.SellerBalanceAdjustmentDAO
+import com.piashcse.database.entities.SellerBalanceAdjustmentTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
@@ -104,6 +106,41 @@ class PayoutRepositoryImpl : PayoutRepository {
     private fun sellerIdsFor(sellerUserId: String): List<EntityID<String>> =
         SellerDAO.find { SellerTable.userId eq sellerUserId }.map { it.id }
 
+    private fun outstandingDebtByCurrency(sellerId: String): Map<String, BigDecimal> =
+        SellerBalanceAdjustmentDAO.find {
+            (SellerBalanceAdjustmentTable.sellerId eq sellerId.entityID(SellerTable)) and
+                SellerBalanceAdjustmentTable.settledAt.isNull()
+        }.groupBy { it.currency }
+            .mapValues { (_, rows) -> rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.amount.abs()) } }
+
+    /** Consume outstanding seller debt against available PENDING rows. */
+    private fun applyDebtToRows(
+        sellerId: String,
+        rows: List<SellerPayoutDAO>,
+    ) {
+        val adjustments =
+            SellerBalanceAdjustmentDAO.find {
+                (SellerBalanceAdjustmentTable.sellerId eq sellerId.entityID(SellerTable)) and
+                    SellerBalanceAdjustmentTable.settledAt.isNull()
+            }.orderBy(SellerBalanceAdjustmentTable.createdAt to SortOrder.ASC).toList()
+        adjustments.forEach { adjustment ->
+            var remaining = adjustment.amount.abs()
+            val candidates =
+                rows.filter {
+                    it.currency == adjustment.currency && it.payoutAmount > BigDecimal.ZERO
+                }.iterator()
+            while (remaining > BigDecimal.ZERO && candidates.hasNext()) {
+                val row = candidates.next()
+                val take = remaining.min(row.payoutAmount)
+                row.payoutAmount = row.payoutAmount.subtract(take).max(BigDecimal.ZERO)
+                remaining = remaining.subtract(take)
+            }
+            if (remaining <= BigDecimal.ZERO) {
+                adjustment.settledAt = currentUtc()
+            }
+        }
+    }
+
     private fun requireActiveSeller(sellerUserId: String): SellerDAO {
         val seller = requireSellerByUserId(sellerUserId)
         val user = UserDAO.findById(sellerUserId)
@@ -129,12 +166,16 @@ class PayoutRepositoryImpl : PayoutRepository {
                     (SellerPayoutTable.sellerId eq seller.id) and
                         (SellerPayoutTable.status inList listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name))
                 }.toList()
-            val byCurrency =
+            val debtByCurrency = outstandingDebtByCurrency(seller.id.value)
+            val availableByCurrency =
                 availableRows
                     .groupBy { it.currency }
-                    .mapValues { (_, rows) ->
-                        rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString()
+                    .mapValues { (currency, rows) ->
+                        rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+                            .subtract(debtByCurrency[currency] ?: BigDecimal.ZERO)
+                            .max(BigDecimal.ZERO)
                     }
+            val byCurrency = availableByCurrency.mapValues { it.value.toPlainString() }
             val pendingByCurrency =
                 pendingRows
                     .groupBy { it.currency }
@@ -578,6 +619,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                         .orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
                         .toList()
                         .filter { normalizedCurrency == null || it.currency.equals(normalizedCurrency, ignoreCase = true) }
+                applyDebtToRows(seller.id.value, available)
 
                 val currencies = available.map { it.currency }.distinct()
                 if (currencies.size > 1) {

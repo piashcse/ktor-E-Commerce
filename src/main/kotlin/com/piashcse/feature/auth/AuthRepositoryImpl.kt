@@ -23,6 +23,7 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import java.security.MessageDigest
 import java.time.Instant
 import java.util.*
@@ -153,7 +154,14 @@ class AuthRepositoryImpl : AuthRepository {
     private fun loginAttemptPredicate(
         email: String,
         userType: UserType,
-    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and (LoginAttemptTable.userType eq userType)
+        ipAddress: String? = null,
+    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and
+        (LoginAttemptTable.userType eq userType) and
+        if (ipAddress == null) {
+            LoginAttemptTable.ipAddress.isNull()
+        } else {
+            LoginAttemptTable.ipAddress eq ipAddress
+        }
 
     override suspend fun recordFailedAttempt(
         email: String,
@@ -161,7 +169,10 @@ class AuthRepositoryImpl : AuthRepository {
         ipAddress: String?,
     ): Int =
         query {
-            val existing = LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.forUpdate().singleOrNull()
+            val existing =
+                LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }
+                    .forUpdate()
+                    .singleOrNull()
             if (existing != null) {
                 existing.attemptCount++
                 existing.ipAddress = ipAddress
@@ -180,11 +191,11 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun resetLoginAttempts(
         email: String,
         userType: UserType,
+        ipAddress: String?,
     ) = query {
-        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()?.apply {
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()?.apply {
             attemptCount = 0
             lockedUntil = null
-            ipAddress = null
         }
         Unit
     }
@@ -192,18 +203,20 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun getLoginAttempt(
         email: String,
         userType: UserType,
+        ipAddress: String?,
     ): LoginAttemptDAO? =
         query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
         }
 
     override suspend fun lockAccount(
         email: String,
         userType: UserType,
         lockDurationMinutes: Long,
+        ipAddress: String?,
     ): Boolean =
         query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
                 ?.apply { lockedUntil = Instant.now().plusSeconds(lockDurationMinutes * 60) } != null
         }
 

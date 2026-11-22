@@ -68,6 +68,7 @@ interface AuthRepository {
     suspend fun getLoginAttempt(
         email: String,
         userType: UserType,
+        ipAddress: String? = null,
     ): LoginAttemptDAO?
 
     suspend fun recordFailedAttempt(
@@ -79,12 +80,14 @@ interface AuthRepository {
     suspend fun resetLoginAttempts(
         email: String,
         userType: UserType,
+        ipAddress: String? = null,
     )
 
     suspend fun lockAccount(
         email: String,
         userType: UserType,
         lockDurationMinutes: Long,
+        ipAddress: String? = null,
     ): Boolean
 
     // OTP

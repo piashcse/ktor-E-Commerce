@@ -319,12 +319,12 @@ private fun Route.variantSellerRoutes() {
                 call.currentUserId,
                 productId,
                 variantId,
-                call.receive<ProductVariantRequest>(),
+                call.receive<ProductVariantUpdateRequest>(),
             ),
         )
     }.describe {
         summary = "Update product variant"
-        requestBody { jsonBody<ProductVariantRequest>() }
+        requestBody { jsonBody<ProductVariantUpdateRequest>() }
         responses {
             ok<ProductVariantResponse>("Variant updated")
             standardErrors()

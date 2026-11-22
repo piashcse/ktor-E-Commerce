@@ -268,13 +268,20 @@ class CmsService {
             val categories = ProductCategoryTable.selectAll().limit(1000).map { it[ProductCategoryTable.id].value }
             val pages =
                 CmsPageDAO.find { CmsPageTable.status eq CmsPageStatus.PUBLISHED }.limit(1000).toList()
+            val noIndex =
+                SeoMetadataDAO.find { SeoMetadataTable.noIndex eq true }
+                    .mapNotNull { it.entityId }
+                    .toSet()
             buildString {
                 append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
                 append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n")
                 appendUrl(baseUrl, "/", null)
-                products.forEach { appendUrl(baseUrl, "/products/${it.id.value}", it.updatedAt ?: it.createdAt) }
-                categories.forEach { appendUrl(baseUrl, "/product-categories/$it", null) }
-                pages.forEach { appendUrl(baseUrl, "/pages/${it.slug}", it.updatedAt ?: it.publishedAt) }
+                products.filterNot { it.id.value in noIndex }
+                    .forEach { appendUrl(baseUrl, "/products/${it.id.value}", it.updatedAt ?: it.createdAt) }
+                categories.filterNot { it in noIndex }
+                    .forEach { appendUrl(baseUrl, "/product-categories/$it", null) }
+                pages.filterNot { it.id.value in noIndex || it.slug in noIndex }
+                    .forEach { appendUrl(baseUrl, "/pages/${it.slug}", it.updatedAt ?: it.publishedAt) }
                 append("</urlset>\n")
             }
         }

@@ -162,9 +162,20 @@ class ChargebackService {
                 SellerPayoutDAO.find {
                     SellerPayoutTable.orderId eq chargeback.orderId
                 }.forEach { payout ->
-                    payout.payoutAmount = java.math.BigDecimal.ZERO.setScale(2)
-                    payout.commissionAmount = java.math.BigDecimal.ZERO.setScale(2)
-                    payout.status = com.piashcse.constants.PayoutStatus.REFUNDED.name
+                    val alreadyPaid = payout.status == com.piashcse.constants.PayoutStatus.PAID.name
+                    if (alreadyPaid) {
+                        com.piashcse.database.entities.SellerBalanceAdjustmentDAO.new {
+                            this.sellerId = payout.sellerId
+                            this.orderId = payout.orderId
+                            amount = payout.payoutAmount.negate()
+                            currency = payout.currency
+                            reason = "chargeback:${chargeback.id.value}"
+                        }
+                    } else {
+                        payout.payoutAmount = java.math.BigDecimal.ZERO.setScale(2)
+                        payout.commissionAmount = java.math.BigDecimal.ZERO.setScale(2)
+                        payout.status = com.piashcse.constants.PayoutStatus.REFUNDED.name
+                    }
                 }
                 OrderDAO.findById(chargeback.orderId.value)?.let { order ->
                     order.paymentStatus = com.piashcse.constants.PaymentStatus.REFUNDED
