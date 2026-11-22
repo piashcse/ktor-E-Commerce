@@ -53,21 +53,6 @@ class OrderRepositoryImpl(
     private val loyaltyService: LoyaltyService = LoyaltyService(),
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
 ) : OrderRepository {
-    private fun validateShopsApproved(shopIds: Set<String>) {
-        val shops =
-            if (shopIds.isNotEmpty()) {
-                ShopDAO.find { ShopTable.id inList shopIds.map { it.entityID(ShopTable) } }.associateBy { it.id.value }
-            } else {
-                emptyMap()
-            }
-        shopIds.forEach { shopId ->
-            val shop = shops[shopId] ?: throw ValidationException(Message.Orders.SHOP_NOT_FOUND)
-            if (shop.status != ShopStatus.APPROVED) {
-                throw ValidationException(Message.Orders.SHOP_INACTIVE)
-            }
-        }
-    }
-
     private fun generatePickupCode(): String {
         val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         return (1..6).map { alphabet[kotlin.random.Random.nextInt(alphabet.length)] }.joinToString("")
@@ -90,14 +75,6 @@ class OrderRepositoryImpl(
             this.notes = notes
             this.changedBy = userId?.let { it.entityID(UserTable) }
         }
-    }
-
-    // PII minimization: never persist the full phone number in the denormalized
-    // shippingAddress snapshot — keep only the last 4 digits for support lookup.
-    private fun maskPhone(phoneNumber: String): String {
-        val digits = phoneNumber.filter { it.isDigit() }
-        if (digits.length <= 4) return "***"
-        return "***" + digits.takeLast(4)
     }
 
     /**
@@ -163,130 +140,6 @@ class OrderRepositoryImpl(
         }
     }
 
-    private data class CheckoutShipping(
-        val name: String,
-        val price: BigDecimal,
-        val shopId: String? = null,
-    )
-
-    private data class Fulfillment(
-        val pickupWarehouse: WarehouseDAO?,
-        val shippingAddress: ShippingAddressDAO?,
-        val shippingMethod: CheckoutShipping,
-        val fullAddress: String,
-        val contactEmail: String,
-        val taxCountry: String,
-        val taxRegion: String?,
-    )
-
-    /** Shared pickup/delivery resolution used by both order placement and preview. */
-    private fun resolveFulfillment(
-        userId: String,
-        checkoutRequest: CheckoutRequest,
-    ): Fulfillment {
-        val pickup = checkoutRequest.fulfillmentType == FulfillmentType.PICKUP
-        val pickupWarehouse =
-            if (pickup) {
-                val id =
-                    checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
-                        ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
-                val warehouse =
-                    WarehouseDAO.findById(id)
-                        ?: throw ValidationException("Pickup location not found")
-                if (!warehouse.isActive || !warehouse.supportsPickup) {
-                    throw ValidationException("Pickup location is not available")
-                }
-                warehouse
-            } else {
-                null
-            }
-
-        val shippingAddress =
-            if (pickup) {
-                null
-            } else {
-                val address =
-                    ShippingAddressDAO.findById(
-                        checkoutRequest.shippingAddressId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-                if (address.userId.value != userId) {
-                    throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
-                }
-                address
-            }
-        val shippingMethod =
-            if (pickup) {
-                CheckoutShipping("PICKUP", BigDecimal.ZERO.setScale(2))
-            } else {
-                val method =
-                    ShippingMethodDAO.findById(
-                        checkoutRequest.shippingMethodId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-                CheckoutShipping(method.name, method.price, method.shopId?.value)
-            }
-        val fullAddress =
-            if (pickupWarehouse != null) {
-                buildString {
-                    append("Pickup at ${pickupWarehouse.name}\n")
-                    append("${pickupWarehouse.address ?: ""}, ${pickupWarehouse.city ?: ""}\n")
-                    append(pickupWarehouse.country ?: "")
-                }
-            } else {
-                val address = shippingAddress ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-                buildString {
-                    append("${address.firstName} ${address.lastName}\n")
-                    append("${address.streetAddress}, ${address.city}, ${address.state ?: ""}\n")
-                    append("${address.country}, ${address.zipCode}\n")
-                    append("Phone: ${maskPhone(address.phoneNumber)}")
-                }
-            }
-        val taxCountry =
-            pickupWarehouse?.country ?: shippingAddress?.country
-                ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-        return Fulfillment(
-            pickupWarehouse = pickupWarehouse,
-            shippingAddress = shippingAddress,
-            shippingMethod = shippingMethod,
-            fullAddress = fullAddress,
-            contactEmail = shippingAddress?.email ?: UserDAO.findById(userId)?.email.orEmpty(),
-            taxCountry = taxCountry,
-            taxRegion = if (pickup) null else shippingAddress?.state,
-        )
-    }
-
-    private fun loadCartCatalog(cartItems: List<CartItemDAO>): Pair<Map<String, ProductDAO>, Map<String, ProductVariantDAO>> {
-        val productsMap =
-            ProductDAO.find {
-                ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-            }.associateBy { it.id.value }
-        val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
-        val variantsMap =
-            if (variantIds.isNotEmpty()) {
-                ProductVariantDAO.find {
-                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
-                }.associateBy { it.id.value }
-            } else {
-                emptyMap()
-            }
-        return productsMap to variantsMap
-    }
-
-    private data class CheckoutContext(
-        val cartItems: List<CartItemDAO>,
-        val shippingAddress: ShippingAddressDAO?,
-        val contactEmail: String,
-        val fullAddress: String,
-        val shippingMethod: CheckoutShipping,
-        val pickupWarehouse: WarehouseDAO?,
-        val taxCountry: String,
-        val taxRegion: String?,
-        val productsMap: Map<String, ProductDAO>,
-        val variantsMap: Map<String, ProductVariantDAO>,
-        val itemsByShop: Map<String, List<CartItemDAO>>,
-    )
-
     private data class CheckoutQuote(
         val orders: List<OrderDAO>,
         val totalUsdSubTotal: BigDecimal,
@@ -311,7 +164,7 @@ class OrderRepositoryImpl(
                 retryQuery {
                     existingOrderResponses(userId, idempotencyKey) ?: run {
                         val checkoutReference = UUID.randomUUID().toString()
-                        val context = loadCheckoutContext(userId, checkoutRequest)
+                        val context = CheckoutContextLoader.load(userId, checkoutRequest)
                         val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
                         if (checkoutRequest.couponCode != null) {
                             applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
@@ -364,51 +217,6 @@ class OrderRepositoryImpl(
         if (existing.isEmpty()) return null
         val itemsMap = loadItemsForOrders(existing)
         return existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
-    }
-
-    private fun loadCheckoutContext(
-        userId: String,
-        checkoutRequest: CheckoutRequest,
-    ): CheckoutContext {
-        // Lock the cart for the duration of the checkout transaction. Two
-        // concurrent placements must not both read (and fulfil) the same rows.
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.forUpdate().toList()
-        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
-
-        val fulfillment = resolveFulfillment(userId, checkoutRequest)
-        val (productsMap, variantsMap) = loadCartCatalog(cartItems)
-
-        val itemsByShop =
-            cartItems.groupBy {
-                productsMap[it.productId.value]?.shopId?.value
-                    ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
-            }
-        validateShopsApproved(itemsByShop.keys)
-        fulfillment.shippingMethod.shopId?.let { methodShop ->
-            if (itemsByShop.size != 1 || methodShop != itemsByShop.keys.first()) {
-                throw ValidationException("Shipping method is not available for these shops")
-            }
-        }
-        fulfillment.pickupWarehouse?.let { warehouse ->
-            if (itemsByShop.size != 1) throw ValidationException("Pickup orders must contain items from one shop")
-            if (warehouse.shopId.value != itemsByShop.keys.first()) {
-                throw ValidationException("Pickup location does not belong to the selling shop")
-            }
-        }
-
-        return CheckoutContext(
-            cartItems = cartItems,
-            shippingAddress = fulfillment.shippingAddress,
-            contactEmail = fulfillment.contactEmail,
-            fullAddress = fulfillment.fullAddress,
-            shippingMethod = fulfillment.shippingMethod,
-            pickupWarehouse = fulfillment.pickupWarehouse,
-            taxCountry = fulfillment.taxCountry,
-            taxRegion = fulfillment.taxRegion,
-            productsMap = productsMap,
-            variantsMap = variantsMap,
-            itemsByShop = itemsByShop,
-        )
     }
 
     private fun createOrders(
@@ -1244,7 +1052,7 @@ class OrderRepositoryImpl(
         val currency = checkoutRequest.currency.uppercase()
         val fxRate = if (currency != AppConstants.DEFAULT_CURRENCY) fxService.rateTo(currency) else BigDecimal.ONE
         return query {
-            val context = loadCheckoutContext(userId, checkoutRequest)
+            val context = CheckoutContextLoader.load(userId, checkoutRequest)
             val subUsd = checkoutSubtotalUsd(context)
             val sub = checkoutSubtotal(context, fxRate)
             val ship = checkoutShipping(context, subUsd, fxRate)
