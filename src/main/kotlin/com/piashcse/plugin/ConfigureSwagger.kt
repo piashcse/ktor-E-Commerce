@@ -1,10 +1,12 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
+import io.ktor.http.ContentType
 import io.ktor.openapi.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.OpenApiDocSource
 import io.ktor.server.routing.openapi.registerBearerAuthSecurityScheme
 
 fun Application.configureSwagger() {
@@ -22,6 +24,14 @@ fun Application.configureSwagger() {
 
     routing {
         swaggerUI(path = "swagger") {
+            source =
+                OpenApiDocSource.FirstOf(
+                    OpenApiDocSource.File("openapi/documentation.yaml"),
+                    OpenApiDocSource.Routing(
+                        contentType = ContentType.Application.Yaml,
+                        serializeModel = OpenApiDocs::render,
+                    ),
+                )
             info =
                 OpenApiInfo(
                     title = "Ktor E-Commerce API",

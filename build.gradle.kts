@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.valiktor.core)
     implementation(libs.commons.io)
     implementation(libs.dotenv.kotlin)
+    implementation(libs.kaml)
 
     // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)
