@@ -41,6 +41,7 @@ import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderCompletion
 import com.piashcse.feature.order.OrderEvents
 import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
@@ -549,19 +550,9 @@ class OmnichannelService(
             }
         }
         SellerTotals.applyOrderTx(order)
-        loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
-        OutboxPublisher.enqueueTx(
-            OutboxAggregate.PAYMENT,
-            payment.id.value,
-            PaymentCompletedEvent(
-                paymentId = payment.id.value,
-                orderId = order.id.value,
-                userId = customer.id.value,
-                email = customer.email,
-                amount = payment.amount,
-            ),
-        )
-        digitalDelivery.grantForOrderTx(order)
+        // Shared completion path: loyalty, seller payout ledger, digital delivery
+        // and reservation finalization must match online/offline payments.
+        OrderCompletion.completeTx(order, payment, loyaltyService, digitalDelivery)
         return order.toOrderResponse(includeSensitive = false)
     }
 
