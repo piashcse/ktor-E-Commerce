@@ -16,19 +16,17 @@ import com.piashcse.database.entities.PaymentTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReservationStatus
-import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
-import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.database.entities.calcCommission
 import com.piashcse.database.entities.removeSales
 import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
@@ -140,13 +138,7 @@ object OrderCancellation {
         }
     }
 
-    private fun reverseSellerTotals(order: OrderDAO) {
-        val seller =
-            SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull() ?: return
-        val subtract = order.subTotal.max(BigDecimal.ZERO)
-        seller.totalSales = seller.totalSales.subtract(subtract).max(BigDecimal.ZERO)
-        seller.totalCommission = seller.totalCommission.subtract(seller.calcCommission(subtract)).max(BigDecimal.ZERO)
-    }
+    private fun reverseSellerTotals(order: OrderDAO) = SellerTotals.reverseOrderTx(order)
 
     private fun reverseSellerPayout(order: OrderDAO) {
         SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
