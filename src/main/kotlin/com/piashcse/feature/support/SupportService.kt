@@ -24,6 +24,7 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.FieldValidationException
@@ -193,7 +194,7 @@ class SupportService {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<TicketSummaryResponse> =
-        query {
+        readQuery {
             SupportTicketTable.selectAll()
                 .where { SupportTicketTable.userId eq userId.entityID(UserTable) }
                 .orderBy(SupportTicketTable.lastMessageAt to SortOrder.DESC)
@@ -204,7 +205,7 @@ class SupportService {
         userId: String,
         ticketId: String,
     ): TicketResponse =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
             TicketResponse(
@@ -313,7 +314,7 @@ class SupportService {
         ticketId: String,
         attachmentId: String,
     ): SupportAttachmentDownload =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
             findAttachment(ticket.id.value, attachmentId)
@@ -323,7 +324,7 @@ class SupportService {
         ticketId: String,
         attachmentId: String,
     ): SupportAttachmentDownload =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             findAttachment(ticket.id.value, attachmentId)
         }
@@ -362,7 +363,7 @@ class SupportService {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<TicketSummaryResponse> =
-        query {
+        readQuery {
             SupportTicketTable.selectAll()
                 .also { query ->
                     status?.let { query.andWhere { SupportTicketTable.status eq it } }
@@ -375,7 +376,7 @@ class SupportService {
         }
 
     suspend fun adminTicket(ticketId: String): TicketResponse =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             TicketResponse(
                 ticket = ticket.toSummary(),

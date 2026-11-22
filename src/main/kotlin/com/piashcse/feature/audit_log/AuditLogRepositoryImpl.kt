@@ -46,7 +46,7 @@ class AuditLogRepositoryImpl : AuditLogRepository {
         resourceType: String?,
         resourceId: String?,
         outcome: String?,
-    ) = query {
+    ) = readQuery {
         AuditLogTable.selectAll().also { q ->
             listOfNotNull(
                 actorId?.let { AuditLogTable.actorId eq it },
@@ -60,7 +60,7 @@ class AuditLogRepositoryImpl : AuditLogRepository {
     }
 
     override suspend fun getAuditLogById(logId: String) =
-        query {
+        readQuery {
             AuditLogDAO.findById(logId)?.toAuditLogResponse() ?: logId.throwNotFound("AuditLog")
         }
 }
