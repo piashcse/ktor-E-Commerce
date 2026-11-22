@@ -1,6 +1,5 @@
 package com.piashcse.feature.auth
 
-import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.RbacDefaults
@@ -27,18 +26,13 @@ import java.util.*
 
 @Suppress("TooManyFunctions")
 class AuthRepositoryImpl : AuthRepository {
+    private val registration = RegistrationService()
+
     private val otpAttempts = OtpAttemptService()
 
     private val loginAttempts = LoginAttemptService()
 
     private val tokens = AuthTokenService()
-
-    private fun hashPassword(password: String) = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, password.toCharArray())
-
-    private fun verifyPassword(
-        raw: String,
-        hash: String,
-    ) = BCrypt.verifyer().verify(raw.toCharArray(), hash).verified
 
     private fun userTypeOrNull(raw: String): UserType? = runCatching { UserType.valueOf(raw.uppercase()) }.getOrNull()
 
@@ -90,78 +84,7 @@ class AuthRepositoryImpl : AuthRepository {
 
     // ── Registration ──────────────────────────────────────────────────────
 
-    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
-        val userTypeEnum = userTypeOrNull(registerRequest.userType) ?: UserType.CUSTOMER
-        val normalizedEmail = normalizeEmail(registerRequest.email)
-
-        val (email, otp, result) =
-            query {
-                val existingUser =
-                    UserDAO.find { UserTable.email eq normalizedEmail and (UserTable.userType eq userTypeEnum) }
-                        .firstOrNull()
-
-                val otp = generateOTP()
-                val otpExpiryTime = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
-
-                if (existingUser != null) {
-                    if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
-                    if (existingUser.otpExpiry?.isAfter(currentUtc()) == true) {
-                        throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
-                    }
-                    // Guest-checkout rows have a server-generated random password, so
-                    // the first real registration may claim them. Any other unverified
-                    // row must prove knowledge of the existing password: otherwise an
-                    // attacker could register a victim's email and swap in their own
-                    // password before the victim completes the OTP (pre-hijacking).
-                    val mayReplacePassword =
-                        existingUser.isGuest ||
-                            verifyPassword(registerRequest.password, existingUser.password)
-                    if (!mayReplacePassword) {
-                        throw ValidationException(Message.Auth.USE_PASSWORD_RESET)
-                    }
-                    existingUser.otpCode = tokens.hashOtp(otp)
-                    existingUser.otpExpiry = otpExpiryTime
-                    existingUser.password = hashPassword(registerRequest.password)
-                    Triple(
-                        existingUser.email,
-                        otp,
-                        RegistrationResult.OtpResent(
-                            existingUser.id.value,
-                            existingUser.email,
-                            Message.Auth.OTP_SENT,
-                            otp = otp,
-                        ),
-                    )
-                } else {
-                    val inserted =
-                        UserDAO.new {
-                            email = normalizedEmail
-                            otpCode = tokens.hashOtp(otp)
-                            otpExpiry = otpExpiryTime
-                            password = hashPassword(registerRequest.password)
-                            userType = userTypeEnum
-                        }
-                    UserProfileDAO.new { userId = inserted.id }
-                    if (userTypeEnum == UserType.SELLER) {
-                        SellerDAO.new {
-                            userId = inserted.id
-                            status = ShopStatus.PENDING
-                        }
-                    }
-                    Triple(
-                        inserted.email,
-                        otp,
-                        RegistrationResult.Created(
-                            inserted.id.value,
-                            normalizedEmail,
-                            Message.Auth.OTP_SENT,
-                            otp = otp,
-                        ),
-                    )
-                }
-            }
-        return result
-    }
+    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult = registration.register(registerRequest)
 
     // ── User helpers ──────────────────────────────────────────────────────
 
@@ -195,7 +118,7 @@ class AuthRepositoryImpl : AuthRepository {
     ): Boolean =
         query {
             val user = UserDAO.findById(userId) ?: return@query false
-            verifyPassword(rawPassword, user.password)
+            PasswordHasher.verify(rawPassword, user.password)
         }
 
     override suspend fun getRegistrationOtp(userId: String): String? =
@@ -224,9 +147,9 @@ class AuthRepositoryImpl : AuthRepository {
     ): Boolean =
         query {
             val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            if (!verifyPassword(changePassword.oldPassword, userEntity.password)) return@query false
+            if (!PasswordHasher.verify(changePassword.oldPassword, userEntity.password)) return@query false
             if (changePassword.oldPassword == changePassword.newPassword) throw ValidationException(Message.Auth.PASSWORD_SAME)
-            userEntity.password = hashPassword(changePassword.newPassword)
+            userEntity.password = PasswordHasher.hash(changePassword.newPassword)
             userEntity.tokenVersion += 1
             // A password change must invalidate every existing session.
             tokens.revokeAllUserTokensTx(userId)
@@ -285,7 +208,7 @@ class AuthRepositoryImpl : AuthRepository {
                 return@query ResetResult.InvalidOrExpiredOtp
             }
 
-            if (verifyPassword(resetPasswordRequest.newPassword, user.password)) {
+            if (PasswordHasher.verify(resetPasswordRequest.newPassword, user.password)) {
                 throw ValidationException(Message.Auth.PASSWORD_SAME)
             }
 
@@ -297,7 +220,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             user.resetOtpCode = null
             user.resetOtpExpiry = null
-            user.password = hashPassword(resetPasswordRequest.newPassword)
+            user.password = PasswordHasher.hash(resetPasswordRequest.newPassword)
             user.tokenVersion += 1
             // Password reset must invalidate every existing session.
             tokens.revokeAllUserTokensTx(user.id.value)
