@@ -8,24 +8,18 @@ import com.piashcse.database.entities.GiftCardDAO
 import com.piashcse.database.entities.GiftCardRedemptionDAO
 import com.piashcse.database.entities.GiftCardRedemptionTable
 import com.piashcse.database.entities.GiftCardTable
-import com.piashcse.database.entities.WalletAccountDAO
 import com.piashcse.database.entities.WalletLedgerDAO
 import com.piashcse.database.entities.WalletLedgerTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.utils.common.DateTimes.toUtcString
-import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -106,29 +100,18 @@ data class RedemptionPreview(
     val creditAvailable: BigDecimal,
 )
 
-@Suppress("TooManyFunctions")
 class LoyaltyService {
     private val referrals = ReferralService()
 
     private val giftCards = GiftCardService()
 
-    suspend fun wallet(userId: String): WalletResponse =
-        query {
-            val account = LoyaltyAccounts.accountFor(userId)
-            account.toWalletResponse()
-        }
+    suspend fun wallet(userId: String): WalletResponse = WalletQueries.wallet(userId)
 
     suspend fun ledger(
         userId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<WalletLedgerResponse> =
-        query {
-            WalletLedgerTable.selectAll()
-                .where { WalletLedgerTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
-                .orderBy(WalletLedgerTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { WalletLedgerDAO.wrapRow(it).toLedgerResponse() }
-        }
+    ): PaginatedResponse<WalletLedgerResponse> = WalletQueries.ledger(userId, limit, offset)
 
     /** Idempotently awards points for a paid order and completes a pending referral. */
     fun earnForPaidOrderTx(
@@ -555,24 +538,4 @@ class LoyaltyService {
                 (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                 (WalletLedgerTable.referenceId eq referenceId)
         }.any()
-
-    private fun WalletAccountDAO.toWalletResponse() =
-        WalletResponse(
-            creditBalance = Money.str(creditBalance),
-            pointsBalance = pointsBalance,
-            lifetimePoints = lifetimePoints,
-            referralCode = referralCode,
-        )
-
-    private fun WalletLedgerDAO.toLedgerResponse() =
-        WalletLedgerResponse(
-            id = id.value,
-            type = type,
-            pointsDelta = pointsDelta,
-            creditDelta = Money.str(creditDelta),
-            referenceType = referenceType,
-            referenceId = referenceId,
-            note = note,
-            createdAt = createdAt.toUtcString(),
-        )
 }

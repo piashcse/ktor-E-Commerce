@@ -54,7 +54,6 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
-@Suppress("TooManyFunctions")
 class B2bService {
     private val accounts = B2bAccountService()
     private val invoices = B2bInvoiceService()
