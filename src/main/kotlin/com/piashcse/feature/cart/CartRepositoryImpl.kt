@@ -8,6 +8,7 @@ import com.piashcse.feature.tax.TaxTotals
 import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
+import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.service.PricingService
@@ -193,79 +194,11 @@ class CartRepositoryImpl : CartRepository {
             true
         }
 
-    @Suppress("LongMethod")
     override suspend fun getCartSummary(userId: String): CartSummaryResponse =
         query {
-            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-            val products =
-                ProductDAO.find {
-                    ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-                }.associateBy { it.id.value }
-            val productEntityIds = products.keys.map { it.entityID(ProductTable) }
-            val imagesMap =
-                if (products.isNotEmpty()) {
-                    ProductImageDAO.imagesForProducts(productEntityIds)
-                } else {
-                    emptyMap()
-                }
-            val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
-            val variantsById =
-                if (variantIds.isNotEmpty()) {
-                    ProductVariantDAO.find {
-                        ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
-                    }.associateBy { it.id.value }
-                } else {
-                    emptyMap()
-                }
-            val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
-            val activeWarehouseIds =
-                if (shopIds.isEmpty()) {
-                    emptySet()
-                } else {
-                    WarehouseDAO.find {
-                        (WarehouseTable.shopId inList shopIds.map { it.entityID(ShopTable) }) and
-                            (WarehouseTable.isActive eq true)
-                    }.map { it.id.value }.toSet()
-                }
-            val inventoryRows =
-                if (products.isNotEmpty()) {
-                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }
-                        .filter { it.warehouseId.value in activeWarehouseIds }
-                } else {
-                    emptyList()
-                }
+            val catalog = loadCartCatalog(userId)
 
-            fun stockFor(
-                productId: String,
-                variantId: String?,
-            ): Int =
-                inventoryRows
-                    .filter {
-                        it.productId.value == productId && it.variantId?.value == variantId
-                    }.sumOf { it.stockQuantity }
-            val shops =
-                if (shopIds.isNotEmpty()) {
-                    ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
-                } else {
-                    emptyMap()
-                }
-
-            val items =
-                cartItems.mapNotNull { cartItem ->
-                    val product = products[cartItem.productId.value] ?: return@mapNotNull null
-                    val variant = cartItem.variantId?.value?.let { variantsById[it] }
-                    val unitPrice = PricingService.unitPriceUsd(product, variant)
-                    cartItem.toCartItemSummary(
-                        product = product,
-                        unitPrice = unitPrice,
-                        image = variant?.imageUrl ?: imagesMap[product.id.value]?.firstOrNull(),
-                        stockQuantity = stockFor(product.id.value, variant?.id?.value),
-                        shopName = product.shopId?.value?.let { shops[it]?.name },
-                        variant = variant,
-                    )
-                }
-
-            val lines = items.map { Money.of(it.price) to it.quantity }
+            val lines = catalog.items.map { Money.of(it.price) to it.quantity }
             val subtotal = PricingService.subtotal(lines)
             // Use the same tax engine as checkout, keyed to the user's default
             // address when available. With no address it falls back to the
@@ -275,9 +208,9 @@ class CartRepositoryImpl : CartRepository {
                     .orderBy(ShippingAddressTable.isDefault to SortOrder.DESC)
                     .firstOrNull()
             var taxTotals = TaxTotals()
-            cartItems.forEach { cartItem ->
-                val product = products[cartItem.productId.value] ?: return@forEach
-                val variant = cartItem.variantId?.value?.let { variantsById[it] }
+            catalog.cartItems.forEach { cartItem ->
+                val product = catalog.products[cartItem.productId.value] ?: return@forEach
+                val variant = cartItem.variantId?.value?.let { catalog.variantsById[it] }
                 val unitPrice = PricingService.unitPriceUsd(product, variant)
                 val lineTotal = Money.unitTotal(unitPrice, cartItem.quantity)
                 val quote =
@@ -295,11 +228,11 @@ class CartRepositoryImpl : CartRepository {
             // Shipping estimate: cheapest method × number of shops that still
             // need shipping, waived once the platform threshold is reached.
             val physicalShops =
-                products.values
+                catalog.products.values
                     .filter { !it.isDigital }
                     .groupBy { it.shopId?.value }
                     .count { (_, shopProducts) -> shopProducts.any { !it.freeShipping } }
-            val cartShopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+            val cartShopIds = catalog.products.values.mapNotNull { it.shopId?.value }.distinct()
             val cheapestMethod =
                 ShippingMethodDAO.all()
                     .filter { method ->
@@ -316,7 +249,7 @@ class CartRepositoryImpl : CartRepository {
             val total = Money.scale2(subtotal.add(taxTotalsNormalized.exclusiveTax).add(shippingUsd))
 
             val shopSummaries =
-                items
+                catalog.items
                     .groupBy { it.shopId }
                     .map { (shopId, shopItems) ->
                         com.piashcse.model.response.CartShopSummary(
@@ -333,10 +266,10 @@ class CartRepositoryImpl : CartRepository {
                     }
 
             CartSummaryResponse(
-                items = items,
+                items = catalog.items,
                 subtotal = subtotal.toPlainString(),
                 estimatedTax = taxTotalsNormalized.tax.toPlainString(),
-                itemCount = cartItems.sumOf { it.quantity },
+                itemCount = catalog.cartItems.sumOf { it.quantity },
                 total = total.toPlainString(),
                 estimatedShipping = shippingUsd.toPlainString(),
                 freeShippingThreshold = Money.str(StorefrontSettings.freeShippingThreshold),
@@ -344,4 +277,84 @@ class CartRepositoryImpl : CartRepository {
                 shops = shopSummaries,
             )
         }
+
+    private data class CartCatalog(
+        val cartItems: List<CartItemDAO>,
+        val products: Map<String, ProductDAO>,
+        val variantsById: Map<String, ProductVariantDAO>,
+        val items: List<CartItemSummary>,
+    )
+
+    private fun loadCartCatalog(userId: String): CartCatalog {
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+        val products =
+            ProductDAO.find {
+                ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+            }.associateBy { it.id.value }
+        val productEntityIds = products.keys.map { it.entityID(ProductTable) }
+        val imagesMap =
+            if (products.isNotEmpty()) {
+                ProductImageDAO.imagesForProducts(productEntityIds)
+            } else {
+                emptyMap()
+            }
+        val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
+        val variantsById =
+            if (variantIds.isNotEmpty()) {
+                ProductVariantDAO.find {
+                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                }.associateBy { it.id.value }
+            } else {
+                emptyMap()
+            }
+        val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+        val activeWarehouseIds =
+            if (shopIds.isEmpty()) {
+                emptySet()
+            } else {
+                WarehouseDAO.find {
+                    (WarehouseTable.shopId inList shopIds.map { it.entityID(ShopTable) }) and
+                        (WarehouseTable.isActive eq true)
+                }.map { it.id.value }.toSet()
+            }
+        val inventoryRows =
+            if (products.isNotEmpty()) {
+                InventoryDAO.find { InventoryTable.productId inList productEntityIds }
+                    .filter { it.warehouseId.value in activeWarehouseIds }
+            } else {
+                emptyList()
+            }
+
+        fun stockFor(
+            productId: String,
+            variantId: String?,
+        ): Int =
+            inventoryRows
+                .filter {
+                    it.productId.value == productId && it.variantId?.value == variantId
+                }.sumOf { it.stockQuantity }
+        val shops =
+            if (shopIds.isNotEmpty()) {
+                ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
+            } else {
+                emptyMap()
+            }
+
+        val items =
+            cartItems.mapNotNull { cartItem ->
+                val product = products[cartItem.productId.value] ?: return@mapNotNull null
+                val variant = cartItem.variantId?.value?.let { variantsById[it] }
+                val unitPrice = PricingService.unitPriceUsd(product, variant)
+                cartItem.toCartItemSummary(
+                    product = product,
+                    unitPrice = unitPrice,
+                    image = variant?.imageUrl ?: imagesMap[product.id.value]?.firstOrNull(),
+                    stockQuantity = stockFor(product.id.value, variant?.id?.value),
+                    shopName = product.shopId?.value?.let { shops[it]?.name },
+                    variant = variant,
+                )
+            }
+
+        return CartCatalog(cartItems, products, variantsById, items)
+    }
 }
