@@ -19,11 +19,9 @@ import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxQuote
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.tax.TaxTotals
-import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
-import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.model.response.TaxLineResponse
 import com.piashcse.service.CatalogCache
@@ -32,16 +30,10 @@ import com.piashcse.service.PricingService
 import com.piashcse.utils.common.CursorPage
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
-import com.piashcse.utils.common.cursorPage
 import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.jdbc.Query
-import org.jetbrains.exposed.v1.jdbc.andWhere
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Instant
@@ -60,31 +52,6 @@ class OrderRepositoryImpl(
     private val loyaltyService: LoyaltyService = LoyaltyService(),
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
 ) : OrderRepository {
-    private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
-
-    private fun loadItemsForOrders(orders: List<OrderDAO>): Map<String, List<OrderItemResponse>> =
-        OrderItemDAO.itemsForOrders(orders.map { it.id })
-            .mapValues { (_, items) -> items.toItemResponses() }
-
-    private fun Query.toOrdersPaginated(
-        limit: Int,
-        offset: Int,
-        includeSensitive: Boolean = true,
-        forCustomer: Boolean = false,
-    ): PaginatedResponse<OrderResponse> {
-        val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
-        val itemsMap = loadItemsForOrders(rows)
-        val data =
-            rows.map { order ->
-                order.toOrderResponse(
-                    itemsMap[order.id.value],
-                    includeSensitive = includeSensitive,
-                    forCustomer = forCustomer,
-                )
-            }
-        return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
-    }
-
     private fun validateShopsApproved(shopIds: Set<String>) {
         val shops =
             if (shopIds.isNotEmpty()) {
@@ -109,11 +76,6 @@ class OrderRepositoryImpl(
         datePrefix: String,
         sequenceNumber: Int,
     ) = "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${UUID.randomUUID().toString().take(8).uppercase()}"
-
-    private fun parseOrderStatus(raw: String): OrderStatus =
-        runCatching { OrderStatus.valueOf(raw.trim().uppercase()) }.getOrElse {
-            throw ValidationException(Message.Errors.invalidParameter("status", raw))
-        }
 
     private fun logStatusChange(
         orderId: String,
@@ -1348,75 +1310,24 @@ class OrderRepositoryImpl(
         query: String?,
         from: Instant?,
         to: Instant?,
-    ): PaginatedResponse<OrderResponse> =
-        readQuery {
-            val orders = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
-            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase().escapeLike()}%"
-                orders.andWhere {
-                    (OrderTable.orderNumber.lowerCase() like pattern) or
-                        (OrderTable.contactEmail.lowerCase() like pattern)
-                }
-            }
-            orders.applyCreatedRange(OrderTable.createdAt, from, to)
-            orders
-                .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toOrdersPaginated(limit, offset, forCustomer = true)
-        }
+    ): PaginatedResponse<OrderResponse> = OrderQueries.getOrders(userId, limit, offset, status, query, from, to)
 
     override suspend fun getOrdersCursor(
         userId: String,
         limit: Int,
         cursor: String?,
-    ): CursorPage<OrderResponse> =
-        readQuery {
-            val page =
-                OrderTable.selectAll()
-                    .andWhere { OrderTable.userId eq userId }
-                    .cursorPage(limit, cursor, OrderTable.createdAt, OrderTable.id) { it }
-            val orders = page.data.map { OrderDAO.wrapRow(it) }
-            val itemsMap = loadItemsForOrders(orders)
-            CursorPage(
-                data = orders.map { it.toOrderResponse(itemsMap[it.id.value], forCustomer = true) },
-                nextCursor = page.nextCursor,
-                hasMore = page.hasMore,
-                limit = page.limit,
-            )
-        }
+    ): CursorPage<OrderResponse> = OrderQueries.getOrdersCursor(userId, limit, cursor)
 
     override suspend fun getOrderForGuest(
         orderNumber: String,
         email: String,
-    ): OrderResponse? =
-        readQuery {
-            val order =
-                OrderDAO.find {
-                    (OrderTable.orderNumber eq orderNumber) and
-                        (OrderTable.contactEmail.lowerCase() eq email.trim().lowercase())
-                }.firstOrNull() ?: return@readQuery null
-            order.toOrderResponse(
-                OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
-                includeSensitive = false,
-                forCustomer = true,
-            )
-        }
+    ): OrderResponse? = OrderQueries.getOrderForGuest(orderNumber, email)
 
     override suspend fun getOrderById(
         orderId: String,
         userId: String,
         userType: UserType,
-    ): OrderResponse =
-        readQuery {
-            orderId.requireNotBlank("Order ID")
-            val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
-            requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
-            order.toOrderResponse(
-                OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
-                includeSensitive = userType == UserType.CUSTOMER,
-                forCustomer = userType == UserType.CUSTOMER,
-            )
-        }
+    ): OrderResponse = OrderQueries.getOrderById(orderId, userId, userType)
 
     override suspend fun updateOrderStatus(
         userId: String,
@@ -1567,30 +1478,7 @@ class OrderRepositoryImpl(
         query: String?,
         from: Instant?,
         to: Instant?,
-    ): PaginatedResponse<OrderResponse> =
-        readQuery {
-            val seller =
-                try {
-                    requireSellerByUserId(userId)
-                } catch (_: ForbiddenException) {
-                    throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
-                }
-            val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
-
-            val orders = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
-            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase().escapeLike()}%"
-                orders.andWhere {
-                    (OrderTable.orderNumber.lowerCase() like pattern) or
-                        (OrderTable.contactEmail.lowerCase() like pattern)
-                }
-            }
-            orders.applyCreatedRange(OrderTable.createdAt, from, to)
-            orders
-                .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toOrdersPaginated(limit, offset, includeSensitive = false)
-        }
+    ): PaginatedResponse<OrderResponse> = OrderQueries.getSellerOrders(userId, limit, offset, status, query, from, to)
 
     override suspend fun getAdminOrders(
         limit: Int,
@@ -1599,20 +1487,5 @@ class OrderRepositoryImpl(
         startDate: Instant?,
         endDate: Instant?,
         query: String?,
-    ): PaginatedResponse<OrderResponse> =
-        readQuery {
-            val orders = OrderTable.selectAll()
-            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            orders.applyCreatedRange(OrderTable.createdAt, startDate, endDate)
-            query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase().escapeLike()}%"
-                orders.andWhere {
-                    (OrderTable.orderNumber.lowerCase() like pattern) or
-                        (OrderTable.contactEmail.lowerCase() like pattern)
-                }
-            }
-            orders
-                .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toOrdersPaginated(limit, offset, includeSensitive = false)
-        }
+    ): PaginatedResponse<OrderResponse> = OrderQueries.getAdminOrders(limit, offset, status, startDate, endDate, query)
 }
