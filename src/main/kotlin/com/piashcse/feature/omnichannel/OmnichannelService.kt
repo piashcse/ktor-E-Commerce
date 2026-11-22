@@ -45,6 +45,7 @@ import com.piashcse.feature.order.OrderEvents
 import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.service.PricingService
@@ -52,7 +53,9 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
+import com.piashcse.utils.extension.paginateWithPreload
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -66,6 +69,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -201,7 +205,7 @@ class OmnichannelService(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<OrderResponse> =
-        query {
+        readQuery {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
             OrderTable.selectAll()
@@ -210,9 +214,7 @@ class OmnichannelService(
                         (OrderTable.fulfillmentType eq FulfillmentType.PICKUP)
                 }
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    OrderDAO.wrapRow(it).toOrderResponse(includeSensitive = false)
-                }
+                .toPosOrdersPaginated(limit, offset)
         }
 
     suspend fun markReady(
@@ -732,7 +734,7 @@ class OmnichannelService(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<PosSessionResponse> =
-        query {
+        readQuery {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
             PosSessionTable.selectAll()
@@ -746,7 +748,7 @@ class OmnichannelService(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<OrderResponse> =
-        query {
+        readQuery {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
             OrderTable.selectAll()
@@ -755,10 +757,24 @@ class OmnichannelService(
                         (OrderTable.fulfillmentType eq FulfillmentType.POS)
                 }
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    OrderDAO.wrapRow(it).toOrderResponse(includeSensitive = false)
-                }
+                .toPosOrdersPaginated(limit, offset)
         }
+
+    private fun Query.toPosOrdersPaginated(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<OrderResponse> =
+        paginateWithPreload(
+            limit,
+            offset,
+            rowMapper = { OrderDAO.wrapRow(it) },
+            preloadAndMap = { orders ->
+                val items =
+                    OrderItemDAO.itemsForOrders(orders.map { it.id })
+                        .mapValues { (_, rows) -> rows.map { it.toOrderItemResponse() } }
+                orders.map { it.toOrderResponse(items[it.id.value], includeSensitive = false) }
+            },
+        )
 
     private fun PosSessionDAO.toResponse() =
         PosSessionResponse(

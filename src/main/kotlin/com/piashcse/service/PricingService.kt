@@ -34,6 +34,19 @@ object PricingService {
 
     fun tax(subTotal: BigDecimal): BigDecimal = Money.tax(subTotal, taxRate)
 
+    /** Converts a USD amount into the order currency and rounds to cents. */
+    fun toCurrency(
+        amountUsd: BigDecimal,
+        fxRate: BigDecimal,
+    ): BigDecimal = Money.scale2(amountUsd.multiply(fxRate))
+
+    /** Line total in the order currency: convert the unit price, then multiply by quantity. */
+    fun lineTotal(
+        unitPriceUsd: BigDecimal,
+        quantity: Int,
+        fxRate: BigDecimal = BigDecimal.ONE,
+    ): BigDecimal = Money.unitTotal(toCurrency(unitPriceUsd, fxRate), quantity)
+
     fun breakdown(
         subTotal: BigDecimal,
         shippingTotal: BigDecimal,

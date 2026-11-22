@@ -89,7 +89,7 @@ class GuestCheckoutService(
         return if (error != null) {
             CouponQuote(BigDecimal.ZERO.setScale(2), error)
         } else {
-            CouponQuote(Money.scale2(CouponRules.discountUsd(snapshot, eligibleUsd).multiply(fxRate)), null)
+            CouponQuote(PricingService.toCurrency(CouponRules.discountUsd(snapshot, eligibleUsd), fxRate), null)
         }
     }
 
@@ -184,7 +184,7 @@ class GuestCheckoutService(
                     )
 
                 // Convert the unit price first so the quote matches the persisted order line.
-                val line = Money.unitTotal(Money.scale2(unitUsd.multiply(fxRate)), item.quantity)
+                val line = PricingService.lineTotal(unitUsd, item.quantity, fxRate)
                 subTotal = subTotal.add(line)
                 val taxQuote =
                     taxService.resolve(
@@ -200,10 +200,9 @@ class GuestCheckoutService(
                 if (shopsWithShipping.isEmpty() || StorefrontSettings.freeShippingReached(subtotalUsd)) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
-                    Money.scale2(
-                        shippingMethod.price
-                            .multiply(BigDecimal(shopsWithShipping.size))
-                            .multiply(fxRate),
+                    PricingService.toCurrency(
+                        shippingMethod.price.multiply(BigDecimal(shopsWithShipping.size)),
+                        fxRate,
                     )
                 }
 
@@ -216,7 +215,7 @@ class GuestCheckoutService(
             } else {
                 promotionService.evaluateTx(subtotalUsd, shopIds)?.let { promotion ->
                     if (promotion.freeShipping) shipping = BigDecimal.ZERO.setScale(2)
-                    discount = Money.scale2(promotion.discount.multiply(fxRate))
+                    discount = PricingService.toCurrency(promotion.discount, fxRate)
                 }
             }
 
@@ -230,7 +229,7 @@ class GuestCheckoutService(
                     val variant =
                         item.variantId?.takeIf(String::isNotBlank)?.let { variants[it] }
                     val unitUsd = PricingService.unitPriceUsd(product, variant)
-                    val line = Money.unitTotal(Money.scale2(unitUsd.multiply(fxRate)), item.quantity)
+                    val line = PricingService.lineTotal(unitUsd, item.quantity, fxRate)
                     val share = Money.proportionalSplit(discount, line, subTotal)
                     val quote =
                         taxService.resolve(
@@ -261,9 +260,9 @@ class GuestCheckoutService(
                 couponValid = couponCode?.let { couponError == null },
                 couponError = couponError,
                 freeShippingThreshold =
-                    Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
+                    PricingService.toCurrency(StorefrontSettings.freeShippingThreshold, fxRate).toPlainString(),
                 freeShippingRemaining =
-                    Money.scale2(StorefrontSettings.freeShippingRemaining(subtotalUsd).multiply(fxRate)).toPlainString(),
+                    PricingService.toCurrency(StorefrontSettings.freeShippingRemaining(subtotalUsd), fxRate).toPlainString(),
                 locale = request.locale,
             )
         }

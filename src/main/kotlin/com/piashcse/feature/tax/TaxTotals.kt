@@ -17,14 +17,17 @@ data class TaxTotals(
     fun add(
         amount: BigDecimal,
         quote: TaxQuote,
-    ): TaxTotals {
-        val applied = TaxService.applyTax(amount, quote)
-        return copy(
+    ): TaxTotals = add(TaxService.applyTax(amount, quote), quote)
+
+    fun add(
+        applied: TaxAmounts,
+        quote: TaxQuote,
+    ): TaxTotals =
+        copy(
             tax = tax.add(applied.tax),
             exclusiveTax = if (quote.inclusive) exclusiveTax else exclusiveTax.add(applied.tax),
             inclusive = inclusive || quote.inclusive,
         )
-    }
 
     fun normalized(): TaxTotals =
         copy(

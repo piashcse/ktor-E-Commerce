@@ -18,6 +18,7 @@ import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxQuote
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.tax.TaxTotals
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -573,7 +574,7 @@ class OrderRepositoryImpl(
             if (!product.isDigital) allDigital = false
             if (!product.isDigital && !product.freeShipping) allFreeShipping = false
             val unitPriceUsd = PricingService.unitPriceUsd(product, variant)
-            val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
+            val unitPrice = PricingService.toCurrency(unitPriceUsd, fxRate)
             val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
             shopUsdSubTotal = shopUsdSubTotal.add(Money.unitTotal(unitPriceUsd, cartItem.quantity))
             val taxQuote =
@@ -651,7 +652,7 @@ class OrderRepositoryImpl(
             if (allDigital || context.pickupWarehouse != null || allFreeShipping || freeShippingByThreshold) {
                 BigDecimal.ZERO.setScale(2)
             } else {
-                Money.scale2(context.shippingMethod.price.multiply(fxRate))
+                PricingService.toCurrency(context.shippingMethod.price, fxRate)
             }
         order.subTotal = scaledSubTotal
         order.shippingCost = ship
@@ -715,7 +716,7 @@ class OrderRepositoryImpl(
                     )
             }
         val totalEligible = eligibleByOrder.values.fold(BigDecimal.ZERO) { acc, amount -> acc.add(amount) }
-        val discount = Money.scale2(discountUsd.multiply(fxRate))
+        val discount = PricingService.toCurrency(discountUsd, fxRate)
         quote.orders.forEach { order ->
             val orderEligible = eligibleByOrder[order.id.value] ?: BigDecimal.ZERO
             val orderDiscount =
@@ -753,7 +754,7 @@ class OrderRepositoryImpl(
         promotion: PromotionMatch,
         fxRate: BigDecimal,
     ) {
-        val discount = Money.scale2(promotion.discount.multiply(fxRate))
+        val discount = PricingService.toCurrency(promotion.discount, fxRate)
         val totalSubTotal = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.subTotal) }
         quote.orders.forEach { order ->
             val orderDiscount =
@@ -1034,7 +1035,7 @@ class OrderRepositoryImpl(
             context.cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
                 val product = context.productsMap[cartItem.productId.value] ?: return@fold acc
                 val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
-                val unit = Money.scale2(PricingService.unitPriceUsd(product, variant).multiply(fxRate))
+                val unit = PricingService.toCurrency(PricingService.unitPriceUsd(product, variant), fxRate)
                 acc.add(Money.unitTotal(unit, cartItem.quantity))
             },
         )
@@ -1067,7 +1068,7 @@ class OrderRepositoryImpl(
         ) {
             BigDecimal.ZERO.setScale(2)
         } else {
-            Money.scale2(PricingService.shipping(context.shippingMethod.price, shopsWithShipping).multiply(fxRate))
+            PricingService.toCurrency(PricingService.shipping(context.shippingMethod.price, shopsWithShipping), fxRate)
         }
     }
 
@@ -1077,15 +1078,14 @@ class OrderRepositoryImpl(
         businessTaxId: String?,
         fxRate: BigDecimal,
     ): TaxPreview {
-        var tax = BigDecimal.ZERO
-        var exclusiveTax = BigDecimal.ZERO
+        var taxTotals = TaxTotals()
         val lines = mutableListOf<TaxLineResponse>()
         context.cartItems.forEach { cartItem ->
             val product =
                 context.productsMap[cartItem.productId.value]
                     ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
             val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
-            val unit = Money.scale2(PricingService.unitPriceUsd(product, variant).multiply(fxRate))
+            val unit = PricingService.toCurrency(PricingService.unitPriceUsd(product, variant), fxRate)
             val line = Money.unitTotal(unit, cartItem.quantity)
             val quote =
                 taxService.resolve(
@@ -1097,8 +1097,7 @@ class OrderRepositoryImpl(
                     businessTaxId = businessTaxId,
                 )
             val amounts = taxService.apply(line, quote)
-            tax = tax.add(amounts.tax)
-            if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            taxTotals = taxTotals.add(amounts, quote)
             lines +=
                 TaxLineResponse(
                     productId = product.id.value,
@@ -1110,7 +1109,8 @@ class OrderRepositoryImpl(
                     grossAmount = amounts.gross.toPlainString(),
                 )
         }
-        return TaxPreview(Money.scale2(tax), Money.scale2(exclusiveTax), lines)
+        val totals = taxTotals.normalized()
+        return TaxPreview(totals.tax, totals.exclusiveTax, lines)
     }
 
     private fun couponPreview(
@@ -1130,7 +1130,7 @@ class OrderRepositoryImpl(
             val lines = cartCouponLines(context.cartItems, context.productsMap, context.variantsMap)
             val eligibleUsd = CouponRules.eligibleSubtotalUsd(snapshot, lines)
             CouponRules.eligibilityError(snapshot, eligibleUsd)?.let { throw ValidationException(it) }
-            val discount = Money.scale2(CouponRules.discountUsd(snapshot, eligibleUsd).multiply(fxRate))
+            val discount = PricingService.toCurrency(CouponRules.discountUsd(snapshot, eligibleUsd), fxRate)
             val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
             val eligibleProductIds =
                 context.productsMap.values
@@ -1238,8 +1238,8 @@ class OrderRepositoryImpl(
         val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
         val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
         val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
-        val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
-        val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
+        val walletDiscount = PricingService.toCurrency(walletUsd, fxRate).min(responseTotal)
+        val giftDiscount = PricingService.toCurrency(giftUsd, fxRate).min(responseTotal.subtract(walletDiscount))
         return response.copy(
             walletDiscount = walletDiscount.toPlainString(),
             giftCardDiscount = giftDiscount.toPlainString(),
@@ -1263,9 +1263,9 @@ class OrderRepositoryImpl(
         return response.copy(
             locale = locale,
             freeShippingThreshold =
-                Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
+                PricingService.toCurrency(StorefrontSettings.freeShippingThreshold, fxRate).toPlainString(),
             freeShippingRemaining =
-                Money.scale2(StorefrontSettings.freeShippingRemaining(subUsd).multiply(fxRate)).toPlainString(),
+                PricingService.toCurrency(StorefrontSettings.freeShippingRemaining(subUsd), fxRate).toPlainString(),
             formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
             formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
             formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
@@ -1303,7 +1303,7 @@ class OrderRepositoryImpl(
             val couponCode = checkoutRequest.couponCode
             if (couponCode == null) {
                 promotionService.evaluateTx(subUsd, context.itemsByShop.keys)?.let { promotion ->
-                    val discount = Money.scale2(promotion.discount.multiply(fxRate))
+                    val discount = PricingService.toCurrency(promotion.discount, fxRate)
                     val discountedShipping = if (promotion.freeShipping) BigDecimal.ZERO.setScale(2) else ship
                     response =
                         response.copy(

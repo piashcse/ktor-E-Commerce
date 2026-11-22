@@ -23,4 +23,21 @@ class PricingServiceTest {
     fun `money discount percent`() {
         assertEquals(BigDecimal("10.00"), Money.discountPercent(BigDecimal("100.00"), BigDecimal("90.00")))
     }
+
+    @Test
+    fun `currency conversion rounds to cents`() {
+        assertEquals(BigDecimal("92.35"), PricingService.toCurrency(BigDecimal("100.00"), BigDecimal("0.9235")))
+    }
+
+    @Test
+    fun `line total converts the unit before multiplying`() {
+        assertEquals(
+            BigDecimal("27.72"),
+            PricingService.lineTotal(BigDecimal("9.235"), 3, BigDecimal("1.0000")),
+        )
+        assertEquals(
+            BigDecimal("46.18"),
+            PricingService.lineTotal(BigDecimal("10.00"), 2, BigDecimal("2.309")),
+        )
+    }
 }
