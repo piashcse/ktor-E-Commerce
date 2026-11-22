@@ -7,6 +7,7 @@ import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.database.entities.B2bAccountDAO
 import com.piashcse.database.entities.B2bAccountTable
@@ -26,9 +27,11 @@ import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
+import com.piashcse.feature.seller.SellerTotals
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -89,7 +92,7 @@ class B2bService {
                 throw ValidationException("One or more products were not found")
             }
             if (products.values.any {
-                    it.deletedAt != null || it.status != com.piashcse.constants.ProductStatus.ACTIVE
+                    it.deletedAt != null || it.status != ProductStatus.ACTIVE
                 }
             ) {
                 throw ValidationException("One or more products are not active")
@@ -106,7 +109,7 @@ class B2bService {
             }
             val quote =
                 B2bQuoteDAO.new {
-                    this.buyerUserId = buyerUserId.entityID(com.piashcse.database.entities.UserTable)
+                    this.buyerUserId = buyerUserId.entityID(UserTable)
                     this.sellerId = seller.id
                     this.shopId = shopId?.entityID(ShopTable)
                     this.status = B2bQuoteStatus.REQUESTED
@@ -141,7 +144,7 @@ class B2bService {
     ): PaginatedResponse<QuoteResponse> =
         query {
             B2bQuoteTable.selectAll()
-                .where { B2bQuoteTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable) }
+                .where { B2bQuoteTable.buyerUserId eq buyerUserId.entityID(UserTable) }
                 .orderBy(B2bQuoteTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { B2bQuoteDAO.wrapRow(it).toResponse() }
         }
@@ -237,13 +240,13 @@ class B2bService {
             }
             val openTotal =
                 B2bPurchaseOrderDAO.find {
-                    (B2bPurchaseOrderTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable)) and
+                    (B2bPurchaseOrderTable.buyerUserId eq buyerUserId.entityID(UserTable)) and
                         (B2bPurchaseOrderTable.status eq PurchaseOrderStatus.OPEN)
                 }.fold(BigDecimal.ZERO) { acc, po -> acc.add(po.total) }
             // Fulfilled POs become unpaid invoices; those still consume credit.
             val unpaidInvoices =
                 B2bInvoiceDAO.find {
-                    (B2bInvoiceTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable)) and
+                    (B2bInvoiceTable.buyerUserId eq buyerUserId.entityID(UserTable)) and
                         (B2bInvoiceTable.status inList listOf(B2bInvoiceStatus.PENDING, B2bInvoiceStatus.OVERDUE))
                 }.fold(BigDecimal.ZERO) { acc, invoice -> acc.add(invoice.amount) }
             val exposure = openTotal.add(unpaidInvoices)
@@ -277,7 +280,7 @@ class B2bService {
     ): PaginatedResponse<PurchaseOrderResponse> =
         query {
             B2bPurchaseOrderTable.selectAll()
-                .where { B2bPurchaseOrderTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable) }
+                .where { B2bPurchaseOrderTable.buyerUserId eq buyerUserId.entityID(UserTable) }
                 .orderBy(B2bPurchaseOrderTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { B2bPurchaseOrderDAO.wrapRow(it).toResponse() }
         }
@@ -355,7 +358,7 @@ class B2bService {
             order.flush()
             quoteItems.forEach { item ->
                 val product = products[item.productId.value] ?: throw ValidationException("Product not found")
-                if (product.deletedAt != null || product.status != com.piashcse.constants.ProductStatus.ACTIVE) {
+                if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
                     throw ValidationException("Product ${product.name} is not active")
                 }
                 if (!product.isDigital) product.decrementStock(item.quantity)
@@ -371,7 +374,7 @@ class B2bService {
                     sku = product.sku
                 }
             }
-            com.piashcse.feature.seller.SellerTotals.applyOrderTx(order)
+            SellerTotals.applyOrderTx(order)
             po.orderId = order.id
             po.status = PurchaseOrderStatus.FULFILLED
             po.fulfilledAt = currentUtc()
@@ -465,7 +468,7 @@ class B2bService {
         forUpdate: Boolean = false,
     ): B2bAccountDAO {
         val query =
-            B2bAccountDAO.find { B2bAccountTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
+            B2bAccountDAO.find { B2bAccountTable.userId eq userId.entityID(UserTable) }
         val account =
             (if (forUpdate) query.forUpdate() else query).firstOrNull()
                 ?: throw ValidationException("Apply for a B2B account first")
