@@ -13,7 +13,6 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -25,6 +24,8 @@ import java.time.format.DateTimeFormatter
 private val DFMT = DateTimeFormatter.ISO_DATE
 
 class DashboardRepositoryImpl : DashboardRepository {
+    private val sellerDashboard = SellerDashboardService()
+
     override suspend fun getDashboardStats() =
         readQuery {
             val today = currentUtc().toLocalDate().atStartOfDay()
@@ -202,66 +203,6 @@ class DashboardRepositoryImpl : DashboardRepository {
      * Net product revenue (line total − seller discount) converted to USD.
      * One implementation for platform-wide and seller-scoped top products.
      */
-    private fun productRevenueByProduct(
-        productIds: List<EntityID<String>>,
-        shopIds: List<EntityID<String>>? = null,
-    ): Map<String, BigDecimal> {
-        if (productIds.isEmpty()) return emptyMap()
-        var condition: Op<Boolean> =
-            (OrderItemTable.productId inList productIds) and
-                (OrderTable.status neq OrderStatus.CANCELED) and
-                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
-        if (shopIds != null) {
-            condition = condition and (OrderTable.shopId inList shopIds)
-        }
-        val refunds = refundedByProduct(productIds, shopIds)
-        return (OrderItemTable innerJoin OrderTable)
-            .select(
-                OrderItemTable.productId,
-                OrderItemTable.total,
-                OrderItemTable.discountAmount,
-                OrderTable.fxRate,
-            )
-            .where { condition }
-            .toList()
-            .groupBy { it[OrderItemTable.productId].value }
-            .mapValues { (productId, rows) ->
-                val gross =
-                    rows.fold(BigDecimal.ZERO) { acc, row ->
-                        val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
-                        acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
-                    }
-                gross.subtract(refunds[productId] ?: BigDecimal.ZERO).max(BigDecimal.ZERO)
-            }
-    }
-
-    /** Customer refunds (item amount only) per product, converted to USD. */
-    private fun refundedByProduct(
-        productIds: List<EntityID<String>>,
-        shopIds: List<EntityID<String>>? = null,
-    ): Map<String, BigDecimal> {
-        if (productIds.isEmpty()) return emptyMap()
-        var condition: Op<Boolean> =
-            (OrderItemTable.productId inList productIds) and
-                (RefundRequestTable.status eq RefundStatus.REFUNDED)
-        if (shopIds != null) {
-            condition = condition and (OrderTable.shopId inList shopIds)
-        }
-        return RefundRequestTable
-            .join(OrderItemTable, JoinType.INNER, RefundRequestTable.orderItemId, OrderItemTable.id)
-            .join(OrderTable, JoinType.INNER, RefundRequestTable.orderId, OrderTable.id)
-            .select(OrderItemTable.productId, RefundRequestTable.refundAmount, OrderTable.fxRate)
-            .where { condition }
-            .toList()
-            .groupBy { it[OrderItemTable.productId].value }
-            .mapValues { (_, rows) ->
-                rows.fold(BigDecimal.ZERO) { acc, row ->
-                    val amount = row[RefundRequestTable.refundAmount] ?: BigDecimal.ZERO
-                    acc.add(Money.toUsd(amount.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
-                }
-            }
-    }
-
     override suspend fun getTopProducts(limit: Int?) =
         readQuery {
             val maxResults = (limit ?: 10).coerceIn(1, 50)
@@ -273,7 +214,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             if (topProducts.isEmpty()) return@readQuery emptyList<TopProductResponse>()
 
             val productIds = topProducts.map { it.id }
-            val revenueByProduct = productRevenueByProduct(productIds)
+            val revenueByProduct = DashboardRevenue.productRevenueByProduct(productIds)
 
             val inventoryMap =
                 if (productIds.isNotEmpty()) {
@@ -301,199 +242,7 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     // Dashboard aggregates intentionally run in one read transaction; splitting the
     // query block would fragment the snapshot used by the seller console.
-    @Suppress("LongMethod")
-    override suspend fun getSellerStats(sellerUserId: String) =
-        readQuery {
-            val shopIds =
-                SellerDAO.find { SellerTable.userId eq sellerUserId }
-                    .mapNotNull { it.shopId?.value }
-                    .distinct()
-            if (shopIds.isEmpty()) {
-                return@readQuery DashboardStatsResponse(
-                    revenue = mapOf("total" to "0.00", "today" to "0.00"),
-                    orders = mapOf("total" to 0L, "today" to 0L, "pending" to 0L, "canceled" to 0L),
-                    users = mapOf("total" to 0L, "today" to 0L, "sellers" to 0L),
-                    products = mapOf("total" to 0L, "outOfStock" to 0L, "lowStock" to 0L),
-                    shops = mapOf("total" to 0L, "pendingApproval" to 0L),
-                )
-            }
-            val today = currentUtc().toLocalDate().atStartOfDay()
-            val sellerShopIds = shopIds.map { it.entityID(ShopTable) }
-
-            val sellerPaidOrders =
-                OrderTable.selectAll().where {
-                    (OrderTable.shopId inList sellerShopIds) and
-                        (OrderTable.status neq OrderStatus.CANCELED) and
-                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
-                }.toList()
-            val totalRevenue =
-                sellerPaidOrders.fold(BigDecimal.ZERO) { acc, row ->
-                    acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
-                }
-            val todayRevenue =
-                sellerPaidOrders.filter { it[OrderTable.createdAt] >= today }
-                    .fold(BigDecimal.ZERO) { acc, row ->
-                        acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
-                    }
-
-            val customers =
-                OrderTable.select(OrderTable.userId)
-                    .where { OrderTable.shopId inList sellerShopIds }
-                    .map { it[OrderTable.userId].value }
-                    .distinct()
-            val todayCustomers =
-                OrderTable.select(OrderTable.userId)
-                    .where { (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today) }
-                    .map { it[OrderTable.userId].value }
-                    .distinct()
-
-            val sellerTopProducts =
-                ProductDAO.find {
-                    (ProductTable.shopId inList sellerShopIds) and
-                        (ProductTable.status eq ProductStatus.ACTIVE) and
-                        ProductTable.deletedAt.isNull()
-                }.orderBy(ProductTable.totalSales to SortOrder.DESC).limit(5).toList()
-            val sellerProductIds = sellerTopProducts.map { it.id }
-            val sellerRevenueByProduct = productRevenueByProduct(sellerProductIds, sellerShopIds)
-            val sellerStock =
-                if (sellerProductIds.isEmpty()) {
-                    emptyMap()
-                } else {
-                    InventoryDAO.find { InventoryTable.productId inList sellerProductIds }
-                        .groupBy { it.productId.value }
-                        .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
-                }
-            val sellerTopResponses =
-                sellerTopProducts.map { p ->
-                    TopProductResponse(
-                        p.id.value,
-                        p.name,
-                        p.sku,
-                        p.totalSales,
-                        Money.str(sellerRevenueByProduct[p.id.value] ?: BigDecimal.ZERO),
-                        sellerStock[p.id.value] ?: 0,
-                        Money.str(p.rating),
-                        p.status.name.lowercase(),
-                    )
-                }
-
-            val sellerOrderTotal = OrderTable.selectAll().where { OrderTable.shopId inList sellerShopIds }.count()
-            val sellerOrderToday =
-                OrderTable.selectAll().where {
-                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today)
-                }.count()
-            val sellerOrderPending =
-                OrderTable.selectAll().where {
-                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PENDING)
-                }.count()
-            val sellerOrderCanceled =
-                OrderTable.selectAll().where {
-                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.CANCELED)
-                }.count()
-            val sellerUnfulfilled =
-                OrderTable.selectAll().where {
-                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PAID)
-                }.count()
-            val sellerProductTotal =
-                ProductTable.selectAll().where {
-                    (ProductTable.shopId inList sellerShopIds) and ProductTable.deletedAt.isNull()
-                }.count()
-            val sellerOutOfStock =
-                ProductTable.selectAll().where {
-                    (ProductTable.shopId inList sellerShopIds) and
-                        (ProductTable.status eq ProductStatus.OUT_OF_STOCK) and ProductTable.deletedAt.isNull()
-                }.count()
-            val sellerLowStock =
-                InventoryTable.selectAll().where {
-                    (InventoryTable.shopId inList sellerShopIds) and (InventoryTable.status eq InventoryStatus.LOW_STOCK)
-                }.count()
-            val sellerIdList = SellerDAO.find { SellerTable.shopId inList sellerShopIds }.map { it.id }
-            val pendingRefunds =
-                if (sellerIdList.isEmpty()) {
-                    0L
-                } else {
-                    val sellerOrderIds = OrderDAO.find { OrderTable.shopId inList sellerShopIds }.map { it.id }
-                    RefundRequestDAO.find {
-                        (RefundRequestTable.orderId inList sellerOrderIds) and (RefundRequestTable.status eq RefundStatus.PENDING)
-                    }.count()
-                }
-            val pendingRmas =
-                RmaDAO.find {
-                    (RmaTable.shopId inList sellerShopIds) and (RmaTable.status eq RmaStatus.REQUESTED)
-                }.count()
-            val unreadReviews =
-                SellerReviewDAO.find {
-                    (SellerReviewTable.shopId inList sellerShopIds) and (SellerReviewTable.status eq ReviewStatus.ACTIVE)
-                }.count()
-            val payoutRows =
-                if (sellerIdList.isEmpty()) {
-                    emptyList()
-                } else {
-                    SellerPayoutDAO.find {
-                        (SellerPayoutTable.sellerId inList sellerIdList) and
-                            (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
-                            SellerPayoutTable.requestedAt.isNull()
-                    }.toList()
-                }
-            val availablePayout = payoutRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
-            val sellerRecord = SellerDAO.find { SellerTable.userId eq sellerUserId.entityID(UserTable) }.firstOrNull()
-            val shopRecord = shopIds.firstOrNull()?.let { ShopDAO.findById(it) }
-            val pendingSellerShops =
-                ShopTable.selectAll().where {
-                    (ShopTable.id inList sellerShopIds) and (ShopTable.status eq ShopStatus.PENDING)
-                }.count()
-            DashboardStatsResponse(
-                revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
-                orders =
-                    mapOf(
-                        "total" to sellerOrderTotal,
-                        "today" to sellerOrderToday,
-                        "pending" to sellerOrderPending,
-                        "canceled" to sellerOrderCanceled,
-                    ),
-                users =
-                    mapOf(
-                        "total" to customers.size.toLong(),
-                        "today" to todayCustomers.size.toLong(),
-                        "sellers" to sellerIdList.size.toLong(),
-                    ),
-                products =
-                    mapOf(
-                        "total" to sellerProductTotal,
-                        "outOfStock" to sellerOutOfStock,
-                        "lowStock" to sellerLowStock,
-                    ),
-                shops =
-                    mapOf(
-                        "total" to shopIds.size.toLong(),
-                        "pendingApproval" to pendingSellerShops,
-                    ),
-                topProducts = sellerTopResponses,
-                revenueStats = DashboardRevenueStats(Money.str(totalRevenue), Money.str(todayRevenue)),
-                orderStats =
-                    DashboardOrderStats(
-                        sellerOrderTotal,
-                        sellerOrderToday,
-                        sellerOrderPending,
-                        sellerOrderCanceled,
-                        sellerUnfulfilled,
-                    ),
-                userStats = DashboardUserStats(customers.size.toLong(), todayCustomers.size.toLong(), sellerIdList.size.toLong()),
-                productStats = DashboardProductStats(sellerProductTotal, sellerOutOfStock, sellerLowStock),
-                shopStats = DashboardShopStats(shopIds.size.toLong(), pendingSellerShops),
-                sellerExtras =
-                    SellerDashboardExtras(
-                        kycStatus = sellerRecord?.kycStatus?.name,
-                        shopStatus = shopRecord?.status?.name,
-                        availablePayout = Money.str(availablePayout),
-                        payoutCurrency = payoutRows.firstOrNull()?.currency ?: AppConstants.DEFAULT_CURRENCY,
-                        pendingRefunds = pendingRefunds,
-                        pendingRmas = pendingRmas,
-                        activeReviews = unreadReviews,
-                        unfulfilledOrders = sellerUnfulfilled,
-                    ),
-            )
-        }
+    override suspend fun getSellerStats(sellerUserId: String) = sellerDashboard.getSellerStats(sellerUserId)
 
     override suspend fun getRecentActivity(limit: Int?) =
         query {
