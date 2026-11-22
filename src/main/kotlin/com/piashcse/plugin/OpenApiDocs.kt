@@ -30,33 +30,51 @@ internal object OpenApiDocs {
 
     fun render(document: OpenApiDoc): String = yaml.encodeToString(document.withGeneratedOperationIds())
 
-    private fun OpenApiDoc.withGeneratedOperationIds(): OpenApiDoc =
-        copy(paths = paths.mapValues { (path, item) -> item.withOperationIds(path) })
+    private fun OpenApiDoc.withGeneratedOperationIds(): OpenApiDoc {
+        val used = mutableSetOf<String>()
+        return copy(paths = paths.mapValues { (path, item) -> item.withOperationIds(path, used) })
+    }
 
-    private fun ReferenceOr<PathItem>.withOperationIds(path: String): ReferenceOr<PathItem> =
+    private fun ReferenceOr<PathItem>.withOperationIds(
+        path: String,
+        used: MutableSet<String>,
+    ): ReferenceOr<PathItem> =
         when (this) {
             is ReferenceOr.Reference -> this
-            is ReferenceOr.Value -> ReferenceOr.Value(value.withOperationIds(path))
+            is ReferenceOr.Value -> ReferenceOr.Value(value.withOperationIds(path, used))
         }
 
-    private fun PathItem.withOperationIds(path: String): PathItem =
+    private fun PathItem.withOperationIds(
+        path: String,
+        used: MutableSet<String>,
+    ): PathItem =
         copy(
-            get = get?.withOperationId("get", path),
-            put = put?.withOperationId("put", path),
-            post = post?.withOperationId("post", path),
-            delete = delete?.withOperationId("delete", path),
-            patch = patch?.withOperationId("patch", path),
-            head = head?.withOperationId("head", path),
-            options = options?.withOperationId("options", path),
-            trace = trace?.withOperationId("trace", path),
+            get = get?.withOperationId("get", path, used),
+            put = put?.withOperationId("put", path, used),
+            post = post?.withOperationId("post", path, used),
+            delete = delete?.withOperationId("delete", path, used),
+            patch = patch?.withOperationId("patch", path, used),
+            head = head?.withOperationId("head", path, used),
+            options = options?.withOperationId("options", path, used),
+            trace = trace?.withOperationId("trace", path, used),
         )
 
     private fun Operation.withOperationId(
         method: String,
         path: String,
-    ): Operation = if (operationId != null) this else copy(operationId = buildOperationId(method, path))
+        used: MutableSet<String>,
+    ): Operation {
+        val base = operationId ?: operationIdFor(method, path)
+        var id = base
+        var suffix = 2
+        while (!used.add(id)) {
+            id = "$base$suffix"
+            suffix += 1
+        }
+        return copy(operationId = id)
+    }
 
-    private fun buildOperationId(
+    internal fun operationIdFor(
         method: String,
         path: String,
     ): String {

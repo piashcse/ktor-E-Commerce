@@ -203,7 +203,7 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.08".toBigDecimal()
+                minimum = "0.09".toBigDecimal()
             }
         }
 
