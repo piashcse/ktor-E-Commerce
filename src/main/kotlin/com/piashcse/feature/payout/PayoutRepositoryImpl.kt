@@ -133,6 +133,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 val row = candidates.next()
                 val take = remaining.min(row.payoutAmount)
                 row.payoutAmount = row.payoutAmount.subtract(take).max(BigDecimal.ZERO)
+                if (row.payoutAmount <= BigDecimal.ZERO) row.status = PayoutStatus.REFUNDED.name
                 remaining = remaining.subtract(take)
             }
             if (remaining <= BigDecimal.ZERO) {
@@ -620,8 +621,9 @@ class PayoutRepositoryImpl : PayoutRepository {
                         .toList()
                         .filter { normalizedCurrency == null || it.currency.equals(normalizedCurrency, ignoreCase = true) }
                 applyDebtToRows(seller.id.value, available)
+                val claimable = available.filter { it.payoutAmount > BigDecimal.ZERO }
 
-                val currencies = available.map { it.currency }.distinct()
+                val currencies = claimable.map { it.currency }.distinct()
                 if (currencies.size > 1) {
                     throw ValidationException(
                         "Multiple currencies available (${currencies.joinToString()}); specify a currency",
@@ -629,7 +631,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 }
                 val currency = currencies.firstOrNull() ?: normalizedCurrency ?: "USD"
 
-                val balance = available.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+                val balance = claimable.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
                 if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")
                 if (amount > balance) throw ValidationException("Requested amount exceeds available payout balance")
                 // Payout rows are order-level and cannot be split safely without a
@@ -670,7 +672,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 val now = currentUtc()
                 var covered = BigDecimal.ZERO
                 val claimed = mutableListOf<SellerPayoutDAO>()
-                for (row in available) {
+                for (row in claimable) {
                     if (covered >= amount) break
                     row.requestedAt = now
                     row.payoutRequestId = request.id
