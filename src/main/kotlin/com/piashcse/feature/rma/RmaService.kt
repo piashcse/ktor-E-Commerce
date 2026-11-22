@@ -264,7 +264,6 @@ class RmaService {
             rma.toResponse()
         }
 
-    @Suppress("LongMethod")
     suspend fun updateStatus(
         rmaId: String,
         request: RmaStatusUpdateRequest,
@@ -306,88 +305,9 @@ class RmaService {
                             ?: throw ValidationException("Resolution is required when completing an RMA")
                     rma.resolution = resolution
                     if (resolution == RmaResolution.REFUND) {
-                        val item =
-                            OrderItemDAO.findById(rma.orderItemId.value)
-                                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-                        val order =
-                            OrderDAO.findById(rma.orderId.value)
-                                ?: throw ValidationException(Message.Orders.NOT_FOUND)
-                        val existingRefund =
-                            RefundRequestDAO.find {
-                                (RefundRequestTable.orderItemId eq item.id) and
-                                    (
-                                        RefundRequestTable.status inList
-                                            listOf(
-                                                RefundStatus.PENDING,
-                                                RefundStatus.APPROVED,
-                                                RefundStatus.SHIPPED,
-                                                RefundStatus.REFUNDED,
-                                            )
-                                    )
-                            }.firstOrNull()
-                        if (existingRefund == null) {
-                            val alreadyRefundedQuantity =
-                                RefundRequestDAO.find {
-                                    (RefundRequestTable.orderItemId eq item.id) and
-                                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
-                                }.fold(0) { acc, row -> acc + row.quantity }
-                            if (alreadyRefundedQuantity + rma.quantity > item.quantity) {
-                                throw ValidationException(
-                                    "RMA quantity exceeds the remaining ordered quantity " +
-                                        "(${item.quantity - alreadyRefundedQuantity})",
-                                )
-                            }
-                            // Create the refund and leave the RMA open at RECEIVED.
-                            // Calling COMPLETED again after the refund settles closes it.
-                            val refund =
-                                RefundRequestDAO.new {
-                                    this.orderItemId = item.id
-                                    this.userId = rma.userId
-                                    this.orderId = rma.orderId
-                                    this.reason = rma.reason
-                                    this.currency = order.currency
-                                    this.quantity = rma.quantity
-                                    this.status = RefundStatus.PENDING
-                                }
-                            rma.refundRequestId = refund.id
-                            rma.status = RmaStatus.RECEIVED
-                            enqueueStatusChange(rma, fromStatus, rma.status)
-                            return@query rma.toResponse()
-                        }
-                        if (existingRefund.status != RefundStatus.REFUNDED) {
-                            throw ValidationException(
-                                "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
-                            )
-                        }
-                        if (existingRefund.quantity < rma.quantity) {
-                            throw ValidationException(
-                                "Refund ${existingRefund.id.value} covers fewer units than this RMA",
-                            )
-                        }
-                        rma.refundRequestId = existingRefund.id
+                        completeWithRefund(rma, fromStatus)?.let { return@query it }
                     } else {
-                        val replacementId =
-                            request.replacementOrderId
-                                ?: throw ValidationException("replacementOrderId is required for a replacement")
-                        val replacement =
-                            OrderDAO.findById(replacementId)
-                                ?: throw ValidationException("Replacement order not found")
-                        if (replacement.userId.value != rma.userId.value) {
-                            throw ValidationException("Replacement order must belong to the same customer")
-                        }
-                        if (replacement.shopId?.value != rma.shopId?.value) {
-                            throw ValidationException("Replacement order must belong to the same shop")
-                        }
-                        val item =
-                            OrderItemDAO.findById(rma.orderItemId.value)
-                                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-                        ProductDAO.findById(item.productId.value)?.let { product ->
-                            if (!product.isDigital) {
-                                product.restoreStockFor(item.variantId?.value, rma.quantity)
-                            }
-                            product.removeSales(rma.quantity)
-                        }
-                        rma.replacementOrderId = replacement.id
+                        completeWithReplacement(rma, request)
                     }
                     rma.status = RmaStatus.COMPLETED
                     rma.resolvedAt = currentUtc()
@@ -397,6 +317,100 @@ class RmaService {
             enqueueStatusChange(rma, fromStatus, rma.status)
             rma.toResponse()
         }
+
+    /** Creates an open refund for the RMA, leaving it at RECEIVED for a second completion. */
+    private fun completeWithRefund(
+        rma: RmaDAO,
+        fromStatus: RmaStatus,
+    ): RmaResponse? {
+        val item =
+            OrderItemDAO.findById(rma.orderItemId.value)
+                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+        val order =
+            OrderDAO.findById(rma.orderId.value)
+                ?: throw ValidationException(Message.Orders.NOT_FOUND)
+        val existingRefund =
+            RefundRequestDAO.find {
+                (RefundRequestTable.orderItemId eq item.id) and
+                    (
+                        RefundRequestTable.status inList
+                            listOf(
+                                RefundStatus.PENDING,
+                                RefundStatus.APPROVED,
+                                RefundStatus.SHIPPED,
+                                RefundStatus.REFUNDED,
+                            )
+                    )
+            }.firstOrNull()
+        if (existingRefund == null) {
+            val alreadyRefundedQuantity =
+                RefundRequestDAO.find {
+                    (RefundRequestTable.orderItemId eq item.id) and
+                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                }.fold(0) { acc, row -> acc + row.quantity }
+            if (alreadyRefundedQuantity + rma.quantity > item.quantity) {
+                throw ValidationException(
+                    "RMA quantity exceeds the remaining ordered quantity " +
+                        "(${item.quantity - alreadyRefundedQuantity})",
+                )
+            }
+            val refund =
+                RefundRequestDAO.new {
+                    this.orderItemId = item.id
+                    this.userId = rma.userId
+                    this.orderId = rma.orderId
+                    this.reason = rma.reason
+                    this.currency = order.currency
+                    this.quantity = rma.quantity
+                    this.status = RefundStatus.PENDING
+                }
+            rma.refundRequestId = refund.id
+            rma.status = RmaStatus.RECEIVED
+            enqueueStatusChange(rma, fromStatus, rma.status)
+            return rma.toResponse()
+        }
+        if (existingRefund.status != RefundStatus.REFUNDED) {
+            throw ValidationException(
+                "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
+            )
+        }
+        if (existingRefund.quantity < rma.quantity) {
+            throw ValidationException(
+                "Refund ${existingRefund.id.value} covers fewer units than this RMA",
+            )
+        }
+        rma.refundRequestId = existingRefund.id
+        return null
+    }
+
+    /** Links a replacement order and returns the original units to stock. */
+    private fun completeWithReplacement(
+        rma: RmaDAO,
+        request: RmaStatusUpdateRequest,
+    ) {
+        val replacementId =
+            request.replacementOrderId
+                ?: throw ValidationException("replacementOrderId is required for a replacement")
+        val replacement =
+            OrderDAO.findById(replacementId)
+                ?: throw ValidationException("Replacement order not found")
+        if (replacement.userId.value != rma.userId.value) {
+            throw ValidationException("Replacement order must belong to the same customer")
+        }
+        if (replacement.shopId?.value != rma.shopId?.value) {
+            throw ValidationException("Replacement order must belong to the same shop")
+        }
+        val item =
+            OrderItemDAO.findById(rma.orderItemId.value)
+                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+        ProductDAO.findById(item.productId.value)?.let { product ->
+            if (!product.isDigital) {
+                product.restoreStockFor(item.variantId?.value, rma.quantity)
+            }
+            product.removeSales(rma.quantity)
+        }
+        rma.replacementOrderId = replacement.id
+    }
 
     private fun RmaDAO.toResponse() =
         RmaResponse(
