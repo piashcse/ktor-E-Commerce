@@ -8,11 +8,7 @@ import com.piashcse.database.entities.GiftCardDAO
 import com.piashcse.database.entities.GiftCardRedemptionDAO
 import com.piashcse.database.entities.GiftCardRedemptionTable
 import com.piashcse.database.entities.GiftCardTable
-import com.piashcse.database.entities.ReferralDAO
-import com.piashcse.database.entities.ReferralTable
-import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WalletAccountDAO
-import com.piashcse.database.entities.WalletAccountTable
 import com.piashcse.database.entities.WalletLedgerDAO
 import com.piashcse.database.entities.WalletLedgerTable
 import com.piashcse.database.entities.base.currentUtc
@@ -21,7 +17,6 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
@@ -30,7 +25,6 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -114,11 +108,13 @@ data class RedemptionPreview(
 
 @Suppress("TooManyFunctions")
 class LoyaltyService {
+    private val referrals = ReferralService()
+
     private val giftCards = GiftCardService()
 
     suspend fun wallet(userId: String): WalletResponse =
         query {
-            val account = accountFor(userId)
+            val account = LoyaltyAccounts.accountFor(userId)
             account.toWalletResponse()
         }
 
@@ -154,7 +150,7 @@ class LoyaltyService {
                     .toInt()
                     .times(AppConstants.LOYALTY_POINTS_PER_USD)
             if (points > 0) {
-                val account = accountFor(userId)
+                val account = LoyaltyAccounts.accountFor(userId)
                 account.pointsBalance += points
                 account.lifetimePoints += points
                 WalletLedgerDAO.new {
@@ -167,7 +163,7 @@ class LoyaltyService {
                 }
             }
         }
-        completeReferralTx(userId)
+        referrals.completeReferralTx(userId)
     }
 
     /** Read-only preview used by checkout summary; never mutates balances. */
@@ -177,7 +173,7 @@ class LoyaltyService {
         walletCreditUsd: BigDecimal?,
         giftCardCode: String?,
     ): RedemptionPreview {
-        val account = accountFor(userId)
+        val account = LoyaltyAccounts.accountFor(userId)
         val pointsToUse = points.coerceIn(0, account.pointsBalance)
         val pointsUsd =
             BigDecimal(pointsToUse)
@@ -217,7 +213,7 @@ class LoyaltyService {
             }.any()
         if (alreadyReversed) return
 
-        val account = accountFor(userId)
+        val account = LoyaltyAccounts.accountFor(userId)
         val entries =
             WalletLedgerDAO.find {
                 (WalletLedgerTable.userId eq user) and
@@ -323,7 +319,7 @@ class LoyaltyService {
     ) {
         if (walletUsd <= BigDecimal.ZERO && giftUsd <= BigDecimal.ZERO) return
         val user = userId.entityID(com.piashcse.database.entities.UserTable)
-        val account = accountFor(userId)
+        val account = LoyaltyAccounts.accountFor(userId)
 
         if (walletUsd > BigDecimal.ZERO) {
             val orderEntries =
@@ -427,44 +423,14 @@ class LoyaltyService {
     suspend fun claimReferral(
         userId: String,
         code: String,
-    ): ReferralResponse = query { claimReferralTx(userId, code) }
+    ): ReferralResponse = referrals.claimReferral(userId, code)
 
     fun claimReferralTx(
         userId: String,
         code: String,
-    ): ReferralResponse {
-        if (code.isBlank()) throw ValidationException("Referral code is required")
-        val normalized = code.trim().uppercase()
-        val referrer =
-            WalletAccountDAO.find { WalletAccountTable.referralCode eq normalized }.firstOrNull()
-                ?: throw ValidationException("Referral code not found")
-        if (referrer.userId.value == userId) throw ValidationException("You cannot refer yourself")
-        val alreadyPurchased =
-            com.piashcse.database.entities.OrderDAO.find {
-                (com.piashcse.database.entities.OrderTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
-                    (com.piashcse.database.entities.OrderTable.paymentStatus eq com.piashcse.constants.PaymentStatus.COMPLETED)
-            }.any()
-        if (alreadyPurchased) throw ValidationException("Referral codes are only for new customers")
-        if (ReferralDAO.find { ReferralTable.refereeUserId eq userId.entityID(com.piashcse.database.entities.UserTable) }.any()) {
-            throw ValidationException("A referral has already been claimed")
-        }
-        return ReferralDAO.new {
-            this.referrerUserId = referrer.userId
-            this.refereeUserId = userId.entityID(com.piashcse.database.entities.UserTable)
-            this.code = normalized
-            this.status = ReferralStatus.PENDING
-            this.rewardPoints = AppConstants.REFERRAL_REWARD_POINTS
-            this.rewardCredit = BigDecimal.ZERO
-        }.toReferralResponse()
-    }
+    ): ReferralResponse = referrals.claimReferralTx(userId, code)
 
-    suspend fun listReferrals(userId: String): List<ReferralResponse> =
-        query {
-            ReferralDAO.find {
-                (ReferralTable.referrerUserId eq userId.entityID(com.piashcse.database.entities.UserTable)) or
-                    (ReferralTable.refereeUserId eq userId.entityID(com.piashcse.database.entities.UserTable))
-            }.map { it.toReferralResponse() }
-        }
+    suspend fun listReferrals(userId: String): List<ReferralResponse> = referrals.listReferrals(userId)
 
     /**
      * Redeems points into USD. Must run inside the checkout transaction.
@@ -476,7 +442,7 @@ class LoyaltyService {
         referenceId: String,
     ): BigDecimal {
         if (points <= 0) return BigDecimal.ZERO
-        val account = accountFor(userId)
+        val account = LoyaltyAccounts.accountFor(userId)
         if (account.pointsBalance < points) {
             throw ValidationException("Insufficient points: ${account.pointsBalance} available")
         }
@@ -503,7 +469,7 @@ class LoyaltyService {
         referenceId: String,
     ): BigDecimal {
         if (amountUsd <= BigDecimal.ZERO) return BigDecimal.ZERO
-        val account = accountFor(userId)
+        val account = LoyaltyAccounts.accountFor(userId)
         if (account.creditBalance < amountUsd) {
             throw ValidationException("Insufficient store credit: ${account.creditBalance.toPlainString()} available")
         }
@@ -560,7 +526,7 @@ class LoyaltyService {
     ): WalletResponse =
         query {
             if (request.amount <= BigDecimal.ZERO) throw ValidationException("Credit amount must be positive")
-            val account = accountFor(userId)
+            val account = LoyaltyAccounts.accountFor(userId)
             account.creditBalance = account.creditBalance.add(request.amount).setScale(2, RoundingMode.HALF_UP)
             WalletLedgerDAO.new {
                 this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
@@ -578,30 +544,6 @@ class LoyaltyService {
             account.toWalletResponse()
         }
 
-    private fun completeReferralTx(refereeUserId: String) {
-        val referral =
-            ReferralDAO.find {
-                (ReferralTable.refereeUserId eq refereeUserId.entityID(com.piashcse.database.entities.UserTable)) and
-                    (ReferralTable.status eq ReferralStatus.PENDING)
-            }.firstOrNull() ?: return
-        val referrer = accountFor(referral.referrerUserId.value)
-        val referee = accountFor(refereeUserId)
-        listOf(referrer, referee).forEach { account ->
-            account.pointsBalance += referral.rewardPoints
-            account.lifetimePoints += referral.rewardPoints
-            WalletLedgerDAO.new {
-                this.userId = account.userId
-                this.type = WalletEntryType.REFERRAL_BONUS
-                this.pointsDelta = referral.rewardPoints
-                this.referenceType = WalletReferenceType.REFERRAL
-                this.referenceId = referral.id.value
-                this.note = "Referral bonus"
-            }
-        }
-        referral.status = ReferralStatus.COMPLETED
-        referral.completedAt = currentUtc()
-    }
-
     private fun alreadyRedeemed(
         userId: String,
         type: WalletEntryType,
@@ -613,27 +555,6 @@ class LoyaltyService {
                 (WalletLedgerTable.referenceType eq WalletReferenceType.ORDER) and
                 (WalletLedgerTable.referenceId eq referenceId)
         }.any()
-
-    private fun accountFor(userId: String): WalletAccountDAO {
-        UserDAO.findById(userId) ?: userId.throwNotFound("User")
-        // Lock the wallet row: point/credit redemption is a read-modify-write
-        // operation and concurrent checkouts must not spend the same balance twice.
-        return WalletAccountDAO.find { WalletAccountTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
-            .forUpdate()
-            .firstOrNull()
-            ?: WalletAccountDAO.new {
-                this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
-                referralCode = uniqueReferralCode()
-            }
-    }
-
-    private fun uniqueReferralCode(): String {
-        repeat(10) {
-            val code = LoyaltyCodes.random(8)
-            if (!WalletAccountDAO.find { WalletAccountTable.referralCode eq code }.any()) return code
-        }
-        throw ValidationException("Could not allocate a referral code")
-    }
 
     private fun WalletAccountDAO.toWalletResponse() =
         WalletResponse(
@@ -652,19 +573,6 @@ class LoyaltyService {
             referenceType = referenceType,
             referenceId = referenceId,
             note = note,
-            createdAt = createdAt.toUtcString(),
-        )
-
-    private fun ReferralDAO.toReferralResponse() =
-        ReferralResponse(
-            id = id.value,
-            referrerUserId = referrerUserId.value,
-            refereeUserId = refereeUserId.value,
-            code = code,
-            status = status,
-            rewardPoints = rewardPoints,
-            rewardCredit = Money.str(rewardCredit),
-            completedAt = completedAt?.toUtcString(),
             createdAt = createdAt.toUtcString(),
         )
 }
