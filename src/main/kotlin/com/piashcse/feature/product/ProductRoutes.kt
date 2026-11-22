@@ -81,7 +81,9 @@ fun Route.productRoutes() {
             val productId = call.requirePathParameter("id")
             // Count at most one view per IP/product per five minutes. The detail
             // response itself is cached, so a write on every GET would defeat it.
-            val viewKey = "products:viewed:$productId:${call.clientIp}"
+            // Keep dedup keys outside the `products:` namespace invalidated by
+            // catalog writes, otherwise every write re-counts views.
+            val viewKey = "views:product:$productId:${call.clientIp}"
             if (cache.get<Boolean>(viewKey) != true) {
                 productRepo.incrementViewCount(productId)
                 cache.set(viewKey, true, 300)
@@ -317,12 +319,12 @@ private fun Route.variantSellerRoutes() {
                 call.currentUserId,
                 productId,
                 variantId,
-                call.receive<ProductVariantRequest>(),
+                call.receive<ProductVariantUpdateRequest>(),
             ),
         )
     }.describe {
         summary = "Update product variant"
-        requestBody { jsonBody<ProductVariantRequest>() }
+        requestBody { jsonBody<ProductVariantUpdateRequest>() }
         responses {
             ok<ProductVariantResponse>("Variant updated")
             standardErrors()

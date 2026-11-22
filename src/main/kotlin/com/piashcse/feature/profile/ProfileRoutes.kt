@@ -3,8 +3,8 @@
 package com.piashcse.feature.profile
 
 import com.piashcse.model.request.UserProfileRequest
-import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
@@ -20,7 +20,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.profileRoutes() {
     val userProfileService: ProfileService by inject()
-    customerOnlyAuth {
+    requireRole {
         /**
          * Retrieve the authenticated user's profile information
          */

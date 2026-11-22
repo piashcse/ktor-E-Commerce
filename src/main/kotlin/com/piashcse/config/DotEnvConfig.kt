@@ -11,6 +11,9 @@ object DotEnvConfig {
     val jwtSecret: String get() =
         requireEnv("JWT_SECRET").also {
             require(it.length >= 32) { "JWT_SECRET must be at least 32 characters." }
+            require(!it.contains("generate-a-secure-random", ignoreCase = true)) {
+                "JWT_SECRET is still the public example placeholder; generate a unique secret."
+            }
         }
     val jwtIssuer: String get() = DotEnv.get("JWT_ISSUER", "piashcse")
     val jwtAudience: String get() = DotEnv.get("JWT_AUDIENCE", "ktor-ecommerce")
@@ -46,6 +49,7 @@ object DotEnvConfig {
     val emailUsername: String get() = requireEnv("EMAIL_USERNAME")
     val emailPassword: String get() = requireEnv("EMAIL_PASSWORD")
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
+    val supportEmail: String get() = DotEnv.get("SUPPORT_EMAIL", emailUsername)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
 
     /** "manual" keeps COD-only behaviour; "stripe" enables card payments + webhooks. */

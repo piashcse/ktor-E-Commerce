@@ -192,6 +192,7 @@ class CartRepositoryImpl : CartRepository {
             true
         }
 
+    @Suppress("LongMethod")
     override suspend fun getCartSummary(userId: String): CartSummaryResponse =
         query {
             val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
@@ -301,7 +302,13 @@ class CartRepositoryImpl : CartRepository {
                     .filter { !it.isDigital }
                     .groupBy { it.shopId?.value }
                     .count { (_, shopProducts) -> shopProducts.any { !it.freeShipping } }
-            val cheapestMethod = ShippingMethodDAO.all().minByOrNull { it.price }
+            val cartShopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+            val cheapestMethod =
+                ShippingMethodDAO.all()
+                    .filter { method ->
+                        method.shopId == null || method.shopId?.value in cartShopIds
+                    }
+                    .minByOrNull { it.price }
             val freeShipping = StorefrontSettings.freeShippingReached(subtotal)
             val shippingUsd =
                 if (freeShipping || physicalShops == 0 || cheapestMethod == null) {

@@ -187,15 +187,28 @@ class FraudService {
         cvvStatus: CvvResult = assessment.cvvStatus,
     ) {
         payment.riskScore = assessment.score
-        payment.riskDecision = assessment.decision
+        val decision =
+            if (cvvStatus == CvvResult.MISMATCH || avsStatus == AvsResult.MISMATCH) {
+                if (assessment.decision == RiskDecision.BLOCK) RiskDecision.BLOCK else RiskDecision.REVIEW
+            } else {
+                assessment.decision
+            }
+        payment.riskDecision = decision
         payment.threeDsEnforced = assessment.requires3ds
         payment.avsStatus = avsStatus
         payment.cvvStatus = cvvStatus
         PaymentRiskDAO.new {
             this.paymentId = payment.id
             this.score = assessment.score
-            this.decision = assessment.decision
-            this.reasons = assessment.reasons.joinToString("; ").takeIf { it.isNotBlank() }
+            this.decision = decision
+            this.reasons =
+                (
+                    assessment.reasons +
+                        listOfNotNull(
+                            if (cvvStatus == CvvResult.MISMATCH) "CVV mismatch" else null,
+                            if (avsStatus == AvsResult.MISMATCH) "AVS mismatch" else null,
+                        )
+                ).joinToString("; ").takeIf { it.isNotBlank() }
             this.avsStatus = avsStatus
             this.cvvStatus = cvvStatus
             this.requires3ds = assessment.requires3ds
@@ -219,6 +232,11 @@ class FraudService {
             }
             payment.avsStatus = request.avsStatus
             payment.cvvStatus = request.cvvStatus
+            if ((request.cvvStatus == CvvResult.MISMATCH || request.avsStatus == AvsResult.MISMATCH) &&
+                payment.riskDecision == RiskDecision.ALLOW
+            ) {
+                payment.riskDecision = RiskDecision.REVIEW
+            }
         }
     }
 
@@ -294,7 +312,10 @@ class FraudService {
             PaymentTable.selectAll()
                 .andWhere { PaymentTable.riskDecision inList listOf(RiskDecision.REVIEW, RiskDecision.BLOCK) }
                 .toPaginatedResponse(limit, offset) {
-                    PaymentDAO.wrapRow(it).toPaymentResponse()
+                    PaymentDAO.wrapRow(it).toPaymentResponse().copy(
+                        clientSecret = null,
+                        nextActionUrl = null,
+                    )
                 }
         }
 

@@ -6,6 +6,8 @@ import com.piashcse.constants.RbacDefaults
 import com.piashcse.constants.RoleScope
 import com.piashcse.database.entities.AuthRoleTable
 import com.piashcse.database.entities.MemberWarehouseTable
+import com.piashcse.database.entities.SellerDAO
+import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopInvitationDAO
 import com.piashcse.database.entities.ShopInvitationTable
 import com.piashcse.database.entities.ShopMemberDAO
@@ -16,12 +18,13 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.SendEmailEvent
 import com.piashcse.utils.common.sha256Hex
 import com.piashcse.utils.common.toHex
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.entityIDs
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -94,6 +97,15 @@ class ShopMembershipService {
                 }
             }
         AdminAudit.publish(actorUserId, "SHOP_MEMBER_INVITED", "SHOP", shopId, email)
+        OutboxPublisher.enqueueTx(
+            "SHOP",
+            shopId,
+            SendEmailEvent(
+                to = email,
+                subject = "You have been invited to a shop",
+                body = "Use this invitation token to join: $raw",
+            ),
+        )
         return InvitationCreatedResponse(
             id = invitation.id.value,
             shopId = shopId,
@@ -204,7 +216,19 @@ class ShopMembershipService {
 
     private suspend fun ownerShopId(actorUserId: String): String =
         query {
-            requireSellerByUserId(actorUserId).shopId?.value
+            // Only the seller who owns the shop, or a member explicitly marked
+            // isOwner, may manage staff/roles.
+            val ownShop =
+                SellerDAO.find { SellerTable.userId eq actorUserId.entityID(UserTable) }
+                    .firstOrNull()?.shopId?.value
+            if (ownShop != null) return@query ownShop
+            val ownerMembership =
+                ShopMemberDAO.find {
+                    (ShopMemberTable.userId eq actorUserId.entityID(UserTable)) and
+                        (ShopMemberTable.isOwner eq true) and
+                        (ShopMemberTable.status eq MembershipStatus.ACTIVE)
+                }.firstOrNull()
+            ownerMembership?.shopId?.value
                 ?: throw ValidationException("Seller has no shop yet")
         }
 

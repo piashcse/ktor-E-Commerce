@@ -64,8 +64,10 @@ fun Application.configureAuth() {
                         val user = UserDAO.findById(userId)
                         blacklisted to user
                     }
-                if (cacheKey != null && queryBlacklist) {
-                    CacheService.cache.set(cacheKey, isBlacklisted, 10)
+                // Cache only positive revocations. A negative hit must not keep
+                // a token alive on another node for the TTL window.
+                if (cacheKey != null && isBlacklisted) {
+                    CacheService.cache.set(cacheKey, true, 10)
                 }
                 if (isBlacklisted) {
                     authLog.warn("Blacklisted token rejected (from database)")

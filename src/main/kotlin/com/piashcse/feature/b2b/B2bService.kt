@@ -289,7 +289,7 @@ class B2bService {
                 account.creditLimit = it
             }
             request.paymentTermsDays?.let {
-                if (it !in 0..365) throw ValidationException("Payment terms must be between 0 and 365 days")
+                if (it !in 1..365) throw ValidationException("Payment terms must be between 1 and 365 days")
                 account.paymentTermsDays = it
             }
             request.status?.let {
@@ -321,6 +321,12 @@ class B2bService {
                 }.associateBy { it.id.value }
             if (products.size != request.items.map { it.productId }.distinct().size) {
                 throw ValidationException("One or more products were not found")
+            }
+            if (products.values.any {
+                    it.deletedAt != null || it.status != com.piashcse.constants.ProductStatus.ACTIVE
+                }
+            ) {
+                throw ValidationException("One or more products are not active")
             }
             val sellerIds =
                 products.values.mapNotNull { it.userId.value }.toSet()
@@ -583,7 +589,10 @@ class B2bService {
             order.flush()
             quoteItems.forEach { item ->
                 val product = products[item.productId.value] ?: throw ValidationException("Product not found")
-                product.decrementStock(item.quantity)
+                if (product.deletedAt != null || product.status != com.piashcse.constants.ProductStatus.ACTIVE) {
+                    throw ValidationException("Product ${product.name} is not active")
+                }
+                if (!product.isDigital) product.decrementStock(item.quantity)
                 product.addSales(item.quantity)
                 OrderItemDAO.new {
                     this.orderId = order.id
@@ -596,6 +605,7 @@ class B2bService {
                     sku = product.sku
                 }
             }
+            com.piashcse.feature.seller.SellerTotals.applyOrderTx(order)
             po.orderId = order.id
             po.status = PurchaseOrderStatus.FULFILLED
             po.fulfilledAt = currentUtc()
@@ -629,6 +639,11 @@ class B2bService {
             }
             po.status = PurchaseOrderStatus.CANCELED
             po.canceledAt = currentUtc()
+            // Allow the buyer to accept the same quote again after a seller
+            // cancellation instead of returning the dead PO forever.
+            B2bQuoteDAO.findById(po.quoteId.value)?.let { quote ->
+                if (quote.status == B2bQuoteStatus.ACCEPTED) quote.status = B2bQuoteStatus.SENT
+            }
             po.toResponse()
         }
 
@@ -645,6 +660,21 @@ class B2bService {
                 throw ValidationException("Paid invoices cannot be voided")
             }
             if (invoice.status == B2bInvoiceStatus.VOID) return@query invoice.toResponse()
+            invoice.orderId?.value?.let { orderId ->
+                val order = OrderDAO.findById(orderId)
+                if (order != null && order.status !in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
+                    throw ValidationException(
+                        "Invoice cannot be voided after the order was ${order.status}; cancel/credit the order instead",
+                    )
+                }
+                if (order != null) {
+                    com.piashcse.feature.order.OrderCancellation.cancel(
+                        order,
+                        "B2B invoice voided",
+                        actorUserId,
+                    )
+                }
+            }
             invoice.status = B2bInvoiceStatus.VOID
             invoice.nextReminderAt = null
             actorUserId?.let {

@@ -65,7 +65,10 @@ fun Route.checkoutRoutes() {
     suspend fun requireConfiguredConsents(userId: String) {
         if (!consentRequired()) return
         PolicyType.values().filter { it.requiresConsent }.forEach { type ->
-            if (!consentRepo.hasUserConsented(userId, type)) {
+            // A type with no active document cannot be consented to; do not
+            // brick checkout while the UI correctly reports nothing required.
+            val hasActivePolicy = runCatching { policyRepo.getPolicyByType(type) }.getOrNull() != null
+            if (hasActivePolicy && !consentRepo.hasUserConsented(userId, type)) {
                 throw ValidationException("Consent required for policy: ${type.name}")
             }
         }
@@ -79,7 +82,8 @@ fun Route.checkoutRoutes() {
             if (!featureFlags.isEnabled("guest_checkout")) {
                 throw ValidationException("Guest checkout is disabled")
             }
-            val body = call.receive<GuestCheckoutRequest>()
+            val received = call.receive<GuestCheckoutRequest>()
+            val body = received.copy(idempotencyKey = call.idempotencyKey(received.idempotencyKey))
             if (consentRequired() && !body.consentAccepted) {
                 throw ValidationException("Explicit policy consent is required for guest checkout")
             }
@@ -98,6 +102,9 @@ fun Route.checkoutRoutes() {
          * Server-side quote for the guest checkout page (tax, shipping, coupon).
          */
         post("guest/summary") {
+            if (!featureFlags.isEnabled("guest_checkout")) {
+                throw ValidationException("Guest checkout is disabled")
+            }
             call.respondOk(guestCheckoutService.quote(call.receive<GuestCheckoutRequest>()))
         }.describe {
             summary = "Guest checkout quote"

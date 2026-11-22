@@ -153,8 +153,10 @@ class PromotionService {
             PromotionDAO.find { PromotionTable.id eq promotionId }
                 .forUpdate()
                 .firstOrNull() ?: return
-        if (promotion.usageLimit?.let { promotion.usageCount < it } ?: true) {
-            promotion.usageCount++
+        if (promotion.usageLimit?.let { promotion.usageCount + orderIds.size <= it } ?: true) {
+            // Each split order owns one usage row; keep the counter equal to
+            // the number of active rows so per-order reversal is exact.
+            promotion.usageCount += orderIds.size
         }
         orderIds.forEach { orderId ->
             PromotionUsageDAO.new {
@@ -180,14 +182,12 @@ class PromotionService {
             PromotionUsageDAO.find {
                 PromotionUsageTable.orderId eq orderId.entityID(OrderTable)
             }.toList()
-        rows.groupBy { it.checkoutReference }.forEach { (_, checkoutRows) ->
-            if (checkoutRows.any { it.reversedAt != null }) return@forEach
-            val promotionId = checkoutRows.first().promotionId
-            PromotionDAO.findById(promotionId.value)?.let { promotion ->
+        rows.filter { it.reversedAt == null }.forEach { row ->
+            val promotion = PromotionDAO.findById(row.promotionId.value)
+            if (promotion != null) {
                 promotion.usageCount = (promotion.usageCount - 1).coerceAtLeast(0)
+                row.reversedAt = currentUtc()
             }
-            PromotionUsageDAO.find { PromotionUsageTable.checkoutReference eq checkoutRows.first().checkoutReference }
-                .forEach { it.reversedAt = currentUtc() }
         }
     }
 

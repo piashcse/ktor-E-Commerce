@@ -68,7 +68,9 @@ class InventoryRepositoryImpl : InventoryRepository {
             if (!warehouse.isActive) throw ValidationException("Warehouse is inactive")
             return warehouse
         }
-        return WarehouseDAO.find { WarehouseTable.shopId eq shopId.entityID(ShopTable) }
+        return WarehouseDAO.find {
+            (WarehouseTable.shopId eq shopId.entityID(ShopTable)) and (WarehouseTable.isActive eq true)
+        }.orderBy(WarehouseTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
             .firstOrNull()
             ?: WarehouseDAO.new {
                 this.shopId = shopId.entityID(ShopTable)
@@ -124,6 +126,11 @@ class InventoryRepositoryImpl : InventoryRepository {
                         variantOp(inventoryRequest.variantId)
                 }.forUpdate().firstOrNull()
 
+            val effectiveMax = inventoryRequest.maximumStockLevel ?: existing?.maximumStockLevel ?: DEFAULT_MAX_STOCK
+            if (inventoryRequest.stockQuantity > effectiveMax) {
+                throw ValidationException("Maximum stock level cannot be below the current stock quantity")
+            }
+
             val previousStock = existing?.stockQuantity ?: 0
             val inventory =
                 existing?.apply {
@@ -155,6 +162,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                     ),
                 )
             }
+            product.refreshProductStatus()
             inventory.toInventoryResponse()
         }
 
@@ -211,7 +219,13 @@ class InventoryRepositoryImpl : InventoryRepository {
 
             val newStock =
                 when (normalizedOp) {
-                    "add" -> inventory.stockQuantity + quantity
+                    "add" -> {
+                        try {
+                            Math.addExact(inventory.stockQuantity, quantity)
+                        } catch (_: ArithmeticException) {
+                            throw ValidationException("Stock quantity exceeds the supported range")
+                        }
+                    }
                     "subtract" -> {
                         if (inventory.stockQuantity < quantity) {
                             throw ValidationException(Message.Inventory.insufficientStock(inventory.stockQuantity, quantity))
@@ -243,6 +257,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                     ),
                 )
             }
+            product.refreshProductStatus()
             inventory.toInventoryResponse()
         }
 

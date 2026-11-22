@@ -3,6 +3,7 @@ package com.piashcse.model.response
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
+@Serializable
 sealed class RegistrationResult {
     abstract val message: String
 

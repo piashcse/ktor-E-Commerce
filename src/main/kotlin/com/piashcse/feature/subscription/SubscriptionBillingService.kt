@@ -278,6 +278,7 @@ class SubscriptionBillingService(
                 subscription.dunningAttempts += 1
                 subscription.status = SubscriptionStatus.PAST_DUE
                 if (subscription.graceUntil == null) subscription.graceUntil = now.plusDays(graceDays)
+                subscription.graceUntil?.let { digitalDelivery.extendSubscriptionGraceTx(subscription.id.value, it) }
                 if (invoice.attemptCount >= maxAttempts) {
                     subscription.status = SubscriptionStatus.EXPIRED
                     digitalDelivery.revokeSubscriptionTx(subscription.id.value)
@@ -342,6 +343,9 @@ class SubscriptionBillingService(
                 SubscriptionInvoiceTable.id eq invoiceId.entityID(SubscriptionInvoiceTable)
             }.forUpdate().firstOrNull() ?: return false
         if (invoice.status == InvoiceStatus.PAID) return false
+        // A synchronous charge failure and its webhook describe the same
+        // attempt; only count it once.
+        if (invoice.status == InvoiceStatus.FAILED) return true
         val subscription = SubscriptionDAO.findById(invoice.subscriptionId.value) ?: return false
         invoice.status = InvoiceStatus.FAILED
         invoice.failureReason = reason
@@ -350,6 +354,7 @@ class SubscriptionBillingService(
         invoice.nextRetryAt = currentUtc().plusDays(invoice.attemptCount.toLong())
         subscription.status = SubscriptionStatus.PAST_DUE
         if (subscription.graceUntil == null) subscription.graceUntil = currentUtc().plusDays(graceDays)
+        subscription.graceUntil?.let { digitalDelivery.extendSubscriptionGraceTx(subscription.id.value, it) }
         if (invoice.attemptCount >= maxAttempts) {
             subscription.status = SubscriptionStatus.EXPIRED
             digitalDelivery.revokeSubscriptionTx(subscription.id.value)

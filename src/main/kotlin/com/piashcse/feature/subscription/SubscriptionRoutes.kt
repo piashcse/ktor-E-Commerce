@@ -4,6 +4,7 @@ package com.piashcse.feature.subscription
 
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
+import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
@@ -129,20 +130,22 @@ fun Route.subscriptionAdminRoutes() {
 fun Route.digitalLibraryRoutes() {
     val deliveries: DigitalDeliveryService by inject()
 
-    get("asset") {
-        val token =
-            call.request.queryParameters["token"]
-                ?: throw ValidationException("token is required")
-        val expires =
-            call.request.queryParameters["expires"]?.toLongOrNull()
-                ?: throw ValidationException("expires is required")
-        val signature =
-            call.request.queryParameters["signature"]
-                ?: throw ValidationException("signature is required")
-        call.respondRedirect(deliveries.asset(token, expires, signature), permanent = false)
-    }.describe {
-        summary = "Resolve a short-lived digital download link"
-        description = "Validates the signed expiry and redirects to the asset"
+    generalRateLimit {
+        get("asset") {
+            val token =
+                call.request.queryParameters["token"]
+                    ?: throw ValidationException("token is required")
+            val expires =
+                call.request.queryParameters["expires"]?.toLongOrNull()
+                    ?: throw ValidationException("expires is required")
+            val signature =
+                call.request.queryParameters["signature"]
+                    ?: throw ValidationException("signature is required")
+            call.respondRedirect(deliveries.asset(token, expires, signature), permanent = false)
+        }.describe {
+            summary = "Resolve a short-lived digital download link"
+            description = "Validates the signed expiry and redirects to the asset"
+        }
     }
 
     requireRole {

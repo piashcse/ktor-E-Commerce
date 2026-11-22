@@ -2,7 +2,6 @@ package com.piashcse.feature.product
 
 import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.InventoryDAO
-import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductOptionDAO
 import com.piashcse.database.entities.ProductOptionTable
@@ -15,6 +14,7 @@ import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.database.entities.WarehouseTable
 import com.piashcse.database.entities.optionResponses
+import com.piashcse.database.entities.stockByVariantIds
 import com.piashcse.database.entities.variantResponses
 import com.piashcse.model.response.ProductOptionResponse
 import com.piashcse.model.response.ProductOptionValueResponse
@@ -34,9 +34,31 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
+
+@Serializable
+data class ProductVariantUpdateRequest(
+    val sku: String? = null,
+    val name: String? = null,
+    @Contextual val price: BigDecimal? = null,
+    @Contextual val discountPrice: BigDecimal? = null,
+    val clearDiscountPrice: Boolean = false,
+    val barcode: String? = null,
+    @Contextual val weight: BigDecimal? = null,
+    val dimensions: String? = null,
+    val imageUrl: String? = null,
+    val status: ProductStatus? = null,
+    val isDefault: Boolean? = null,
+    val sortOrder: Int? = null,
+) {
+    init {
+        price?.requirePositivePrice("Variant price")
+        validateDiscountPrice(price, discountPrice)
+        if (sku != null && sku.isBlank()) throw ValidationException("SKU cannot be blank")
+        if (name != null && name.isBlank()) throw ValidationException("Variant name cannot be blank")
+    }
+}
 
 @Serializable
 data class ProductVariantRequest(
@@ -93,15 +115,13 @@ class ProductVariantService(
         query {
             requireProduct(productId)
             val variants =
-                ProductVariantDAO.find { ProductVariantTable.productId eq productId.entityID(ProductTable) }
+                ProductVariantDAO.find {
+                    (ProductVariantTable.productId eq productId.entityID(ProductTable)) and
+                        (ProductVariantTable.status eq ProductStatus.ACTIVE)
+                }
                     .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
                     .toList()
-            val stockByVariant =
-                InventoryDAO.find {
-                    (InventoryTable.productId eq productId.entityID(ProductTable)) and
-                        (InventoryTable.variantId.isNotNull())
-                }.groupBy { it.variantId!!.value }
-                    .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
+            val stockByVariant = stockByVariantIds(variants.map { it.id.value })
             variantResponses(variants, stockByVariant)
         }
 
@@ -156,13 +176,36 @@ class ProductVariantService(
         actorUserId: String,
         productId: String,
         variantId: String,
-        request: ProductVariantRequest,
+        request: ProductVariantUpdateRequest,
     ): ProductVariantResponse =
         query {
             val product = requireOwnedProduct(actorUserId, productId)
             val variant = requireVariant(product.id.value, variantId)
-            if (request.isDefault && !variant.isDefault) clearDefault(product.id.value)
-            variant.applyRequest(request)
+            val price = request.price ?: variant.price
+            val discount =
+                when {
+                    request.clearDiscountPrice -> null
+                    request.discountPrice != null -> request.discountPrice
+                    else -> variant.discountPrice
+                }
+            if (discount != null && discount >= price) {
+                throw ValidationException("Discount price must be lower than the regular price")
+            }
+            if (request.isDefault == true && !variant.isDefault) clearDefault(product.id.value)
+            variant.apply {
+                request.sku?.let { sku = it }
+                request.name?.let { name = it }
+                this.price = price
+                discountPrice = discount
+                discountPercentage = discountPercentage(price, discount)
+                request.barcode?.let { barcode = it }
+                request.weight?.let { weight = it }
+                request.dimensions?.let { dimensions = it }
+                request.imageUrl?.let { imageUrl = it }
+                request.status?.let { status = it }
+                request.isDefault?.let { isDefault = it }
+                request.sortOrder?.let { sortOrder = it }
+            }
             variant.toResponse()
         }.also { invalidateCatalog() }
 
@@ -287,8 +330,20 @@ class ProductVariantService(
         invalidateCatalog()
     }
 
-    private fun requireProduct(productId: String): ProductDAO =
-        ProductDAO.findById(productId)?.takeIf { it.deletedAt == null } ?: productId.throwNotFound("Product")
+    private fun requireProduct(productId: String): ProductDAO {
+        val product =
+            ProductDAO.findById(productId)?.takeIf { it.deletedAt == null }
+                ?: productId.throwNotFound("Product")
+        product.shopId?.value?.let { shopId ->
+            val shop =
+                com.piashcse.database.entities.ShopDAO.findById(shopId)
+                    ?: productId.throwNotFound("Product")
+            if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+                productId.throwNotFound("Product")
+            }
+        }
+        return product
+    }
 
     private fun requireOwnedProduct(
         actorUserId: String,

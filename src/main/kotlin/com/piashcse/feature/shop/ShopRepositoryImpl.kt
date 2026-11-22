@@ -133,8 +133,11 @@ class ShopRepositoryImpl : ShopRepository {
 
     override suspend fun getShopById(shopId: String): ShopResponse? =
         query {
-            val shop = ShopDAO.findById(shopId)
-            shop?.toShopResponse()
+            val shop = ShopDAO.findById(shopId) ?: return@query null
+            // Public discovery must not expose pending/rejected/suspended shop
+            // contact details by ID.
+            if (shop.status != ShopStatus.APPROVED) return@query null
+            shop.toShopResponse()
         }
 
     override suspend fun getShopsByUser(

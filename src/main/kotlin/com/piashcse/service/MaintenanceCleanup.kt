@@ -137,10 +137,14 @@ object MaintenanceCleanup {
                         (DigitalEntitlementTable.expiresAt less nowLocal)
                 }
 
-            // Abandoned carts are removed after 30 idle days.
+            // Abandoned carts are removed after 30 idle days. `createdAt`
+            // never changes when the cart is used, so use the latest of
+            // updatedAt/createdAt.
+            val cartCutoff = nowLocal.minusDays(30)
             purged +=
                 CartItemTable.deleteWhere {
-                    CartItemTable.createdAt less nowLocal.minusDays(30)
+                    (CartItemTable.updatedAt.isNotNull() and (CartItemTable.updatedAt less cartCutoff)) or
+                        (CartItemTable.updatedAt.isNull() and (CartItemTable.createdAt less cartCutoff))
                 }
 
             // Closed support tickets and their messages follow the 3-year retention window.

@@ -17,10 +17,10 @@ object OrderTable : BaseIdTable("order") {
     val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking
     val idempotencyKey = varchar("idempotency_key", 100).nullable() // Per-user idempotency key (partial unique index in SQL)
-    val subTotal = decimal("sub_total", 10, 2)
-    val shippingCost = decimal("shipping_cost", 10, 2).default(BigDecimal("0.00"))
-    val taxAmount = decimal("tax_amount", 10, 2).default(BigDecimal("0.00"))
-    val discountAmount = decimal("discount_amount", 10, 2).default(BigDecimal("0.00"))
+    val subTotal = decimal("sub_total", 12, 2)
+    val shippingCost = decimal("shipping_cost", 12, 2).default(BigDecimal("0.00"))
+    val taxAmount = decimal("tax_amount", 12, 2).default(BigDecimal("0.00"))
+    val discountAmount = decimal("discount_amount", 12, 2).default(BigDecimal("0.00"))
     val couponCode = varchar("coupon_code", 50).nullable()
     val total = decimal("total", 12, 2)
     val currency = varchar("currency", 3).default("USD") // Currency of the order

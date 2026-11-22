@@ -14,6 +14,8 @@ import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxQuote
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderItemResponse
@@ -56,6 +58,7 @@ class OrderRepositoryImpl(
     private val taxService: TaxService = TaxService(),
     private val promotionService: PromotionService = PromotionService(),
     private val loyaltyService: LoyaltyService = LoyaltyService(),
+    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
 ) : OrderRepository {
     private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
 
@@ -362,8 +365,10 @@ class OrderRepositoryImpl(
                         }
                         recalculateTaxes(quote)
                         applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
+                        createOfflinePayments(quote.orders)
                         updateSellerTotals(quote.orders)
                         context.cartItems.forEach { it.delete() }
+                        completeZeroTotalOrders(quote.orders)
                         finalizePlacedOrders(quote.orders, userId, callerEmail)
                         val itemsMap = loadItemsForOrders(quote.orders)
                         quote.orders.map { it.toOrderResponse(itemsMap[it.id.value]) }
@@ -402,7 +407,9 @@ class OrderRepositoryImpl(
         userId: String,
         checkoutRequest: CheckoutRequest,
     ): CheckoutContext {
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+        // Lock the cart for the duration of the checkout transaction. Two
+        // concurrent placements must not both read (and fulfil) the same rows.
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.forUpdate().toList()
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
         val fulfillment = resolveFulfillment(userId, checkoutRequest)
@@ -550,14 +557,16 @@ class OrderRepositoryImpl(
                     ?: cartItem.productId.value.throwNotFound("Product")
             val variant = resolveCheckoutVariant(product, cartItem, context.variantsMap)
             val pickupWarehouseId = context.pickupWarehouse?.id?.value
-            val available =
-                if (pickupWarehouseId != null) {
-                    product.effectiveStockForAt(pickupWarehouseId, variant?.id?.value)
-                } else {
-                    product.effectiveStockFor(variant?.id?.value, forUpdate = true)
+            if (!product.isDigital) {
+                val available =
+                    if (pickupWarehouseId != null) {
+                        product.effectiveStockForAt(pickupWarehouseId, variant?.id?.value)
+                    } else {
+                        product.effectiveStockFor(variant?.id?.value, forUpdate = true)
+                    }
+                if (available < cartItem.quantity) {
+                    throw ValidationException(Message.Validation.insufficientStock(product.name, available))
                 }
-            if (available < cartItem.quantity) {
-                throw ValidationException(Message.Validation.insufficientStock(product.name, available))
             }
 
             // Product prices are stored in USD; persist the order-currency unit
@@ -602,11 +611,15 @@ class OrderRepositoryImpl(
                 }
 
             val allocations =
-                when {
-                    pickupWarehouseId != null ->
-                        product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
-                    variant == null -> product.decrementStock(cartItem.quantity)
-                    else -> product.decrementStockFor(variant.id.value, cartItem.quantity)
+                if (product.isDigital) {
+                    emptyList()
+                } else {
+                    when {
+                        pickupWarehouseId != null ->
+                            product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
+                        variant == null -> product.decrementStock(cartItem.quantity)
+                        else -> product.decrementStockFor(variant.id.value, cartItem.quantity)
+                    }
                 }
             product.addSales(cartItem.quantity)
 
@@ -621,7 +634,12 @@ class OrderRepositoryImpl(
                     this.quantity = allocation.quantity
                     this.restoredQuantity = 0
                     this.status = ReservationStatus.ACTIVE
-                    this.expiresAt = currentUtc().plusHours(24)
+                    // Offline payments (COD/bank transfer) settle after
+                    // fulfilment, so they need a much longer reservation window.
+                    val offline =
+                        checkoutRequest.paymentMethod in
+                            listOf(PaymentMethod.COD, PaymentMethod.BANK_TRANSFER)
+                    this.expiresAt = currentUtc().plusHours(if (offline) 24L * 30 else 24)
                 }
             }
 
@@ -775,14 +793,17 @@ class OrderRepositoryImpl(
         if (total <= BigDecimal.ZERO) return
         val totalUsd = total.divide(fxRate, 2, RoundingMode.HALF_UP)
         var remainingUsd = totalUsd
+        val balances = loyaltyService.redemptionPreviewTx(userId, points, creditUsd, giftCode)
 
         // Cap every redemption before debiting it; never burn points/credit that
         // cannot be applied.
         val pointsToRedeem =
             if (points > 0) {
-                points.coerceAtMost(
-                    remainingUsd.multiply(BigDecimal(100)).setScale(0, RoundingMode.DOWN).toInt(),
-                )
+                points
+                    .coerceAtMost(balances.pointsAvailable)
+                    .coerceAtMost(
+                        remainingUsd.multiply(BigDecimal(100)).setScale(0, RoundingMode.DOWN).toInt(),
+                    )
             } else {
                 0
             }
@@ -790,7 +811,12 @@ class OrderRepositoryImpl(
             BigDecimal(pointsToRedeem)
                 .divide(BigDecimal(100), 4, RoundingMode.HALF_UP)
         remainingUsd = remainingUsd.subtract(pointsUsd).max(BigDecimal.ZERO)
-        val creditToRedeem = creditUsd?.min(remainingUsd)?.max(BigDecimal.ZERO) ?: BigDecimal.ZERO
+        val creditToRedeem =
+            creditUsd
+                ?.min(remainingUsd)
+                ?.min(balances.creditAvailable)
+                ?.max(BigDecimal.ZERO)
+                ?: BigDecimal.ZERO
         remainingUsd = remainingUsd.subtract(creditToRedeem).max(BigDecimal.ZERO)
         val giftBudgetUsd = remainingUsd
 
@@ -916,22 +942,54 @@ class OrderRepositoryImpl(
     }
 
     private fun updateSellerTotals(orders: List<OrderDAO>) {
-        val shopIds = orders.mapNotNull { it.shopId?.value }.distinct()
-        val sellersByShop =
-            if (shopIds.isNotEmpty()) {
-                SellerDAO.find { SellerTable.shopId inList shopIds.map { it.entityID(ShopTable) } }
-                    .associateBy { it.shopId?.value }
-            } else {
-                emptyMap()
+        val itemsByOrder = OrderItemDAO.itemsForOrders(orders.map { it.id })
+        SellerTotals.applyOrdersTx(orders, itemsByOrder)
+    }
+
+    /**
+     * COD and bank-transfer orders need a provider-visible payment row before
+     * collection. Without it an admin has nothing to confirm and a seller
+     * cannot ship a COD order. The row stays PENDING until an admin confirms
+     * the cash/transfer.
+     */
+    private fun createOfflinePayments(orders: List<OrderDAO>) {
+        val payable =
+            orders.filter {
+                it.total > BigDecimal.ZERO &&
+                    it.paymentMethod in listOf(PaymentMethod.COD, PaymentMethod.BANK_TRANSFER)
             }
-        orders.forEach { order ->
-            order.shopId?.value?.let { shopId ->
-                sellersByShop[shopId]?.let { seller ->
-                    seller.totalSales = seller.totalSales.add(order.subTotal)
-                    seller.totalCommission = seller.totalCommission.add(seller.calcCommission(order.subTotal))
-                }
+        if (payable.isEmpty()) return
+        val existing =
+            PaymentDAO.find {
+                (PaymentTable.orderId inList payable.map { it.id }) and
+                    (PaymentTable.status eq PaymentStatus.PENDING)
+            }.map { it.orderId.value }.toSet()
+        payable.filterNot { it.id.value in existing }.forEach { order ->
+            val method = order.paymentMethod ?: return@forEach
+            PaymentDAO.new {
+                this.orderId = order.id
+                this.userId = order.userId
+                amount = order.total
+                currency = order.currency
+                status = PaymentStatus.PENDING
+                paymentMethod = method
+                transactionId = "offline:${order.id.value}"
+                provider = PaymentProvider.MANUAL
+                providerStatus = "awaiting-${method.name.lowercase()}"
+                scaStatus = ScaStatus.NOT_REQUIRED
             }
         }
+    }
+
+    /**
+     * Wallet credit, gift cards or a 100% coupon can make an order total zero.
+     * There is no remaining amount for `POST /payments`, so complete those
+     * orders here with the same side effects as a successful payment.
+     */
+    private fun completeZeroTotalOrders(orders: List<OrderDAO>) {
+        orders
+            .filter { it.total <= BigDecimal.ZERO && it.paymentStatus != PaymentStatus.COMPLETED }
+            .forEach { OrderCompletion.completeZeroTotalTx(it, loyaltyService, digitalDelivery) }
     }
 
     private fun finalizePlacedOrders(
@@ -967,6 +1025,20 @@ class OrderRepositoryImpl(
         val response: CheckoutSummaryResponse,
         val eligibleProductIds: Set<String>?,
     )
+
+    /** Order-currency subtotal using the same unit rounding as placeOrder. */
+    private fun checkoutSubtotal(
+        context: CheckoutContext,
+        fxRate: BigDecimal,
+    ): BigDecimal =
+        Money.scale2(
+            context.cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
+                val product = context.productsMap[cartItem.productId.value] ?: return@fold acc
+                val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
+                val unit = Money.scale2(PricingService.unitPriceUsd(product, variant).multiply(fxRate))
+                acc.add(Money.unitTotal(unit, cartItem.quantity))
+            },
+        )
 
     private fun checkoutSubtotalUsd(context: CheckoutContext): BigDecimal =
         PricingService.subtotal(
@@ -1014,10 +1086,8 @@ class OrderRepositoryImpl(
                 context.productsMap[cartItem.productId.value]
                     ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
             val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
-            val line =
-                Money.scale2(
-                    Money.unitTotal(PricingService.unitPriceUsd(product, variant), cartItem.quantity).multiply(fxRate),
-                )
+            val unit = Money.scale2(PricingService.unitPriceUsd(product, variant).multiply(fxRate))
+            val line = Money.unitTotal(unit, cartItem.quantity)
             val quote =
                 taxService.resolve(
                     country = context.taxCountry,
@@ -1214,7 +1284,7 @@ class OrderRepositoryImpl(
         return query {
             val context = loadCheckoutContext(userId, checkoutRequest)
             val subUsd = checkoutSubtotalUsd(context)
-            val sub = Money.scale2(subUsd.multiply(fxRate))
+            val sub = checkoutSubtotal(context, fxRate)
             val ship = checkoutShipping(context, subUsd, fxRate)
             val taxPreview = checkoutTaxPreview(context, userId, checkoutRequest.businessTaxId, fxRate)
 
@@ -1369,7 +1439,11 @@ class OrderRepositoryImpl(
 
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
 
-                if (!OrderStatus.canTransitionTo(order.status, status)) {
+                val offlineShipment =
+                    status == OrderStatus.SHIPPED &&
+                        order.status == OrderStatus.CONFIRMED &&
+                        order.paymentMethod in listOf(PaymentMethod.COD, PaymentMethod.BANK_TRANSFER)
+                if (!OrderStatus.canTransitionTo(order.status, status) && !offlineShipment) {
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
                 if (status == OrderStatus.PAID) {
@@ -1460,7 +1534,10 @@ class OrderRepositoryImpl(
                         ?: throw ValidationException(Message.Orders.NOT_FOUND)
                 val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
-                if (!OrderStatus.canTransitionTo(order.status, OrderStatus.SHIPPED)) {
+                val offlineShipment =
+                    order.status == OrderStatus.CONFIRMED &&
+                        order.paymentMethod in listOf(PaymentMethod.COD, PaymentMethod.BANK_TRANSFER)
+                if (!OrderStatus.canTransitionTo(order.status, OrderStatus.SHIPPED) && !offlineShipment) {
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
                 val fromStatus = order.status

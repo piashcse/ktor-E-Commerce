@@ -62,6 +62,28 @@ class UserAuthenticationService(
         )
     }
 
+    private suspend fun loginAttempt(
+        email: String,
+        type: UserType,
+        ip: String?,
+    ) = if (ip == null) authRepo.getLoginAttempt(email, type) else authRepo.getLoginAttempt(email, type, ip)
+
+    private suspend fun resetLoginAttempts(
+        email: String,
+        type: UserType,
+        ip: String?,
+    ) = if (ip == null) authRepo.resetLoginAttempts(email, type) else authRepo.resetLoginAttempts(email, type, ip)
+
+    private suspend fun lockAccount(
+        email: String,
+        type: UserType,
+        ip: String?,
+    ) = if (ip == null) {
+        authRepo.lockAccount(email, type, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+    } else {
+        authRepo.lockAccount(email, type, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES, ip)
+    }
+
     suspend fun login(
         loginRequest: LoginRequest,
         ipAddress: String? = null,
@@ -70,10 +92,10 @@ class UserAuthenticationService(
             UserType.fromString(loginRequest.userType)
                 ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
 
-        authRepo.getLoginAttempt(loginRequest.email, userTypeEnum)?.let {
+        loginAttempt(loginRequest.email, userTypeEnum, ipAddress)?.let {
             if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
             if (it.attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
-                authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
+                resetLoginAttempts(loginRequest.email, userTypeEnum, ipAddress)
             }
         }
 
@@ -81,7 +103,7 @@ class UserAuthenticationService(
         if (user == null) {
             val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
             if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
-                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                lockAccount(loginRequest.email, userTypeEnum, ipAddress)
                 throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
             }
             throw InvalidCredentialsException(remainingAttempts = AppConstants.Authentication.MAX_LOGIN_ATTEMPTS - attemptCount)
@@ -97,7 +119,7 @@ class UserAuthenticationService(
                 "Failed login attempt",
             )
             if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
-                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                lockAccount(loginRequest.email, userTypeEnum, ipAddress)
                 throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
             }
             throw InvalidCredentialsException(remainingAttempts = AppConstants.Authentication.MAX_LOGIN_ATTEMPTS - attemptCount)
@@ -124,14 +146,14 @@ class UserAuthenticationService(
         if (!mfaValid) {
             val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
             if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
-                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                lockAccount(loginRequest.email, userTypeEnum, ipAddress)
                 throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
             }
             if (loginRequest.mfaCode.isNullOrBlank()) throw MfaRequiredException()
             throw InvalidMfaCodeException()
         }
 
-        authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
+        resetLoginAttempts(loginRequest.email, userTypeEnum, ipAddress)
         val tokenPair = authRepo.generateTokenPair(user.id.value, user.email, user.userType.name)
         authRepo.storeRefreshToken(user.id.value, tokenPair.refreshToken)
         return LoginResponse(user.toUserResponse(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)

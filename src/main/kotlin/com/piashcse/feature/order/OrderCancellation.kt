@@ -56,6 +56,14 @@ object OrderCancellation {
         if (captured > BigDecimal.ZERO) {
             throw ValidationException("Orders with captured payments must be refunded, not canceled")
         }
+        // Void any un-captured offline intent so it cannot be confirmed later
+        // against a canceled order.
+        PaymentDAO.find {
+            (PaymentTable.orderId eq order.id) and (PaymentTable.status eq PaymentStatus.PENDING)
+        }.forEach {
+            it.status = PaymentStatus.FAILED
+            it.providerStatus = "order-canceled"
+        }
         order.status = OrderStatus.CANCELED
         order.canceledDate = currentUtc()
         if (!notes.isNullOrBlank()) {
@@ -94,11 +102,13 @@ object OrderCancellation {
         } else {
             // Legacy rows created before warehouse allocations were recorded.
             orderItems.forEach { orderItem ->
-                products[orderItem.productId.value]?.restoreStockFor(
-                    orderItem.variantId?.value,
-                    orderItem.quantity,
-                    order.pickupWarehouseId?.value,
-                )
+                products[orderItem.productId.value]
+                    ?.takeUnless { it.isDigital }
+                    ?.restoreStockFor(
+                        orderItem.variantId?.value,
+                        orderItem.quantity,
+                        order.pickupWarehouseId?.value,
+                    )
             }
         }
         orderItems.forEach { orderItem ->

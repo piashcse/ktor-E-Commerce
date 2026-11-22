@@ -59,6 +59,9 @@ class FxService {
         query {
             SupportedCurrencies.requireValid(targetCurrency)
             if (rate <= BigDecimal.ZERO) throw ValidationException("FX rate must be positive")
+            if (rate < BigDecimal("0.0001") || rate > BigDecimal("10000")) {
+                throw ValidationException("FX rate is outside the supported range")
+            }
             val target = targetCurrency.uppercase()
             val existing =
                 FxRateDAO.find {

@@ -61,6 +61,7 @@ object Message {
     // ─── Auth ──────────────────────────────────────────────────────────────
     object Auth {
         const val USER_EXISTS = "User already exists with this email"
+        const val USE_PASSWORD_RESET = "This email is already registered but not verified. Use password reset to regain access"
         const val REGISTRATION_ROLE_FORBIDDEN = "Only CUSTOMER and SELLER accounts can be created through self-registration"
         const val INVALID_CREDENTIALS = "Invalid email or password"
         const val ACCOUNT_NOT_VERIFIED = "Account not verified"

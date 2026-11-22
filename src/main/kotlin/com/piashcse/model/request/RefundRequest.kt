@@ -35,6 +35,12 @@ data class UpdateRefundStatusRequest(
     val refundMethod: RefundMethod? = null,
     /** Seller/admin decision note shown to the customer. */
     val decisionReason: String? = null,
+    /**
+     * Explicit admin override for a refund without a physical return
+     * (damaged/kept goods). Required to move APPROVED -> REFUNDED for
+     * non-digital lines before the return is shipped.
+     */
+    val forceWithoutReturn: Boolean = false,
 ) {
     init {
         validate(this) {

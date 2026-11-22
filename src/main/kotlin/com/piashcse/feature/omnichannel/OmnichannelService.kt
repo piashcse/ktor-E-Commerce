@@ -9,8 +9,10 @@ import com.piashcse.constants.PosSessionStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
+import com.piashcse.database.entities.OrderStatusHistoryDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.PaymentTable
 import com.piashcse.database.entities.PosSessionDAO
 import com.piashcse.database.entities.PosSessionTable
 import com.piashcse.database.entities.ProductDAO
@@ -27,6 +29,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.database.entities.decrementStockAt
 import com.piashcse.database.entities.decrementStockFor
+import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
@@ -211,7 +214,9 @@ class OmnichannelService(
             val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
             if (order.shopId?.value != seller.shopId?.value) throw ForbiddenException("Order belongs to another shop")
             if (order.fulfillmentType != FulfillmentType.PICKUP) throw ValidationException("Order is not a pickup order")
-            if (order.paymentStatus != PaymentStatus.COMPLETED) throw ValidationException("Order is not paid")
+            if (order.paymentStatus != PaymentStatus.COMPLETED && order.paymentMethod != PaymentMethod.COD) {
+                throw ValidationException("Order is not paid")
+            }
             if (order.status == OrderStatus.CANCELED) throw ValidationException("Order is canceled")
             if (order.pickupStatus != null && order.pickupStatus != PickupStatus.PENDING) {
                 throw ValidationException("Pickup order cannot be marked ready")
@@ -230,16 +235,65 @@ class OmnichannelService(
             val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
             if (order.shopId?.value != seller.shopId?.value) throw ForbiddenException("Order belongs to another shop")
             if (order.fulfillmentType != FulfillmentType.PICKUP) throw ValidationException("Order is not a pickup order")
-            if (order.paymentStatus != PaymentStatus.COMPLETED) throw ValidationException("Order is not paid")
+            val collectCashAtPickup =
+                order.paymentMethod == PaymentMethod.COD && order.paymentStatus == PaymentStatus.PENDING
+            if (order.paymentStatus != PaymentStatus.COMPLETED && !collectCashAtPickup) {
+                throw ValidationException("Order is not paid")
+            }
             if (order.status == OrderStatus.CANCELED) throw ValidationException("Order is canceled")
             if (order.pickupStatus != PickupStatus.READY) throw ValidationException("Pickup order is not ready")
             if (order.pickupCode == null || order.pickupCode != code.trim().uppercase()) {
                 throw ValidationException("Invalid pickup code")
             }
+            val fromStatus = order.status
             order.pickupStatus = PickupStatus.PICKED_UP
             order.pickedUpAt = currentUtc()
             order.status = OrderStatus.RECEIVED
             order.completedDate = currentUtc()
+            if (collectCashAtPickup) {
+                val payment =
+                    PaymentDAO.find {
+                        (PaymentTable.orderId eq order.id) and (PaymentTable.status eq PaymentStatus.PENDING)
+                    }.firstOrNull()
+                payment?.apply {
+                    status = PaymentStatus.COMPLETED
+                    providerStatus = "collected-at-pickup"
+                }
+                order.paymentStatus = PaymentStatus.COMPLETED
+                loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, order.total)
+                digitalDelivery.grantForOrderTx(order)
+                payment?.let {
+                    OutboxPublisher.enqueueTx(
+                        "PAYMENT",
+                        it.id.value,
+                        PaymentCompletedEvent(
+                            paymentId = it.id.value,
+                            orderId = order.id.value,
+                            userId = order.userId.value,
+                            email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                            amount = it.amount,
+                        ),
+                    )
+                }
+            }
+            OrderStatusHistoryDAO.new {
+                this.orderId = order.id
+                this.status = OrderStatus.RECEIVED
+                notes = "Pickup completed"
+                changedBy = sellerUserId.entityID(UserTable)
+            }
+            OutboxPublisher.enqueueTx(
+                "ORDER",
+                order.id.value,
+                OrderStatusChangedEvent(
+                    orderId = order.id.value,
+                    userId = order.userId.value,
+                    email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                    orderNumber = order.orderNumber,
+                    fromStatus = fromStatus.name,
+                    toStatus = OrderStatus.RECEIVED.name,
+                ),
+            )
             order.toOrderResponse(includeSensitive = false)
         }
 
@@ -276,15 +330,20 @@ class OmnichannelService(
         val variants: Map<String, ProductVariantDAO>,
     )
 
+    private fun posIdempotencyKey(
+        shopId: String,
+        key: String?,
+    ): String? = key?.takeIf { it.isNotBlank() }?.let { "pos:$shopId:$it" }
+
     private fun findIdempotentPosSale(
         shopId: String,
         key: String?,
     ): OrderDAO? =
-        key?.takeIf { it.isNotBlank() }?.let {
+        posIdempotencyKey(shopId, key)?.let { namespaced ->
             OrderDAO.find {
                 (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
                     (OrderTable.fulfillmentType eq FulfillmentType.POS) and
-                    (OrderTable.idempotencyKey eq it)
+                    (OrderTable.idempotencyKey eq namespaced)
             }.firstOrNull()
         }
 
@@ -330,6 +389,12 @@ class OmnichannelService(
         if (products.values.any { it.shopId?.value != shopId }) {
             throw ValidationException("All POS items must belong to the seller's shop")
         }
+        if (products.values.any {
+                it.deletedAt != null || it.status != com.piashcse.constants.ProductStatus.ACTIVE
+            }
+        ) {
+            throw ValidationException("Cannot sell an inactive product in POS")
+        }
         val variantIds = items.mapNotNull { it.variantId }.distinct()
         val variants =
             if (variantIds.isEmpty()) {
@@ -345,6 +410,9 @@ class OmnichannelService(
                 if (variant.productId.value != item.productId) {
                     throw ValidationException("Variant does not belong to product ${item.productId}")
                 }
+                if (variant.status != com.piashcse.constants.ProductStatus.ACTIVE) {
+                    throw ValidationException("Cannot sell an inactive variant in POS")
+                }
             }
         }
         return PosCatalog(products, variants)
@@ -359,9 +427,16 @@ class OmnichannelService(
         } ?: UserDAO.new {
             this.email = email ?: "pos-${UUID.randomUUID()}@local"
             userType = com.piashcse.constants.UserType.CUSTOMER
-            password = "!"
-            isVerified = email != null
-            isGuest = email == null
+            // Never auto-verify an email supplied at the counter: doing so
+            // would block the real owner from registering. The row is a guest
+            // account that can later be claimed through registration/OTP.
+            password =
+                at.favre.lib.crypto.bcrypt.BCrypt.withDefaults().hashToString(
+                    com.piashcse.constants.AppConstants.BCRYPT_COST,
+                    UUID.randomUUID().toString().toCharArray(),
+                )
+            isVerified = false
+            isGuest = true
         }
     }
 
@@ -385,7 +460,7 @@ class OmnichannelService(
                 userId = customer.id
                 this.shopId = shopId.entityID(com.piashcse.database.entities.ShopTable)
                 this.orderNumber = orderNumber
-                idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
+                idempotencyKey = posIdempotencyKey(shopId, request.idempotencyKey)
                 status = OrderStatus.PAID
                 paymentStatus = PaymentStatus.COMPLETED
                 subTotal = BigDecimal.ZERO
@@ -406,12 +481,14 @@ class OmnichannelService(
             val variant = item.variantId?.let { catalog.variants[it] }
             val unit = Money.scale2(PricingService.unitPriceUsd(product, variant))
             val lineTotal = Money.scale2(unit.multiply(BigDecimal(item.quantity)))
-            if (warehouse != null) {
-                product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
-            } else if (variant == null) {
-                product.decrementStock(item.quantity)
-            } else {
-                product.decrementStockFor(variant.id.value, item.quantity)
+            if (!product.isDigital) {
+                if (warehouse != null) {
+                    product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
+                } else if (variant == null) {
+                    product.decrementStock(item.quantity)
+                } else {
+                    product.decrementStockFor(variant.id.value, item.quantity)
+                }
             }
             product.addSales(item.quantity)
             val quote =
@@ -470,6 +547,7 @@ class OmnichannelService(
                 it.cardSales = Money.scale2(it.cardSales.add(order.total))
             }
         }
+        com.piashcse.feature.seller.SellerTotals.applyOrderTx(order)
         loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
         OutboxPublisher.enqueueTx(
             "PAYMENT",

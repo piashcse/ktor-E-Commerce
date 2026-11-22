@@ -30,5 +30,8 @@ data class PaymentRequest(
             validate(PaymentRequest::amount).isNotNull().isGreaterThan(BigDecimal.ZERO)
             validate(PaymentRequest::paymentMethod).isNotNull()
         }
+        if (idempotencyKey != null && idempotencyKey.length > 100) {
+            throw com.piashcse.utils.validator.ValidationException("Idempotency-Key must be at most 100 characters")
+        }
     }
 }

@@ -28,20 +28,33 @@ class DashboardRepositoryImpl : DashboardRepository {
             val today = currentUtc().toLocalDate().atStartOfDay()
 
             val paidOrders =
-                OrderTable.select(OrderTable.total, OrderTable.fxRate, OrderTable.createdAt)
+                OrderTable.select(OrderTable.id, OrderTable.total, OrderTable.fxRate, OrderTable.createdAt)
                     .where {
                         (OrderTable.status neq OrderStatus.CANCELED) and
                             (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
                     }.toList()
+            val orderFx = paidOrders.associate { it[OrderTable.id].value to it[OrderTable.fxRate] }
+            val refunds =
+                RefundRequestDAO.find { RefundRequestTable.status eq RefundStatus.REFUNDED }.toList()
+
+            fun refundUsd(refund: RefundRequestDAO): BigDecimal {
+                val amount = refund.refundAmount ?: BigDecimal.ZERO
+                val total = amount.add(refund.shippingRefund).add(refund.taxRefund)
+                return Money.toUsd(total, orderFx[refund.orderId.value] ?: BigDecimal.ONE)
+            }
             val totalRevenue =
                 paidOrders.fold(BigDecimal.ZERO) { acc, row ->
                     acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
-                }
+                }.subtract(refunds.fold(BigDecimal.ZERO) { acc, refund -> acc.add(refundUsd(refund)) })
             val todayRevenue =
                 paidOrders.filter { it[OrderTable.createdAt] >= today }
                     .fold(BigDecimal.ZERO) { acc, row ->
                         acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                     }
+                    .subtract(
+                        refunds.filter { (it.resolvedAt ?: it.updatedAt ?: it.createdAt) >= today }
+                            .fold(BigDecimal.ZERO) { acc, refund -> acc.add(refundUsd(refund)) },
+                    )
 
             val orderTotal = OrderTable.selectAll().count()
             val orderToday = OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count()

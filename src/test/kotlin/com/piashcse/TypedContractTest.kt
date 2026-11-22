@@ -105,9 +105,9 @@ class TypedContractTest {
                     every { createdAt } returns LocalDateTime.of(2024, 1, 1, 0, 0)
                     every { updatedAt } returns null
                 }
-            coEvery { authRepo.getLoginAttempt(any(), any()) } returns null
+            coEvery { authRepo.getLoginAttempt(any(), any(), any()) } returns null
             coEvery { authRepo.findUserByEmailAndType(any(), any()) } returns user
-            coEvery { authRepo.resetLoginAttempts(any(), any()) } returns Unit
+            coEvery { authRepo.resetLoginAttempts(any(), any(), any()) } returns Unit
             coEvery { authRepo.generateTokenPair(any(), any(), any()) } returns
                 TokenPair("access-1", "refresh-1", "Bearer", 900)
             coEvery { authRepo.storeRefreshToken(any(), any()) } returns Unit

@@ -115,6 +115,8 @@ class AuditLogSubscriber(
             }
         } catch (e: Exception) {
             log.error("Failed to write audit log for event ${event::class.simpleName}", e)
+            // Do not ACK the outbox row when the audit record was not written.
+            throw e
         }
     }
 

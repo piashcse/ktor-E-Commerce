@@ -42,13 +42,20 @@ fun requireCartSelection(
     variantId: String? = null,
 ): Pair<ProductDAO, ProductVariantDAO?> {
     val product = requireProduct(productId, resourceName)
+    if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
+        throw ValidationException(Message.Products.OUT_OF_STOCK)
+    }
     val variant = resolveVariant(product, variantId)
     if (variant == null && hasVariants(product)) {
         throw ValidationException("Select a product variant before adding it to the cart")
     }
-    val stock =
-        if (variant == null) product.effectiveStock() else product.effectiveStockFor(variant.id.value)
-    if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+    // Digital goods are delivered by entitlement and do not consume physical
+    // inventory; requiring a stock row makes zero-stock downloads unbuyable.
+    if (!product.isDigital) {
+        val stock =
+            if (variant == null) product.effectiveStock() else product.effectiveStockFor(variant.id.value)
+        if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+    }
     if (quantity < product.minOrderQuantity) {
         throw ValidationException("Minimum order quantity for ${product.name} is ${product.minOrderQuantity}")
     }

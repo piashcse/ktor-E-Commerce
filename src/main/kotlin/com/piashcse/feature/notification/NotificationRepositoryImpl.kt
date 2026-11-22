@@ -157,10 +157,11 @@ class NotificationRepositoryImpl : NotificationRepository {
                     else -> throw ForbiddenException("Insufficient permissions to send notifications")
                 }
 
-                // The recipient's stored preference is authoritative. A caller-supplied
-                // channel must not override it.
-                channel?.let { requireChannel(it) }
-                val resolvedChannel = storedChannel(userId)
+                // An explicit channel is allowed for operational announcements;
+                // otherwise resolve the recipient's per-event preference and
+                // fall back to the global default.
+                val resolvedChannel =
+                    channel?.let { requireChannel(it) } ?: storedChannel(userId)
                 val row =
                     NotificationDAO.new {
                         this.userId = userId.entityID(UserTable)

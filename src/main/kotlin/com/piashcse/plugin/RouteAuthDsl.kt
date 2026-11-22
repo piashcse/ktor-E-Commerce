@@ -12,6 +12,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
+import io.ktor.server.request.path
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -41,7 +42,23 @@ val RoleAuthorizationPlugin =
                 return@on
             }
 
-            if (allowedRoles.isEmpty()) return@on
+            if (allowedRoles.isEmpty()) {
+                // A bare role gate means "any authenticated human", not
+                // "any API key". There is no route permission to compare the
+                // key's scopes against here, so fail closed.
+                if (principal.isApiKey) {
+                    call.respond(
+                        HttpStatusCode.Forbidden,
+                        ApiError.of(
+                            message = "API keys cannot access this session route",
+                            code = "FORBIDDEN",
+                            status = HttpStatusCode.Forbidden,
+                            requestId = call.requestId(),
+                        ),
+                    )
+                }
+                return@on
+            }
 
             val exact = pluginConfig.exactMatch
             val hasAccess =
@@ -187,12 +204,93 @@ private fun Route.authorized(
 }
 
 // Convenience Scope Functions for drastically cleaner routing semantics
+
+/**
+ * Coarse scope for a seller API key. Seller accounts still have all role
+ * defaults; a scoped key is restricted to the matching subset.
+ */
+private fun sellerScopeFor(path: String): Permission? =
+    when (path.removePrefix("/api/v1/seller/").substringBefore('/')) {
+        "shops", "members", "kyc", "commission" -> Permission.SHOP_MANAGE
+        "products", "inventories", "warehouses" -> Permission.INVENTORY_MANAGE
+        "orders", "pickup-orders", "pos", "b2b" -> Permission.ORDER_MANAGE
+        "refund-requests", "rma-requests" -> Permission.REFUND_MANAGE
+        "payouts" -> Permission.PAYOUT_MANAGE
+        "dashboard", "readiness" -> Permission.DASHBOARD_VIEW
+        "notifications" -> Permission.NOTIFICATION_SEND
+        "coupons", "promotions", "shipping-methods", "reviews" -> Permission.ORDER_MANAGE
+        else -> null
+    }
+
+/**
+ * Seller routes are available to seller accounts and to accepted shop staff.
+ * The latter are CUSTOMER accounts with an active shop_member row; their
+ * services resolve the inviting shop through findSellerByUserId().
+ */
+val ShopMemberAuthorizationPlugin =
+    createRouteScopedPlugin(name = "ShopMemberAuthorizationPlugin") {
+        on(AuthenticationChecked) { call ->
+            if (call.response.isCommitted) return@on
+            val principal = call.principal<JwtTokenRequest>()
+            if (principal == null) {
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ApiError.of(
+                        message = "Missing or invalid token",
+                        code = "UNAUTHORIZED",
+                        status = HttpStatusCode.Unauthorized,
+                        requestId = call.requestId(),
+                    ),
+                )
+                return@on
+            }
+            val membershipKey = "shopmember:${principal.userId}"
+            val cachedMembership = com.piashcse.service.CacheService.cache.get<Boolean>(membershipKey)
+            val isShopMember =
+                cachedMembership ?: runCatching {
+                    com.piashcse.utils.extension.query {
+                        com.piashcse.utils.extension.findSellerByUserId(principal.userId) != null
+                    }
+                }.getOrDefault(false).also { isMember ->
+                    com.piashcse.service.CacheService.cache.set(membershipKey, isMember, 30)
+                }
+            val allowed = principal.hasRole(UserType.SELLER) || isShopMember
+            val scopeOk =
+                !principal.isApiKey || sellerScopeFor(call.request.path())?.let { principal.hasPermission(it) } != false
+            if (!allowed || !scopeOk) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ApiError.of(
+                        message = "Permission Denied: seller access required",
+                        code = "FORBIDDEN",
+                        status = HttpStatusCode.Forbidden,
+                        requestId = call.requestId(),
+                    ),
+                )
+            }
+        }
+    }
+
 fun Route.customerAuth(build: Route.() -> Unit) = requireRole(UserType.CUSTOMER, build = build)
 
 /** Strict customer-only scope: CUSTOMER role exactly — sellers/admins are denied. */
 fun Route.customerOnlyAuth(build: Route.() -> Unit) = requireRoleExact(UserType.CUSTOMER, build = build)
 
-fun Route.sellerAuth(build: Route.() -> Unit) = requireRoleExact(UserType.SELLER, build = build)
+fun Route.sellerAuth(build: Route.() -> Unit) {
+    authenticate(JWT_AUTHENTICATOR, API_KEY_AUTHENTICATOR) {
+        val routeWithAuth =
+            createChild(
+                object : RouteSelector() {
+                    override suspend fun evaluate(
+                        context: RoutingResolveContext,
+                        segmentIndex: Int,
+                    ) = RouteSelectorEvaluation.Constant
+                },
+            )
+        routeWithAuth.install(ShopMemberAuthorizationPlugin)
+        routeWithAuth.build()
+    }
+}
 
 fun Route.adminAuth(build: Route.() -> Unit) = requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, build = build)
 
@@ -205,6 +303,17 @@ fun ApplicationCall.requireAdminPermission(permission: Permission) {
     val principal = principal<JwtTokenRequest>() ?: return
     if (principal.getUserType()?.isAdminOrHigher == true && !principal.hasPermission(permission)) {
         throw ForbiddenException("Permission Denied: missing ${permission.code}")
+    }
+}
+
+/**
+ * Credential/session/PII mutations must be performed by a human JWT session,
+ * never by a scoped API key. Bare `requireRole { }` routes otherwise accept any
+ * key without checking its scopes.
+ */
+fun ApplicationCall.requireJwtSession() {
+    if (principal<JwtTokenRequest>()?.isApiKey == true) {
+        throw ForbiddenException("API keys cannot perform this session operation")
     }
 }
 

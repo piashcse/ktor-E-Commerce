@@ -18,10 +18,12 @@ import com.piashcse.utils.common.constantTimeEquals
 import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import java.security.MessageDigest
 import java.time.Instant
 import java.util.*
@@ -66,11 +68,12 @@ class AuthRepositoryImpl : AuthRepository {
         return md.digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 
-    /** OTPs are bearer secrets; only their digest is persisted. */
-    private fun hashOtp(otp: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(otp.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
-    }
+    /** OTPs are bearer secrets; only a keyed digest is persisted. */
+    private fun hashOtp(otp: String): String =
+        com.piashcse.utils.common.hmacSha256Hex(
+            com.piashcse.config.DotEnvConfig.jwtSecret,
+            "otp:$otp",
+        )
 
     override suspend fun storeRefreshToken(
         userId: String,
@@ -151,7 +154,14 @@ class AuthRepositoryImpl : AuthRepository {
     private fun loginAttemptPredicate(
         email: String,
         userType: UserType,
-    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and (LoginAttemptTable.userType eq userType)
+        ipAddress: String? = null,
+    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and
+        (LoginAttemptTable.userType eq userType) and
+        if (ipAddress == null) {
+            LoginAttemptTable.ipAddress.isNull()
+        } else {
+            LoginAttemptTable.ipAddress eq ipAddress
+        }
 
     override suspend fun recordFailedAttempt(
         email: String,
@@ -159,7 +169,10 @@ class AuthRepositoryImpl : AuthRepository {
         ipAddress: String?,
     ): Int =
         query {
-            val existing = LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.forUpdate().singleOrNull()
+            val existing =
+                LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }
+                    .forUpdate()
+                    .singleOrNull()
             if (existing != null) {
                 existing.attemptCount++
                 existing.ipAddress = ipAddress
@@ -178,11 +191,11 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun resetLoginAttempts(
         email: String,
         userType: UserType,
+        ipAddress: String?,
     ) = query {
-        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()?.apply {
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()?.apply {
             attemptCount = 0
             lockedUntil = null
-            ipAddress = null
         }
         Unit
     }
@@ -190,18 +203,20 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun getLoginAttempt(
         email: String,
         userType: UserType,
+        ipAddress: String?,
     ): LoginAttemptDAO? =
         query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
         }
 
     override suspend fun lockAccount(
         email: String,
         userType: UserType,
         lockDurationMinutes: Long,
+        ipAddress: String?,
     ): Boolean =
         query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
                 ?.apply { lockedUntil = Instant.now().plusSeconds(lockDurationMinutes * 60) } != null
         }
 
@@ -225,11 +240,19 @@ class AuthRepositoryImpl : AuthRepository {
                     if (existingUser.otpExpiry?.isAfter(currentUtc()) == true) {
                         throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
                     }
+                    // Guest-checkout rows have a server-generated random password, so
+                    // the first real registration may claim them. Any other unverified
+                    // row must prove knowledge of the existing password: otherwise an
+                    // attacker could register a victim's email and swap in their own
+                    // password before the victim completes the OTP (pre-hijacking).
+                    val mayReplacePassword =
+                        existingUser.isGuest ||
+                            verifyPassword(registerRequest.password, existingUser.password)
+                    if (!mayReplacePassword) {
+                        throw ValidationException(Message.Auth.USE_PASSWORD_RESET)
+                    }
                     existingUser.otpCode = hashOtp(otp)
                     existingUser.otpExpiry = otpExpiryTime
-                    // Security: the unverified row may have been created by an attacker
-                    // with their own password (account pre-hijacking). Always replace it
-                    // with the password supplied by the person who can receive the OTP.
                     existingUser.password = hashPassword(registerRequest.password)
                     Triple(
                         existingUser.email,
@@ -545,15 +568,17 @@ class AuthRepositoryImpl : AuthRepository {
             val tokenHash = hashRefreshToken(request.refreshToken)
             val storedToken =
                 RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
-                    ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
+                    ?: throw UnauthorizedException(Message.Auth.INVALID_REFRESH_TOKEN)
 
-            if (!storedToken.isValid) {
-                // Reuse detection: suspected theft — revoke the token family and
-                // bump the credential version so already-issued access tokens die too.
+            // A normally expired token is stale, not evidence of theft. Only a
+            // revoked token indicates replay/reuse and should kill the family.
+            if (storedToken.isExpired) {
+                throw UnauthorizedException(Message.Auth.INVALID_REFRESH_TOKEN)
+            }
+            if (storedToken.isRevoked) {
                 UserDAO.findById(storedToken.userId.value)?.tokenVersion += 1
                 runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
-                storedToken.revokedAt = Instant.now()
-                throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
+                throw UnauthorizedException(Message.Auth.TOKEN_EXPIRED)
             }
 
             val user = UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
@@ -577,7 +602,12 @@ class AuthRepositoryImpl : AuthRepository {
         if (!refreshToken.isNullOrBlank()) {
             revokeRefreshToken(hashRefreshToken(refreshToken))
         } else {
-            revokeAllUserTokens(userId)
+            // Logging out a browser session must not deactivate machine API
+            // keys; those are revoked by password/role changes or explicitly.
+            query {
+                RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
+                    .forEach { it.revokedAt = Instant.now() }
+            }
         }
         return true
     }
@@ -661,8 +691,20 @@ class AuthRepositoryImpl : AuthRepository {
         currentUserId: String,
         targetUserId: String,
     ): Boolean {
+        if (currentUserId == targetUserId) {
+            throw ValidationException("You cannot deactivate your own account")
+        }
         val actor =
             withUsers(currentUserId, targetUserId, "deactivate user") { currentUser, targetUser ->
+                if (targetUser.userType == UserType.SUPER_ADMIN) {
+                    val activeSuperAdmins =
+                        UserDAO.find {
+                            (UserTable.userType eq UserType.SUPER_ADMIN) and (UserTable.isActive eq true)
+                        }.count()
+                    if (activeSuperAdmins <= 1) {
+                        throw ValidationException("Cannot deactivate the last active super admin")
+                    }
+                }
                 targetUser.isActive = false
                 revokeAllUserTokensTx(targetUser.id.value)
                 Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)

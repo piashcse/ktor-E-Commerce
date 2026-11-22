@@ -195,6 +195,7 @@ class PasskeyService(
             authRepo.findUserByEmailAndType(request.email.lowercase(), userType)
                 ?: throw ValidationException("Invalid passkey login")
         if (!user.isActive) throw ValidationException("Account has been deactivated")
+        if (!user.isVerified) throw ValidationException(com.piashcse.constants.Message.Auth.ACCOUNT_NOT_VERIFIED)
         if (user.mfaEnabled) {
             val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
             if (request.mfaCode.isNullOrBlank()) throw com.piashcse.utils.validator.MfaRequiredException()

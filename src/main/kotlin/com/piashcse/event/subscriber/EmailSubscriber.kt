@@ -13,7 +13,9 @@ import com.piashcse.utils.email.EmailSender
 class EmailSubscriber : Subscriber {
     override suspend fun onEvent(event: DomainEvent) {
         if (event is SendEmailEvent) {
-            EmailSender.send(event.to, event.subject, event.body)
+            if (!EmailSender.send(event.to, event.subject, event.body)) {
+                error("Email delivery was rate-limited")
+            }
         }
     }
 }

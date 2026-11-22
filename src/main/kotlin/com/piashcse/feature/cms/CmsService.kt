@@ -185,8 +185,18 @@ class CmsService {
                         (SeoMetadataTable.locale eq normalized)
                 }.firstOrNull()
             if (row != null) return@query row.toResponse()
+            if (normalized != Localization.DEFAULT_LOCALE) {
+                SeoMetadataDAO.find {
+                    (SeoMetadataTable.entityType eq entityType) and
+                        (SeoMetadataTable.entityId eq entityId) and
+                        (SeoMetadataTable.locale eq Localization.DEFAULT_LOCALE)
+                }.firstOrNull()?.let { return@query it.toResponse() }
+            }
             if (entityType == SeoEntityType.PAGE && !entityId.isNullOrBlank()) {
-                val page = CmsPageDAO.find { CmsPageTable.slug eq entityId }.firstOrNull()
+                val page =
+                    CmsPageDAO.find {
+                        (CmsPageTable.slug eq entityId) and (CmsPageTable.status eq CmsPageStatus.PUBLISHED)
+                    }.firstOrNull()
                 if (page != null) {
                     return@query SeoMetadataResponse(
                         entityType = entityType,
@@ -208,6 +218,11 @@ class CmsService {
         query {
             if (request.entityType != SeoEntityType.HOME && request.entityId.isNullOrBlank()) {
                 throw ValidationException("entityId is required for ${request.entityType}")
+            }
+            val requestedLocale =
+                request.locale.trim().lowercase().substringBefore('-').substringBefore('_')
+            if (requestedLocale !in Localization.CODES) {
+                throw ValidationException("Unsupported locale: ${request.locale}")
             }
             val locale = Localization.normalize(request.locale)
             val existing =
@@ -253,13 +268,20 @@ class CmsService {
             val categories = ProductCategoryTable.selectAll().limit(1000).map { it[ProductCategoryTable.id].value }
             val pages =
                 CmsPageDAO.find { CmsPageTable.status eq CmsPageStatus.PUBLISHED }.limit(1000).toList()
+            val noIndex =
+                SeoMetadataDAO.find { SeoMetadataTable.noIndex eq true }
+                    .mapNotNull { it.entityId }
+                    .toSet()
             buildString {
                 append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
                 append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n")
                 appendUrl(baseUrl, "/", null)
-                products.forEach { appendUrl(baseUrl, "/products/${it.id.value}", it.updatedAt ?: it.createdAt) }
-                categories.forEach { appendUrl(baseUrl, "/product-categories/$it", null) }
-                pages.forEach { appendUrl(baseUrl, "/pages/${it.slug}", it.updatedAt ?: it.publishedAt) }
+                products.filterNot { it.id.value in noIndex }
+                    .forEach { appendUrl(baseUrl, "/products/${it.id.value}", it.updatedAt ?: it.createdAt) }
+                categories.filterNot { it in noIndex }
+                    .forEach { appendUrl(baseUrl, "/product-categories/$it", null) }
+                pages.filterNot { it.id.value in noIndex || it.slug in noIndex }
+                    .forEach { appendUrl(baseUrl, "/pages/${it.slug}", it.updatedAt ?: it.publishedAt) }
                 append("</urlset>\n")
             }
         }
@@ -290,11 +312,26 @@ class CmsService {
         }
     }
 
-    private fun sanitizeHtml(html: String): String =
-        html
+    private fun decodeNumericEntities(value: String): String =
+        Regex("&#(x?)([0-9a-fA-F]+);").replace(value) { match ->
+            val code =
+                match.groupValues[2].toIntOrNull(if (match.groupValues[1].isNotEmpty()) 16 else 10)
+            code?.takeIf { it in 0..0x10FFFF }?.let { String(Character.toChars(it)) } ?: match.value
+        }
+
+    private fun sanitizeHtml(html: String): String {
+        // Browsers decode numeric entities before resolving a URL, so
+        // `jav&#x61;script:` is executable even though the literal text does
+        // not match. Reject the document instead of trying to rewrite it.
+        val decoded = decodeNumericEntities(html)
+        if (Regex("(?i)(javascript|vbscript|data)\\s*:").containsMatchIn(decoded)) {
+            throw ValidationException("CMS body contains a disallowed URI scheme")
+        }
+        return html
             .replace(Regex("(?is)<(script|style|iframe)[^>]*>.*?</\\1>"), "")
             .replace(Regex("(?i)\\son\\w+\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)"), "")
             .replace(Regex("(?i)javascript:"), "")
+    }
 
     private fun CmsPageDAO.toResponse() =
         CmsPageResponse(

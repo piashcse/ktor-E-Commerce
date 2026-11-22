@@ -25,7 +25,7 @@ object EmailSender {
     private val smtpPassword = DotEnvConfig.emailPassword
     private val fromEmail = DotEnvConfig.emailUsername
 
-    private const val MAX_EMAILS_PER_WINDOW = 3
+    private const val MAX_EMAILS_PER_WINDOW = 10
     private const val EMAIL_WINDOW_SECONDS = 15 * 60L
     private val smtpBreaker = CircuitBreaker("smtp", failureThreshold = 3, cooldownMs = 60_000)
 
@@ -33,12 +33,12 @@ object EmailSender {
         toEmail: String,
         subject: String,
         body: String,
-    ) {
+    ): Boolean {
         val rateLimitKey = "email_rate_limit:$toEmail"
         val recentSends = CacheService.cache.get<Int>(rateLimitKey) ?: 0
         if (recentSends >= MAX_EMAILS_PER_WINDOW) {
             log.warn("Rate limit exceeded for ${maskEmail(toEmail)} (subject: $subject)")
-            return
+            return false
         }
 
         withContext(Dispatchers.IO) {
@@ -72,5 +72,6 @@ object EmailSender {
                 throw e
             }
         }
+        return true
     }
 }

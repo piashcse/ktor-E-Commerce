@@ -108,7 +108,11 @@ fun Application.configureBasic() {
                         "default-src 'self'; frame-ancestors 'none'"
                     }
                 call.response.headers.append("Content-Security-Policy", csp, safeOnly = false)
-                call.response.headers.append("Cross-Origin-Resource-Policy", "same-origin", safeOnly = false)
+                // Public uploads are intentionally consumable by a separate
+                // storefront origin; API/JSON responses stay same-origin.
+                val crossOriginResource =
+                    if (call.request.path().startsWith("/uploads/")) "cross-origin" else "same-origin"
+                call.response.headers.append("Cross-Origin-Resource-Policy", crossOriginResource, safeOnly = false)
                 call.response.headers.append("Cross-Origin-Opener-Policy", "same-origin", safeOnly = false)
             }
         },

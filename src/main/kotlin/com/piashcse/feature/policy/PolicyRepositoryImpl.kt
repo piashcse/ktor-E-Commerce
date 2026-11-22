@@ -58,9 +58,18 @@ class PolicyRepositoryImpl : PolicyRepository {
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
 
+            val contentChanged =
+                (updatePolicyRequest.content != null && updatePolicyRequest.content != policyDocument.content) ||
+                    (updatePolicyRequest.version != null && updatePolicyRequest.version != policyDocument.version)
             updatePolicyRequest.title?.let { policyDocument.title = it }
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
+            if (contentChanged) {
+                // Existing signatures must not count for text they never saw.
+                com.piashcse.database.entities.PolicyConsentDAO.find {
+                    com.piashcse.database.entities.PolicyConsentTable.policyId eq policyDocument.id
+                }.forEach { it.revokedAt = currentUtc() }
+            }
             updatePolicyRequest.effectiveDate?.let {
                 policyDocument.effectiveDate = DateTimes.parseFlexible(it, "effectiveDate")
             }

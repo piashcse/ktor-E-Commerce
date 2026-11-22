@@ -48,6 +48,14 @@ class ProductTranslationService {
                 .map { ProductTranslationDAO.wrapRow(it).toResponse() }
         }
 
+    private fun requireLocale(locale: String): String {
+        val base = locale.trim().lowercase().substringBefore('-').substringBefore('_')
+        if (base !in Localization.CODES) {
+            throw com.piashcse.utils.validator.ValidationException("Unsupported locale: $locale")
+        }
+        return base
+    }
+
     suspend fun upsert(
         productId: String,
         locale: String,
@@ -55,7 +63,7 @@ class ProductTranslationService {
     ): ProductTranslationResponse =
         query {
             ensureProduct(productId)
-            val normalized = Localization.requireValid(locale)
+            val normalized = requireLocale(locale)
             val existing =
                 ProductTranslationDAO.find {
                     (ProductTranslationTable.productId eq productId.entityID(com.piashcse.database.entities.ProductTable)) and
@@ -79,7 +87,7 @@ class ProductTranslationService {
         locale: String,
     ): Boolean =
         query {
-            val normalized = Localization.requireValid(locale)
+            val normalized = requireLocale(locale)
             val existing =
                 ProductTranslationDAO.find {
                     (ProductTranslationTable.productId eq productId.entityID(com.piashcse.database.entities.ProductTable)) and
