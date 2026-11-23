@@ -9,7 +9,7 @@ import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.seller.CommissionService
-import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
@@ -178,7 +178,7 @@ internal object RefundEffects {
                 }
                 totalCommissionReversed = totalCommissionReversed.add(commissionShare)
             }
-            SellerTotals.reversePartialTx(seller, sellerRefundAmount, totalCommissionReversed)
+            SellerLedger.reversePartial(seller, sellerRefundAmount, totalCommissionReversed)
         }
 
         // Refund ledger entry so the original payment is no longer the last word.

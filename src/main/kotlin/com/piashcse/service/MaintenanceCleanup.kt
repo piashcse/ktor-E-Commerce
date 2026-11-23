@@ -16,6 +16,7 @@ import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.RefreshTokenTable
 import com.piashcse.database.entities.SupportTicketTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.v1.core.and
@@ -28,7 +29,6 @@ import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.time.Instant
 
 /**
  * Daily retention job. Flyway is the schema source of truth, but these tables
@@ -66,7 +66,7 @@ object MaintenanceCleanup {
 
     suspend fun clean() =
         query {
-            val now = Instant.now()
+            val now = AppClock.now()
             val nowLocal = currentUtc()
 
             OutboxTable.deleteWhere {

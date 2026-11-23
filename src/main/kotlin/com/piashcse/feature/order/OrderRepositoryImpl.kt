@@ -14,7 +14,7 @@ import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
-import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxQuote
 import com.piashcse.feature.tax.TaxService
@@ -669,7 +669,7 @@ class OrderRepositoryImpl(
 
     private fun updateSellerTotals(orders: List<OrderDAO>) {
         val itemsByOrder = OrderItemDAO.itemsForOrders(orders.map { it.id })
-        SellerTotals.applyOrdersTx(orders, itemsByOrder)
+        SellerLedger.applyOrders(orders, itemsByOrder)
     }
 
     /**

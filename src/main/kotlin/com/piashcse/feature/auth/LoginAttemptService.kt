@@ -3,11 +3,11 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.LoginAttemptDAO
 import com.piashcse.database.entities.LoginAttemptTable
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNull
-import java.time.Instant
 
 /** Per-email/role/IP login lockout tracking. */
 class LoginAttemptService {
@@ -77,7 +77,7 @@ class LoginAttemptService {
     ): Boolean =
         query {
             LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
-                ?.apply { lockedUntil = Instant.now().plusSeconds(lockDurationMinutes * 60) } != null
+                ?.apply { lockedUntil = AppClock.now().plusSeconds(lockDurationMinutes * 60) } != null
         }
 
     private fun normalizeEmail(value: String): String = value.trim().lowercase()

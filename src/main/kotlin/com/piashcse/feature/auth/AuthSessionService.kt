@@ -5,12 +5,12 @@ import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.*
 import com.piashcse.service.CacheService
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
-import java.time.Instant
 import java.util.*
 
 /** Refresh-token rotation, logout and token blacklisting. */
@@ -41,7 +41,7 @@ class AuthSessionService {
 
             // Rotate old + persist replacement in the same transaction so a
             // concurrent password reset cannot leave a freshly minted token live.
-            storedToken.revokedAt = Instant.now()
+            storedToken.revokedAt = AppClock.now()
             val newTokenPair = tokens.newTokenPair(user.id.value, user.email, user.userType.name, user.tokenVersion)
             tokens.storeRefreshTokenTx(user.id.value, newTokenPair.refreshToken)
             newTokenPair
@@ -58,7 +58,7 @@ class AuthSessionService {
             // keys; those are revoked by password/role changes or explicitly.
             query {
                 RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
-                    .forEach { it.revokedAt = Instant.now() }
+                    .forEach { it.revokedAt = AppClock.now() }
             }
         }
         return true
@@ -70,7 +70,7 @@ class AuthSessionService {
                 if (BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() == null) {
                     BlacklistedTokenDAO.new {
                         this.token = token
-                        this.blacklistedAt = Instant.now()
+                        this.blacklistedAt = AppClock.now()
                     }
                 }
                 true

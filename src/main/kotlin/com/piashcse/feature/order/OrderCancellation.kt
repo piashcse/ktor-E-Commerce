@@ -26,7 +26,7 @@ import com.piashcse.database.entities.removeSales
 import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionService
-import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
@@ -138,7 +138,7 @@ object OrderCancellation {
         }
     }
 
-    private fun reverseSellerTotals(order: OrderDAO) = SellerTotals.reverseOrderTx(order)
+    private fun reverseSellerTotals(order: OrderDAO) = SellerLedger.reverseOrder(order)
 
     private fun reverseSellerPayout(order: OrderDAO) {
         SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->

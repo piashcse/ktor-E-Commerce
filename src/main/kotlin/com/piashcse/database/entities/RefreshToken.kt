@@ -3,9 +3,9 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.common.AppClock
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.timestamp
-import java.time.Instant
 
 object RefreshTokenTable : BaseIdTable("refresh_token") {
     val userId = reference("user_id", UserTable.id)
@@ -22,7 +22,7 @@ class RefreshTokenDAO(id: EntityID<String>) : BaseEntity(id, RefreshTokenTable) 
     var expiresAt by RefreshTokenTable.expiresAt
     var revokedAt by RefreshTokenTable.revokedAt
 
-    val isExpired: Boolean get() = expiresAt.isBefore(Instant.now())
+    val isExpired: Boolean get() = expiresAt.isBefore(AppClock.now())
     val isRevoked: Boolean get() = revokedAt != null
     val isValid: Boolean get() = !isExpired && !isRevoked
 }

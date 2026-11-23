@@ -3,11 +3,11 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.*
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import java.time.Instant
 import java.util.*
 
 /** Registration/reset OTP attempt tracking and lockouts. */
@@ -48,7 +48,7 @@ class OtpAttemptService {
             }
         record.attemptCount = record.attemptCount + 1
         if (record.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-            record.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+            record.lockedUntil = AppClock.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
             user.otpCode = null
             user.otpExpiry = null
         }
@@ -105,7 +105,7 @@ class OtpAttemptService {
     suspend fun lockOtpAttempts(userId: String) {
         query {
             val id = userId.entityID(UserTable)
-            val lockUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+            val lockUntil = AppClock.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
             val existing = registrationAttempt(id, forUpdate = true)
             if (existing != null) {
                 existing.lockedUntil = lockUntil

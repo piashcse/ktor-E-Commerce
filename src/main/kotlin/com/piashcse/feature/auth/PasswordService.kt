@@ -11,6 +11,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.model.request.ForgotPasswordRequest
 import com.piashcse.model.request.ResetRequest
 import com.piashcse.model.response.ResetResult
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.common.constantTimeEquals
 import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.extension.query
@@ -18,7 +19,6 @@ import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
-import java.time.Instant
 
 /** Password change, reset-OTP issuance and reset completion. */
 class PasswordService {
@@ -89,7 +89,7 @@ class PasswordService {
                         }
                     }
                 if (attemptRecord.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-                    attemptRecord.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+                    attemptRecord.lockedUntil = AppClock.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
                     user.resetOtpCode = null
                     user.resetOtpExpiry = null
                 }

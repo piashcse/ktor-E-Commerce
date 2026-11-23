@@ -2,6 +2,7 @@ package com.piashcse.feature.subscription
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.BillingInterval
+import com.piashcse.constants.InvoiceStatus
 import com.piashcse.constants.SubscriptionStatus
 import com.piashcse.utils.validator.FieldValidationException
 import com.piashcse.utils.validator.FieldViolation
@@ -80,4 +81,17 @@ data class BillingRunResponse(
     val paid: Int = 0,
     val failed: Int = 0,
     val expired: Int = 0,
+)
+
+@Serializable
+data class SubscriptionInvoiceResponse(
+    val id: String,
+    val subscriptionId: String,
+    val amount: String,
+    val currency: String,
+    val status: InvoiceStatus,
+    val periodStart: String,
+    val periodEnd: String,
+    val providerReference: String?,
+    val paidAt: String?,
 )

@@ -8,13 +8,13 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.notification.NotificationResponse
 import com.piashcse.mapper.*
 import com.piashcse.model.response.*
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.UnauthorizedException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
-import java.time.Instant
 import java.util.UUID
 
 @kotlinx.serialization.Serializable
@@ -261,7 +261,7 @@ class PrivacyService {
         user.mfaSecret = null
         user.mfaEnabled = false
         user.mfaLastUsedStep = null
-        RefreshTokenDAO.find { RefreshTokenTable.userId eq user.id }.forEach { it.revokedAt = Instant.now() }
+        RefreshTokenDAO.find { RefreshTokenTable.userId eq user.id }.forEach { it.revokedAt = AppClock.now() }
 
         UserProfileDAO.find { UserProfileTable.userId eq user.id }.forEach { profile ->
             profile.image = null

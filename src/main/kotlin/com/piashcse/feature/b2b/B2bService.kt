@@ -31,7 +31,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
-import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -373,7 +373,7 @@ class B2bService {
                     sku = product.sku
                 }
             }
-            SellerTotals.applyOrderTx(order)
+            SellerLedger.applyOrder(order)
             po.orderId = order.id
             po.status = PurchaseOrderStatus.FULFILLED
             po.fulfilledAt = currentUtc()

@@ -35,7 +35,7 @@ import com.piashcse.database.entities.decrementStockAt
 import com.piashcse.database.entities.decrementStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCompletion
-import com.piashcse.feature.seller.SellerTotals
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderResponse
@@ -321,7 +321,7 @@ class PosService(
                 it.cardSales = Money.scale2(it.cardSales.add(order.total))
             }
         }
-        SellerTotals.applyOrderTx(order)
+        SellerLedger.applyOrder(order)
         // Shared completion path: loyalty, seller payout ledger, digital delivery
         // and reservation finalization must match online/offline payments.
         OrderCompletion.completeTx(order, payment, loyaltyService, digitalDelivery)
