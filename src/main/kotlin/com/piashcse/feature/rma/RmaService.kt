@@ -9,11 +9,7 @@ import com.piashcse.constants.RmaStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.event.OutboxAggregate
-import com.piashcse.event.OutboxPublisher
-import com.piashcse.event.RmaStatusChangedEvent
 import com.piashcse.feature.order.OrderSearch
-import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
@@ -29,27 +25,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 class RmaService {
     private fun activeStatuses() =
         listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED, RmaStatus.IN_TRANSIT, RmaStatus.RECEIVED, RmaStatus.COMPLETED)
-
-    private fun enqueueStatusChange(
-        rma: RmaDAO,
-        fromStatus: RmaStatus?,
-        toStatus: RmaStatus,
-    ) {
-        if (fromStatus == toStatus) return
-        OutboxPublisher.enqueueTx(
-            OutboxAggregate.RMA,
-            rma.id.value,
-            RmaStatusChangedEvent(
-                rmaId = rma.id.value,
-                orderId = rma.orderId.value,
-                userId = rma.userId.value,
-                email = UserDAO.findById(rma.userId.value)?.email.orEmpty(),
-                fromStatus = fromStatus?.name ?: "NONE",
-                toStatus = toStatus.name,
-                note = rma.resolutionNote,
-            ),
-        )
-    }
 
     suspend fun create(
         userId: String,
@@ -89,8 +64,8 @@ class RmaService {
                     this.status = RmaStatus.REQUESTED
                     this.reason = request.reason
                 }
-            enqueueStatusChange(rma, null, RmaStatus.REQUESTED)
-            rma.toResponse()
+            RmaEvents.enqueueStatusChange(rma, null, RmaStatus.REQUESTED)
+            rma.toRmaResponse()
         }
 
     suspend fun getUserRmas(
@@ -101,7 +76,7 @@ class RmaService {
         query {
             RmaTable.selectAll().andWhere { RmaTable.userId eq userId }
                 .orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toRmaResponse() }
                 .let { enrichRmas(it) }
         }
 
@@ -127,7 +102,7 @@ class RmaService {
                     q.applyCreatedRange(RmaTable.createdAt, from, to)
                 }
                 .orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toRmaResponse() }
                 .let { enrichRmas(it) }
         }
 
@@ -149,7 +124,7 @@ class RmaService {
             matchingOrderIds?.let { query.andWhere { RmaTable.orderId inList it } }
             query.applyCreatedRange(RmaTable.createdAt, from, to)
             query.orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toRmaResponse() }
                 .let { enrichRmas(it) }
         }
 
@@ -181,37 +156,12 @@ class RmaService {
         rmaId: String,
         userId: String,
         trackingNumber: String,
-    ): RmaResponse =
-        query {
-            val rma = RmaDAO.findById(rmaId) ?: rmaId.throwNotFound("RMA")
-            if (rma.userId.value != userId) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-            if (rma.status != RmaStatus.APPROVED) {
-                throw ValidationException("RMA must be approved before shipping")
-            }
-            trackingNumber.requireNotBlank("Tracking number")
-            val fromStatus = rma.status
-            rma.trackingNumber = trackingNumber
-            rma.status = RmaStatus.IN_TRANSIT
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
-        }
+    ): RmaResponse = RmaLifecycleService.ship(rmaId, userId, trackingNumber)
 
     suspend fun cancel(
         rmaId: String,
         userId: String,
-    ): RmaResponse =
-        query {
-            val rma = RmaDAO.findById(rmaId) ?: rmaId.throwNotFound("RMA")
-            if (rma.userId.value != userId) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-            if (rma.status !in listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED)) {
-                throw ValidationException("RMA cannot be cancelled from status ${rma.status}")
-            }
-            val fromStatus = rma.status
-            rma.status = RmaStatus.CANCELLED
-            rma.resolvedAt = currentUtc()
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
-        }
+    ): RmaResponse = RmaLifecycleService.cancel(rmaId, userId)
 
     suspend fun updateStatus(
         rmaId: String,
@@ -263,8 +213,8 @@ class RmaService {
                 }
                 else -> throw ValidationException("Unsupported RMA transition")
             }
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
+            RmaEvents.enqueueStatusChange(rma, fromStatus, rma.status)
+            rma.toRmaResponse()
         }
 
     /** Creates an open refund for the RMA, leaving it at RECEIVED for a second completion. */
@@ -315,8 +265,8 @@ class RmaService {
                 }
             rma.refundRequestId = refund.id
             rma.status = RmaStatus.RECEIVED
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            return rma.toResponse()
+            RmaEvents.enqueueStatusChange(rma, fromStatus, rma.status)
+            return rma.toRmaResponse()
         }
         if (existingRefund.status != RefundStatus.REFUNDED) {
             throw ValidationException(
@@ -360,29 +310,4 @@ class RmaService {
         }
         rma.replacementOrderId = replacement.id
     }
-
-    private fun RmaDAO.toResponse() =
-        RmaResponse(
-            id = id.value,
-            orderId = orderId.value,
-            orderItemId = orderItemId.value,
-            userId = userId.value,
-            shopId = shopId?.value,
-            quantity = quantity,
-            type = type,
-            status = status,
-            reason = reason,
-            resolution = resolution,
-            note = resolutionNote,
-            allowedActions =
-                RmaStatus.entries
-                    .filter { it != RmaStatus.IN_TRANSIT && it != RmaStatus.CANCELLED }
-                    .filter { RmaStatus.canTransitionTo(status, it) }
-                    .map { it.name },
-            trackingNumber = trackingNumber,
-            replacementOrderId = replacementOrderId?.value,
-            refundRequestId = refundRequestId?.value,
-            createdAt = createdAt.toUtcString(),
-            resolvedAt = resolvedAt?.toUtcString(),
-        )
 }
