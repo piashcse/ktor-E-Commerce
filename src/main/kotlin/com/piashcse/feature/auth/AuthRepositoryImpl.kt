@@ -17,7 +17,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import java.util.*
 
-@Suppress("TooManyFunctions")
 class AuthRepositoryImpl : AuthRepository {
     private val otpVerification = OtpVerificationService()
     private val sessions = AuthSessionService()
@@ -45,12 +44,6 @@ class AuthRepositoryImpl : AuthRepository {
         userId: String,
         refreshToken: String,
     ) = tokens.storeRefreshToken(userId, refreshToken)
-
-    override suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? = tokens.getRefreshTokenByHash(tokenHash)
-
-    override suspend fun revokeRefreshToken(tokenHash: String): Boolean = tokens.revokeRefreshToken(tokenHash)
-
-    override suspend fun revokeAllUserTokens(userId: String): Boolean = tokens.revokeAllUserTokens(userId)
 
     // ── Login attempt helpers ────────────────────────────────────────────
 
@@ -91,11 +84,6 @@ class AuthRepositoryImpl : AuthRepository {
     ): UserDAO? =
         query {
             UserDAO.find { UserTable.email eq normalizeEmail(email) and (UserTable.userType eq userTypeEnum) }.firstOrNull()
-        }
-
-    override suspend fun findUserById(userId: String): UserDAO? =
-        query {
-            UserDAO.findById(userId)
         }
 
     override suspend fun recordMfaStep(
@@ -152,18 +140,6 @@ class AuthRepositoryImpl : AuthRepository {
         userId: String,
         otp: String,
     ): Boolean = otpVerification.verifyOtp(userId, otp)
-
-    override suspend fun invalidateOtp(userId: String) = otpAttempts.invalidateOtp(userId)
-
-    override suspend fun getOtpAttempt(userId: String): Int = otpAttempts.getOtpAttempt(userId)
-
-    override suspend fun isOtpLocked(userId: String): Boolean = otpAttempts.isOtpLocked(userId)
-
-    override suspend fun recordFailedOtpAttempt(userId: String): Int = otpAttempts.recordFailedOtpAttempt(userId)
-
-    override suspend fun resetOtpAttempts(userId: String) = otpAttempts.resetOtpAttempts(userId)
-
-    override suspend fun lockOtpAttempts(userId: String) = otpAttempts.lockOtpAttempts(userId)
 
     override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair = sessions.refreshAccessToken(request)
 
