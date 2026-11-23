@@ -3,14 +3,12 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.entities.LoginAttemptDAO
-import com.piashcse.database.entities.RefreshTokenDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 
 /** Aggregate auth facade; splitting it would fragment session/OTP invariants. */
-@Suppress("TooManyFunctions")
 interface AuthRepository {
     // Registration
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult
@@ -22,8 +20,6 @@ interface AuthRepository {
         email: String,
         userTypeEnum: UserType,
     ): UserDAO?
-
-    suspend fun findUserById(userId: String): UserDAO?
 
     /**
      * Atomically records the last accepted TOTP step for a user. Must run inside a
@@ -51,12 +47,6 @@ interface AuthRepository {
         userId: String,
         refreshToken: String,
     )
-
-    suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO?
-
-    suspend fun revokeRefreshToken(tokenHash: String): Boolean
-
-    suspend fun revokeAllUserTokens(userId: String): Boolean
 
     suspend fun generateTokenPair(
         userId: String,
@@ -95,19 +85,6 @@ interface AuthRepository {
         userId: String,
         otp: String,
     ): Boolean
-
-    suspend fun invalidateOtp(userId: String)
-
-    // OTP attempt tracking
-    suspend fun getOtpAttempt(userId: String): Int
-
-    suspend fun isOtpLocked(userId: String): Boolean
-
-    suspend fun recordFailedOtpAttempt(userId: String): Int
-
-    suspend fun resetOtpAttempts(userId: String)
-
-    suspend fun lockOtpAttempts(userId: String)
 
     // Password
     suspend fun changePassword(

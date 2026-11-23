@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.B2bAccountStatus
 import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
@@ -44,7 +45,7 @@ object B2bQuoteTable : BaseIdTable("b2b_quote") {
     val sellerId = reference("seller_id", SellerTable.id).index()
     val shopId = reference("shop_id", ShopTable.id).nullable()
     val status = enumerationByName("status", 20, B2bQuoteStatus::class).default(B2bQuoteStatus.REQUESTED)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val subtotal = decimal("subtotal", 12, 2).default(BigDecimal.ZERO)
     val taxAmount = decimal("tax_amount", 12, 2).default(BigDecimal.ZERO)
     val total = decimal("total", 12, 2).default(BigDecimal.ZERO)
@@ -95,7 +96,7 @@ object B2bPurchaseOrderTable : BaseIdTable("b2b_purchase_order") {
     val shopId = reference("shop_id", ShopTable.id).nullable()
     val poNumber = varchar("po_number", 50).uniqueIndex()
     val status = enumerationByName("status", 20, PurchaseOrderStatus::class).default(PurchaseOrderStatus.OPEN)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val total = decimal("total", 12, 2)
     val netTermsDays = integer("net_terms_days").default(30)
     val dueDate = datetime("due_date").nullable()
@@ -128,7 +129,7 @@ object B2bInvoiceTable : BaseIdTable("b2b_invoice") {
     val sellerId = reference("seller_id", SellerTable.id).index()
     val invoiceNumber = varchar("invoice_number", 50).uniqueIndex()
     val status = enumerationByName("status", 20, B2bInvoiceStatus::class).default(B2bInvoiceStatus.PENDING).index()
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val amount = decimal("amount", 12, 2)
     val dueDate = datetime("due_date")
     val paidAt = datetime("paid_at").nullable()

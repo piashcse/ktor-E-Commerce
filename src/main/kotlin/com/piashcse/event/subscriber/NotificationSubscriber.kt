@@ -37,7 +37,7 @@ import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationMessage
 import com.piashcse.feature.notification.NotificationTemplates
 import com.piashcse.feature.notification.StorefrontLinks
-import com.piashcse.feature.seller.PayoutLedger
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -447,7 +447,7 @@ class NotificationSubscriber(
                 val order = OrderDAO.findById(event.orderId) ?: return@query
                 // Idempotent fallback for payments created before the ledger
                 // was moved into the payment transaction.
-                PayoutLedger.createForOrderTx(order)
+                SellerLedger.createPayout(order)
                 Unit
             }
         } catch (e: Exception) {

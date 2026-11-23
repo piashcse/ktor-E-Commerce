@@ -18,6 +18,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.utils.common.sha256Hex
@@ -98,7 +99,7 @@ class ShopMembershipService {
             }
         AdminAudit.publish(actorUserId, "SHOP_MEMBER_INVITED", "SHOP", shopId, email)
         OutboxPublisher.enqueueTx(
-            "SHOP",
+            OutboxAggregate.SHOP,
             shopId,
             SendEmailEvent(
                 to = email,

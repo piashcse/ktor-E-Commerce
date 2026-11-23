@@ -2,7 +2,6 @@ package com.piashcse.feature.support
 
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.SupportSenderRole
-import com.piashcse.constants.TicketCategory
 import com.piashcse.constants.TicketPriority
 import com.piashcse.constants.TicketStatus
 import com.piashcse.database.entities.OrderDAO
@@ -16,6 +15,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.service.AppMetrics
@@ -23,123 +23,16 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.validator.FieldValidationException
-import com.piashcse.utils.validator.FieldViolation
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-
-@Serializable
-data class CreateTicketRequest(
-    val subject: String,
-    val body: String,
-    val category: TicketCategory = TicketCategory.OTHER,
-    val priority: TicketPriority = TicketPriority.NORMAL,
-    val orderId: String? = null,
-) {
-    init {
-        val violations =
-            buildList {
-                if (subject.isBlank()) add(FieldViolation("subject", "Subject is required"))
-                if (body.isBlank()) add(FieldViolation("body", "Message body is required"))
-            }
-        if (violations.isNotEmpty()) throw FieldValidationException(violations)
-    }
-}
-
-@Serializable
-data class TicketReplyRequest(
-    val body: String,
-    val isInternal: Boolean = false,
-) {
-    init {
-        if (body.isBlank()) throw FieldValidationException(listOf(FieldViolation("body", "Message body is required")))
-    }
-}
-
-@Serializable
-data class TicketUpdateRequest(
-    val status: TicketStatus? = null,
-    val priority: TicketPriority? = null,
-    val category: TicketCategory? = null,
-    val assignedTo: String? = null,
-)
-
-@Serializable
-data class TicketSatisfactionRequest(
-    val score: Int,
-    val comment: String? = null,
-) {
-    init {
-        if (score !in 1..5) {
-            throw FieldValidationException(listOf(FieldViolation("score", "Score must be between 1 and 5")))
-        }
-    }
-}
-
-@Serializable
-data class TicketMessageResponse(
-    val id: String,
-    val ticketId: String,
-    val senderId: String,
-    val senderRole: SupportSenderRole,
-    val body: String,
-    val isInternal: Boolean,
-    val createdAt: String?,
-)
-
-@Serializable
-data class TicketSummaryResponse(
-    val id: String,
-    val userId: String,
-    val orderId: String?,
-    val shopId: String?,
-    val subject: String,
-    val category: TicketCategory,
-    val priority: TicketPriority,
-    val status: TicketStatus,
-    val assignedTo: String?,
-    val lastMessageAt: String?,
-    val resolvedAt: String?,
-    val createdAt: String?,
-    val firstResponseAt: String? = null,
-    val responseDueAt: String? = null,
-    val resolutionDueAt: String? = null,
-    val slaBreached: Boolean = false,
-    val csatScore: Int? = null,
-    val csatComment: String? = null,
-    val csatRatedAt: String? = null,
-)
-
-@Serializable
-data class TicketAttachmentResponse(
-    val id: String,
-    val ticketId: String,
-    val fileName: String,
-    val contentType: String?,
-    val sizeBytes: Long,
-    val createdAt: String?,
-)
-
-data class SupportAttachmentDownload(
-    val storageName: String,
-    val fileName: String,
-    val contentType: String?,
-)
-
-@Serializable
-data class TicketResponse(
-    val ticket: TicketSummaryResponse,
-    val messages: List<TicketMessageResponse>,
-    val attachments: List<TicketAttachmentResponse> = emptyList(),
-)
 
 class SupportService {
     suspend fun create(
@@ -176,7 +69,7 @@ class SupportService {
                 }
             AppMetrics.supportTicketsOpened.increment()
             OutboxPublisher.enqueueTx(
-                "SUPPORT",
+                OutboxAggregate.SUPPORT,
                 ticket.id.value,
                 SendEmailEvent(
                     to = DotEnvConfig.supportEmail,
@@ -192,7 +85,7 @@ class SupportService {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<TicketSummaryResponse> =
-        query {
+        readQuery {
             SupportTicketTable.selectAll()
                 .where { SupportTicketTable.userId eq userId.entityID(UserTable) }
                 .orderBy(SupportTicketTable.lastMessageAt to SortOrder.DESC)
@@ -203,7 +96,7 @@ class SupportService {
         userId: String,
         ticketId: String,
     ): TicketResponse =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
             TicketResponse(
@@ -240,7 +133,7 @@ class SupportService {
             }
             ticket.lastMessageAt = now
             OutboxPublisher.enqueueTx(
-                "SUPPORT",
+                OutboxAggregate.SUPPORT,
                 ticket.id.value,
                 SendEmailEvent(
                     to = DotEnvConfig.supportEmail,
@@ -312,7 +205,7 @@ class SupportService {
         ticketId: String,
         attachmentId: String,
     ): SupportAttachmentDownload =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
             findAttachment(ticket.id.value, attachmentId)
@@ -322,7 +215,7 @@ class SupportService {
         ticketId: String,
         attachmentId: String,
     ): SupportAttachmentDownload =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             findAttachment(ticket.id.value, attachmentId)
         }
@@ -361,7 +254,7 @@ class SupportService {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<TicketSummaryResponse> =
-        query {
+        readQuery {
             SupportTicketTable.selectAll()
                 .also { query ->
                     status?.let { query.andWhere { SupportTicketTable.status eq it } }
@@ -374,7 +267,7 @@ class SupportService {
         }
 
     suspend fun adminTicket(ticketId: String): TicketResponse =
-        query {
+        readQuery {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
             TicketResponse(
                 ticket = ticket.toSummary(),
@@ -416,7 +309,7 @@ class SupportService {
             if (!request.isInternal) {
                 UserDAO.findById(ticket.userId.value)?.email?.takeIf { it.isNotBlank() }?.let { email ->
                     OutboxPublisher.enqueueTx(
-                        "SUPPORT",
+                        OutboxAggregate.SUPPORT,
                         ticket.id.value,
                         SendEmailEvent(
                             to = email,

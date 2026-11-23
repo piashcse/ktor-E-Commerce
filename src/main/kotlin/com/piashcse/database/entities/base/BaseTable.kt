@@ -1,5 +1,6 @@
 package com.piashcse.database.entities.base
 
+import com.piashcse.utils.common.AppClock
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
@@ -7,7 +8,6 @@ import org.jetbrains.exposed.v1.dao.*
 import org.jetbrains.exposed.v1.javatime.datetime
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.*
 
 abstract class BaseIdTable(name: String) : IdTable<String>(name) {
@@ -39,4 +39,4 @@ abstract class BaseEntityClass<E : BaseEntity>(table: BaseIdTable, entityType: C
 }
 
 // generating utc time
-fun currentUtc(): LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
+fun currentUtc(): LocalDateTime = AppClock.nowUtc()

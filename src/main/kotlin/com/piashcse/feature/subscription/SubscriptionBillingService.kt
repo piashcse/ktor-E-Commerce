@@ -89,7 +89,7 @@ class SubscriptionBillingService(
         var canceled = 0
         dueIds.forEach { id ->
             when (val result = bill(id, now)) {
-                is RenewalOutcome.Created -> created += 1
+                is RenewalOutcome.InvoiceCreated -> created += 1
                 is RenewalOutcome.Paid -> {
                     created += 1
                     paid += 1
@@ -107,7 +107,7 @@ class SubscriptionBillingService(
     }
 
     private sealed interface RenewalOutcome {
-        data class Created(val invoiceId: String) : RenewalOutcome
+        data class InvoiceCreated(val invoiceId: String) : RenewalOutcome
 
         data class Paid(val invoiceId: String) : RenewalOutcome
 
@@ -218,7 +218,7 @@ class SubscriptionBillingService(
             }
 
         if (ready.paymentMethodReference.isNullOrBlank() || ready.chargeProvider == PaymentProvider.MANUAL) {
-            return RenewalOutcome.Created(ready.invoiceId)
+            return RenewalOutcome.InvoiceCreated(ready.invoiceId)
         }
 
         val charge =

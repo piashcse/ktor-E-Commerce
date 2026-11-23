@@ -33,6 +33,7 @@ class OpenApiGenerationTest {
             val body = response.bodyAsText()
 
             assertContains(body, "openapi: 3.1.1")
+            assertContains(body, "operationId: getApiV1Orders")
             assertContains(body, "/api/v1/orders")
             assertContains(body, "/api/v1/seller/orders")
             assertContains(body, "/api/v1/admin/orders")
@@ -42,6 +43,14 @@ class OpenApiGenerationTest {
 
             val operations = Regex("(?m)^    (get|post|put|patch|delete):").findAll(body).count()
             assertTrue(operations >= 200, "expected the full API surface, found $operations operations")
+
+            val operationIds =
+                Regex("(?m)^\\s+operationId: (\\S+)$")
+                    .findAll(body)
+                    .map { it.groupValues[1] }
+                    .toList()
+            assertEquals(operations, operationIds.size)
+            assertEquals(operationIds.size, operationIds.distinct().size, "operation ids must be unique")
 
             File("build/endpoints.yaml").writeText(body)
         }

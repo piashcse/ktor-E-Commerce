@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
@@ -23,7 +24,7 @@ object OrderTable : BaseIdTable("order") {
     val discountAmount = decimal("discount_amount", 12, 2).default(BigDecimal("0.00"))
     val couponCode = varchar("coupon_code", 50).nullable()
     val total = decimal("total", 12, 2)
-    val currency = varchar("currency", 3).default("USD") // Currency of the order
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY) // Currency of the order
     val businessTaxId = varchar("business_tax_id", 50).nullable()
     val taxExempt = bool("tax_exempt").default(false)
     val walletDiscount = decimal("wallet_discount", 10, 2).default(BigDecimal("0.00"))

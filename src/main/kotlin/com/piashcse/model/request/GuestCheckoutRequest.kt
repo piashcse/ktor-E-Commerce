@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Localization
 import com.piashcse.constants.PaymentMethod
 import kotlinx.serialization.Serializable
@@ -37,7 +38,7 @@ data class GuestCheckoutRequest(
     val shippingMethodId: String,
     val paymentMethod: PaymentMethod? = null,
     val couponCode: String? = null,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val notes: String? = null,
     val idempotencyKey: String? = null,
     /** Checkout locale used for totals and transactional email. */

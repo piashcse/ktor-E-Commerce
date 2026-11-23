@@ -34,7 +34,7 @@ object AdminAudit {
             )
         runCatching {
             transaction {
-                OutboxPublisher.enqueueTx("AUDIT", resourceId ?: actorUserId, event)
+                OutboxPublisher.enqueueTx(OutboxAggregate.AUDIT, resourceId ?: actorUserId, event)
             }
         }
     }

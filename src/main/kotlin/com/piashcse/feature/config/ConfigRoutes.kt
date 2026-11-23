@@ -5,6 +5,7 @@
 package com.piashcse.feature.config
 
 import com.piashcse.config.DotEnv
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.payment.PaymentGateway
@@ -22,7 +23,7 @@ data class PublicConfigResponse(
     val guestCheckout: Boolean,
     val requirePolicyConsent: Boolean,
     val supportedCurrencies: List<String>,
-    val baseCurrency: String = "USD",
+    val baseCurrency: String = AppConstants.DEFAULT_CURRENCY,
     /** Methods the checkout may offer right now (prevents unpayable orders). */
     val paymentMethods: List<PaymentMethod> = emptyList(),
     val paymentProvider: String = "MANUAL",
@@ -47,7 +48,7 @@ fun Route.configRoutes() {
                     supportedCurrencies =
                         com.piashcse.service.CacheService.cache.get<List<String>>("config:currencies")
                             ?: (
-                                listOf("USD") + fxService.listRates().map { it.targetCurrency }
+                                listOf(AppConstants.DEFAULT_CURRENCY) + fxService.listRates().map { it.targetCurrency }
                             ).distinct().sorted().also {
                                 com.piashcse.service.CacheService.cache.set("config:currencies", it, 60)
                             },

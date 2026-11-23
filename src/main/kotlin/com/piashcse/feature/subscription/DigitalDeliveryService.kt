@@ -134,7 +134,7 @@ class DigitalDeliveryService(
         DigitalEntitlementDAO.find {
             DigitalEntitlementTable.subscriptionId eq subscriptionId.entityID(com.piashcse.database.entities.SubscriptionTable)
         }.forEach { entitlement ->
-            if (entitlement.expiresAt == null || entitlement.expiresAt!!.isBefore(until)) {
+            if (entitlement.expiresAt?.isBefore(until) ?: true) {
                 entitlement.expiresAt = until
             }
         }

@@ -3,6 +3,7 @@ package com.piashcse.plugin
 import com.piashcse.constants.Message
 import com.piashcse.feature.i18n.I18nService
 import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.common.ApiErrorCode
 import com.piashcse.utils.common.FieldError
 import com.piashcse.utils.db.isCheckViolation
 import com.piashcse.utils.db.isDataException
@@ -71,7 +72,7 @@ private suspend fun ApplicationCall.respondValidationError(exception: Constraint
         HttpStatusCode.BadRequest,
         ApiError.of(
             message = "Validation failed",
-            code = "VALIDATION_FAILED",
+            code = ApiErrorCode.VALIDATION_FAILED,
             status = HttpStatusCode.BadRequest,
             requestId = requestId(),
             errors = fieldErrors,
@@ -82,7 +83,7 @@ private suspend fun ApplicationCall.respondValidationError(exception: Constraint
 private fun ApplicationCall.errorResponse(
     message: String,
     code: HttpStatusCode = HttpStatusCode.BadRequest,
-    errorCode: String = "BAD_REQUEST",
+    errorCode: String = ApiErrorCode.BAD_REQUEST,
 ): ApiError {
     val translated = i18n.translate(locale, message)
     return ApiError.of(
@@ -107,7 +108,10 @@ fun Application.configureStatusPage() {
             // DB constraint violations → deterministic client errors, not 500s.
             if (error.isUniqueViolation()) {
                 statusPageLog.warn("Duplicate key: ${error.message}")
-                call.respond(HttpStatusCode.Conflict, call.errorResponse("Resource already exists", HttpStatusCode.Conflict, "CONFLICT"))
+                call.respond(
+                    HttpStatusCode.Conflict,
+                    call.errorResponse("Resource already exists", HttpStatusCode.Conflict, ApiErrorCode.CONFLICT),
+                )
                 return@exception
             }
 
@@ -115,7 +119,7 @@ fun Application.configureStatusPage() {
                 statusPageLog.warn("Foreign-key violation: ${error.message}")
                 call.respond(
                     HttpStatusCode.Conflict,
-                    call.errorResponse("Resource is still referenced by other records", HttpStatusCode.Conflict, "CONFLICT"),
+                    call.errorResponse("Resource is still referenced by other records", HttpStatusCode.Conflict, ApiErrorCode.CONFLICT),
                 )
                 return@exception
             }
@@ -124,7 +128,7 @@ fun Application.configureStatusPage() {
                 statusPageLog.warn("Constraint violation: ${error.message}")
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"),
+                    call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, ApiErrorCode.VALIDATION_FAILED),
                 )
                 return@exception
             }
@@ -151,7 +155,7 @@ fun Application.configureStatusPage() {
                         call.errorResponse(
                             error.message ?: Message.Errors.VALIDATION_FAILED,
                             HttpStatusCode.BadRequest,
-                            "VALIDATION_FAILED",
+                            ApiErrorCode.VALIDATION_FAILED,
                         ),
                     )
                 }
@@ -160,7 +164,7 @@ fun Application.configureStatusPage() {
                 -> {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"),
+                        call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, ApiErrorCode.VALIDATION_FAILED),
                     )
                 }
                 is NumberFormatException -> {

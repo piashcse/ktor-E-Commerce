@@ -3,9 +3,9 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.common.AppClock
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.timestamp
-import java.time.Instant
 
 object OtpAttemptTable : BaseIdTable("otp_attempt") {
     val purpose = varchar("purpose", 20).default("GENERAL")
@@ -26,6 +26,6 @@ class OtpAttemptDAO(id: EntityID<String>) : BaseEntity(id, OtpAttemptTable) {
     var lockedUntil by OtpAttemptTable.lockedUntil
     var purpose by OtpAttemptTable.purpose
 
-    val isLocked: Boolean get() = lockedUntil?.isAfter(Instant.now()) == true
-    val isLockExpired: Boolean get() = lockedUntil?.isBefore(Instant.now()) == true
+    val isLocked: Boolean get() = lockedUntil?.isAfter(AppClock.now()) == true
+    val isLockExpired: Boolean get() = lockedUntil?.isBefore(AppClock.now()) == true
 }

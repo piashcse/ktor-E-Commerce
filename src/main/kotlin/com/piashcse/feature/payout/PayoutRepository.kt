@@ -1,5 +1,6 @@
 package com.piashcse.feature.payout
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.utils.common.PaginatedResponse
 import kotlinx.serialization.Contextual
@@ -17,7 +18,7 @@ data class PayoutResponse(
     val subTotal: String,
     val commissionAmount: String,
     val payoutAmount: String,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val status: String,
     val payoutRequestId: String? = null,
     val rejectionReason: String? = null,
@@ -57,7 +58,7 @@ data class PayoutDecisionRequest(val reason: String? = null)
 @Serializable
 data class PayoutBalanceResponse(
     val available: String,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val pendingRequestAmount: String = "0.00",
     /** Available balance per ISO currency (multi-currency sellers). */
     val balances: Map<String, String> = emptyMap(),

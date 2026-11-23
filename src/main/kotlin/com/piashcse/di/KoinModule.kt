@@ -94,6 +94,7 @@ import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.user.AdminUserService
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.webhook.WebhookAdminService
 import com.piashcse.feature.wishlist.WishlistRepository
@@ -191,6 +192,7 @@ val serviceModule =
         single { GuestCheckoutService(get()) }
         single { RmaService() }
         single { KycService() }
+        single { AdminUserService() }
         single { InvoiceService() }
         single { StockAlertService() }
         single { PromotionService() }

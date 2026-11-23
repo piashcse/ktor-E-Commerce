@@ -6,104 +6,21 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.RmaResolution
 import com.piashcse.constants.RmaStatus
-import com.piashcse.constants.RmaType
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.event.OutboxPublisher
-import com.piashcse.event.RmaStatusChangedEvent
-import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
-import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.lowerCase
-import org.jetbrains.exposed.v1.core.or
-import org.jetbrains.exposed.v1.jdbc.andWhere
-import org.jetbrains.exposed.v1.jdbc.selectAll
-
-@Serializable
-data class RmaCreateRequest(
-    val orderId: String,
-    val orderItemId: String,
-    val quantity: Int = 1,
-    val type: RmaType = RmaType.RETURN,
-    val reason: String,
-) {
-    init {
-        if (quantity <= 0) throw ValidationException("Quantity must be positive")
-        if (reason.isBlank()) throw ValidationException("Reason is required")
-    }
-}
-
-@Serializable
-data class RmaShipRequest(val trackingNumber: String)
-
-@Serializable
-data class RmaStatusUpdateRequest(
-    val status: RmaStatus,
-    val resolution: RmaResolution? = null,
-    val replacementOrderId: String? = null,
-    val note: String? = null,
-)
-
-@Serializable
-data class RmaResponse(
-    val id: String,
-    val orderId: String,
-    val orderItemId: String,
-    val userId: String,
-    val shopId: String?,
-    val quantity: Int,
-    val type: RmaType,
-    val status: RmaStatus,
-    val reason: String,
-    val resolution: RmaResolution?,
-    val note: String? = null,
-    val orderNumber: String? = null,
-    val customerEmail: String? = null,
-    val productName: String? = null,
-    val allowedActions: List<String> = emptyList(),
-    val trackingNumber: String?,
-    val replacementOrderId: String?,
-    val refundRequestId: String?,
-    val createdAt: String,
-    val resolvedAt: String?,
-)
 
 class RmaService {
     private fun activeStatuses() =
         listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED, RmaStatus.IN_TRANSIT, RmaStatus.RECEIVED, RmaStatus.COMPLETED)
-
-    private fun enqueueStatusChange(
-        rma: RmaDAO,
-        fromStatus: RmaStatus?,
-        toStatus: RmaStatus,
-    ) {
-        if (fromStatus == toStatus) return
-        OutboxPublisher.enqueueTx(
-            "RMA",
-            rma.id.value,
-            RmaStatusChangedEvent(
-                rmaId = rma.id.value,
-                orderId = rma.orderId.value,
-                userId = rma.userId.value,
-                email = UserDAO.findById(rma.userId.value)?.email.orEmpty(),
-                fromStatus = fromStatus?.name ?: "NONE",
-                toStatus = toStatus.name,
-                note = rma.resolutionNote,
-            ),
-        )
-    }
 
     suspend fun create(
         userId: String,
@@ -143,21 +60,15 @@ class RmaService {
                     this.status = RmaStatus.REQUESTED
                     this.reason = request.reason
                 }
-            enqueueStatusChange(rma, null, RmaStatus.REQUESTED)
-            rma.toResponse()
+            RmaEvents.enqueueStatusChange(rma, null, RmaStatus.REQUESTED)
+            rma.toRmaResponse()
         }
 
     suspend fun getUserRmas(
         userId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<RmaResponse> =
-        query {
-            RmaTable.selectAll().andWhere { RmaTable.userId eq userId }
-                .orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
-                .let { enrichRmas(it) }
-        }
+    ): PaginatedResponse<RmaResponse> = RmaQueries.getUserRmas(userId, limit, offset)
 
     suspend fun getSellerRmas(
         sellerUserId: String,
@@ -167,40 +78,7 @@ class RmaService {
         to: java.time.Instant?,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<RmaResponse> =
-        query {
-            val seller = requireSellerByUserId(sellerUserId)
-            val shopId = seller.shopId?.value ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
-            var orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
-            search?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
-                orderIds =
-                    OrderDAO.find {
-                        (OrderTable.id inList orderIds) and
-                            ((OrderTable.orderNumber.lowerCase() like pattern) or (OrderTable.contactEmail.lowerCase() like pattern))
-                    }.map { it.id }
-            }
-            if (orderIds.isEmpty()) return@query com.piashcse.utils.common.emptyPage(limit, offset)
-            RmaTable.selectAll().andWhere { RmaTable.orderId inList orderIds }
-                .also { q ->
-                    status?.let { q.andWhere { RmaTable.status eq it } }
-                    from?.let { date ->
-                        q.andWhere {
-                            RmaTable.createdAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    to?.let { date ->
-                        q.andWhere {
-                            RmaTable.createdAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                }
-                .orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
-                .let { enrichRmas(it) }
-        }
+    ): PaginatedResponse<RmaResponse> = RmaQueries.getSellerRmas(sellerUserId, status, search, from, to, limit, offset)
 
     suspend fun getAdminRmas(
         limit: Int,
@@ -209,90 +87,19 @@ class RmaService {
         search: String?,
         from: java.time.Instant?,
         to: java.time.Instant?,
-    ): PaginatedResponse<RmaResponse> =
-        query {
-            val matchingOrderIds =
-                search?.takeIf { it.isNotBlank() }?.let { term ->
-                    val pattern = "%${term.trim().lowercase()}%"
-                    OrderDAO.find {
-                        (OrderTable.orderNumber.lowerCase() like pattern) or
-                            (OrderTable.contactEmail.lowerCase() like pattern)
-                    }.map { it.id }
-                }
-            if (matchingOrderIds != null && matchingOrderIds.isEmpty()) {
-                return@query com.piashcse.utils.common.emptyPage(limit, offset)
-            }
-            val query = RmaTable.selectAll()
-            status?.let { query.andWhere { RmaTable.status eq it } }
-            matchingOrderIds?.let { query.andWhere { RmaTable.orderId inList it } }
-            from?.let { query.andWhere { RmaTable.createdAt greaterEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
-            to?.let { query.andWhere { RmaTable.createdAt lessEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
-            query.orderBy(RmaTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
-                .let { enrichRmas(it) }
-        }
-
-    private fun enrichRmas(page: PaginatedResponse<RmaResponse>): PaginatedResponse<RmaResponse> {
-        if (page.data.isEmpty()) return page
-        val orders =
-            OrderDAO.find { OrderTable.id inList page.data.map { it.orderId }.distinct().map { it.entityID(OrderTable) } }
-                .associateBy { it.id.value }
-        val items =
-            OrderItemDAO.find {
-                OrderItemTable.id inList page.data.map { it.orderItemId }.distinct().map { it.entityID(OrderItemTable) }
-            }.associateBy { it.id.value }
-        val users =
-            UserDAO.find { UserTable.id inList page.data.map { it.userId }.distinct().map { it.entityID(UserTable) } }
-                .associateBy { it.id.value }
-        return page.copy(
-            data =
-                page.data.map { rma ->
-                    rma.copy(
-                        orderNumber = orders[rma.orderId]?.orderNumber,
-                        customerEmail = users[rma.userId]?.email,
-                        productName = items[rma.orderItemId]?.productName,
-                    )
-                },
-        )
-    }
+    ): PaginatedResponse<RmaResponse> = RmaQueries.getAdminRmas(limit, offset, status, search, from, to)
 
     suspend fun ship(
         rmaId: String,
         userId: String,
         trackingNumber: String,
-    ): RmaResponse =
-        query {
-            val rma = RmaDAO.findById(rmaId) ?: rmaId.throwNotFound("RMA")
-            if (rma.userId.value != userId) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-            if (rma.status != RmaStatus.APPROVED) {
-                throw ValidationException("RMA must be approved before shipping")
-            }
-            trackingNumber.requireNotBlank("Tracking number")
-            val fromStatus = rma.status
-            rma.trackingNumber = trackingNumber
-            rma.status = RmaStatus.IN_TRANSIT
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
-        }
+    ): RmaResponse = RmaLifecycleService.ship(rmaId, userId, trackingNumber)
 
     suspend fun cancel(
         rmaId: String,
         userId: String,
-    ): RmaResponse =
-        query {
-            val rma = RmaDAO.findById(rmaId) ?: rmaId.throwNotFound("RMA")
-            if (rma.userId.value != userId) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-            if (rma.status !in listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED)) {
-                throw ValidationException("RMA cannot be cancelled from status ${rma.status}")
-            }
-            val fromStatus = rma.status
-            rma.status = RmaStatus.CANCELLED
-            rma.resolvedAt = currentUtc()
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
-        }
+    ): RmaResponse = RmaLifecycleService.cancel(rmaId, userId)
 
-    @Suppress("LongMethod")
     suspend fun updateStatus(
         rmaId: String,
         request: RmaStatusUpdateRequest,
@@ -334,120 +141,110 @@ class RmaService {
                             ?: throw ValidationException("Resolution is required when completing an RMA")
                     rma.resolution = resolution
                     if (resolution == RmaResolution.REFUND) {
-                        val item =
-                            OrderItemDAO.findById(rma.orderItemId.value)
-                                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-                        val order =
-                            OrderDAO.findById(rma.orderId.value)
-                                ?: throw ValidationException(Message.Orders.NOT_FOUND)
-                        val existingRefund =
-                            RefundRequestDAO.find {
-                                (RefundRequestTable.orderItemId eq item.id) and
-                                    (
-                                        RefundRequestTable.status inList
-                                            listOf(
-                                                RefundStatus.PENDING,
-                                                RefundStatus.APPROVED,
-                                                RefundStatus.SHIPPED,
-                                                RefundStatus.REFUNDED,
-                                            )
-                                    )
-                            }.firstOrNull()
-                        if (existingRefund == null) {
-                            val alreadyRefundedQuantity =
-                                RefundRequestDAO.find {
-                                    (RefundRequestTable.orderItemId eq item.id) and
-                                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
-                                }.fold(0) { acc, row -> acc + row.quantity }
-                            if (alreadyRefundedQuantity + rma.quantity > item.quantity) {
-                                throw ValidationException(
-                                    "RMA quantity exceeds the remaining ordered quantity " +
-                                        "(${item.quantity - alreadyRefundedQuantity})",
-                                )
-                            }
-                            // Create the refund and leave the RMA open at RECEIVED.
-                            // Calling COMPLETED again after the refund settles closes it.
-                            val refund =
-                                RefundRequestDAO.new {
-                                    this.orderItemId = item.id
-                                    this.userId = rma.userId
-                                    this.orderId = rma.orderId
-                                    this.reason = rma.reason
-                                    this.currency = order.currency
-                                    this.quantity = rma.quantity
-                                    this.status = RefundStatus.PENDING
-                                }
-                            rma.refundRequestId = refund.id
-                            rma.status = RmaStatus.RECEIVED
-                            enqueueStatusChange(rma, fromStatus, rma.status)
-                            return@query rma.toResponse()
-                        }
-                        if (existingRefund.status != RefundStatus.REFUNDED) {
-                            throw ValidationException(
-                                "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
-                            )
-                        }
-                        if (existingRefund.quantity < rma.quantity) {
-                            throw ValidationException(
-                                "Refund ${existingRefund.id.value} covers fewer units than this RMA",
-                            )
-                        }
-                        rma.refundRequestId = existingRefund.id
+                        completeWithRefund(rma, fromStatus)?.let { return@query it }
                     } else {
-                        val replacementId =
-                            request.replacementOrderId
-                                ?: throw ValidationException("replacementOrderId is required for a replacement")
-                        val replacement =
-                            OrderDAO.findById(replacementId)
-                                ?: throw ValidationException("Replacement order not found")
-                        if (replacement.userId.value != rma.userId.value) {
-                            throw ValidationException("Replacement order must belong to the same customer")
-                        }
-                        if (replacement.shopId?.value != rma.shopId?.value) {
-                            throw ValidationException("Replacement order must belong to the same shop")
-                        }
-                        val item =
-                            OrderItemDAO.findById(rma.orderItemId.value)
-                                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-                        ProductDAO.findById(item.productId.value)?.let { product ->
-                            if (!product.isDigital) {
-                                product.restoreStockFor(item.variantId?.value, rma.quantity)
-                            }
-                            product.removeSales(rma.quantity)
-                        }
-                        rma.replacementOrderId = replacement.id
+                        completeWithReplacement(rma, request)
                     }
                     rma.status = RmaStatus.COMPLETED
                     rma.resolvedAt = currentUtc()
                 }
                 else -> throw ValidationException("Unsupported RMA transition")
             }
-            enqueueStatusChange(rma, fromStatus, rma.status)
-            rma.toResponse()
+            RmaEvents.enqueueStatusChange(rma, fromStatus, rma.status)
+            rma.toRmaResponse()
         }
 
-    private fun RmaDAO.toResponse() =
-        RmaResponse(
-            id = id.value,
-            orderId = orderId.value,
-            orderItemId = orderItemId.value,
-            userId = userId.value,
-            shopId = shopId?.value,
-            quantity = quantity,
-            type = type,
-            status = status,
-            reason = reason,
-            resolution = resolution,
-            note = resolutionNote,
-            allowedActions =
-                RmaStatus.entries
-                    .filter { it != RmaStatus.IN_TRANSIT && it != RmaStatus.CANCELLED }
-                    .filter { RmaStatus.canTransitionTo(status, it) }
-                    .map { it.name },
-            trackingNumber = trackingNumber,
-            replacementOrderId = replacementOrderId?.value,
-            refundRequestId = refundRequestId?.value,
-            createdAt = createdAt.toUtcString(),
-            resolvedAt = resolvedAt?.toUtcString(),
-        )
+    /** Creates an open refund for the RMA, leaving it at RECEIVED for a second completion. */
+    private fun completeWithRefund(
+        rma: RmaDAO,
+        fromStatus: RmaStatus,
+    ): RmaResponse? {
+        val item =
+            OrderItemDAO.findById(rma.orderItemId.value)
+                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+        val order =
+            OrderDAO.findById(rma.orderId.value)
+                ?: throw ValidationException(Message.Orders.NOT_FOUND)
+        val existingRefund =
+            RefundRequestDAO.find {
+                (RefundRequestTable.orderItemId eq item.id) and
+                    (
+                        RefundRequestTable.status inList
+                            listOf(
+                                RefundStatus.PENDING,
+                                RefundStatus.APPROVED,
+                                RefundStatus.SHIPPED,
+                                RefundStatus.REFUNDED,
+                            )
+                    )
+            }.firstOrNull()
+        if (existingRefund == null) {
+            val alreadyRefundedQuantity =
+                RefundRequestDAO.find {
+                    (RefundRequestTable.orderItemId eq item.id) and
+                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                }.fold(0) { acc, row -> acc + row.quantity }
+            if (alreadyRefundedQuantity + rma.quantity > item.quantity) {
+                throw ValidationException(
+                    "RMA quantity exceeds the remaining ordered quantity " +
+                        "(${item.quantity - alreadyRefundedQuantity})",
+                )
+            }
+            val refund =
+                RefundRequestDAO.new {
+                    this.orderItemId = item.id
+                    this.userId = rma.userId
+                    this.orderId = rma.orderId
+                    this.reason = rma.reason
+                    this.currency = order.currency
+                    this.quantity = rma.quantity
+                    this.status = RefundStatus.PENDING
+                }
+            rma.refundRequestId = refund.id
+            rma.status = RmaStatus.RECEIVED
+            RmaEvents.enqueueStatusChange(rma, fromStatus, rma.status)
+            return rma.toRmaResponse()
+        }
+        if (existingRefund.status != RefundStatus.REFUNDED) {
+            throw ValidationException(
+                "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
+            )
+        }
+        if (existingRefund.quantity < rma.quantity) {
+            throw ValidationException(
+                "Refund ${existingRefund.id.value} covers fewer units than this RMA",
+            )
+        }
+        rma.refundRequestId = existingRefund.id
+        return null
+    }
+
+    /** Links a replacement order and returns the original units to stock. */
+    private fun completeWithReplacement(
+        rma: RmaDAO,
+        request: RmaStatusUpdateRequest,
+    ) {
+        val replacementId =
+            request.replacementOrderId
+                ?: throw ValidationException("replacementOrderId is required for a replacement")
+        val replacement =
+            OrderDAO.findById(replacementId)
+                ?: throw ValidationException("Replacement order not found")
+        if (replacement.userId.value != rma.userId.value) {
+            throw ValidationException("Replacement order must belong to the same customer")
+        }
+        if (replacement.shopId?.value != rma.shopId?.value) {
+            throw ValidationException("Replacement order must belong to the same shop")
+        }
+        val item =
+            OrderItemDAO.findById(rma.orderItemId.value)
+                ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+        ProductDAO.findById(item.productId.value)?.let { product ->
+            if (!product.isDigital) {
+                product.restoreStockFor(item.variantId?.value, rma.quantity)
+            }
+            product.removeSales(rma.quantity)
+        }
+        rma.replacementOrderId = replacement.id
+    }
 }

@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,7 +11,7 @@ data class CheckoutSummaryResponse(
     val discountAmount: String = "0.00",
     val total: String,
     val itemCount: Int,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val taxLines: List<TaxLineResponse> = emptyList(),
     val walletDiscount: String = "0.00",
     val giftCardDiscount: String = "0.00",

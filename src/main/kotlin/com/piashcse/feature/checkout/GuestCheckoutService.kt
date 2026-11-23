@@ -28,6 +28,7 @@ import com.piashcse.feature.coupon.toSnapshot
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.tax.TaxTotals
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.GuestCheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
@@ -88,7 +89,7 @@ class GuestCheckoutService(
         return if (error != null) {
             CouponQuote(BigDecimal.ZERO.setScale(2), error)
         } else {
-            CouponQuote(Money.scale2(CouponRules.discountUsd(snapshot, eligibleUsd).multiply(fxRate)), null)
+            CouponQuote(PricingService.toCurrency(CouponRules.discountUsd(snapshot, eligibleUsd), fxRate), null)
         }
     }
 
@@ -96,7 +97,6 @@ class GuestCheckoutService(
      * Server-side quote for the guest checkout page so the total shown before
      * submitting matches the order that will be placed (tax + shipping + promo).
      */
-    @Suppress("LongMethod", "CyclomaticComplexMethod")
     suspend fun quote(request: GuestCheckoutRequest): CheckoutSummaryResponse {
         if (request.items.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
         val currency = request.currency.uppercase()
@@ -121,160 +121,193 @@ class GuestCheckoutService(
                 ShippingMethodDAO.findById(request.shippingMethodId)
                     ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
 
-            var subtotalUsd = BigDecimal.ZERO
-            var subTotal = BigDecimal.ZERO
-            var tax = BigDecimal.ZERO
-            var exclusiveTax = BigDecimal.ZERO
-            var taxInclusive = false
-            var itemCount = 0
-            val shopsWithShipping = mutableSetOf<String>()
-            val shopIds = mutableSetOf<String>()
-            val couponLines = mutableListOf<CouponLine>()
-
-            request.items.forEach { item ->
-                val product =
-                    products[item.productId]
-                        ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-                if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
-                    throw ValidationException(Message.Products.OUT_OF_STOCK)
-                }
-                val variant =
-                    item.variantId?.takeIf(String::isNotBlank)?.let { id ->
-                        variants[id] ?: id.throwNotFound("Product variant")
-                    }
-                if (variant != null && variant.productId.value != product.id.value) {
-                    throw ValidationException("Variant does not belong to this product")
-                }
-                if (variant == null &&
-                    ProductVariantDAO.find { ProductVariantTable.productId eq product.id }.any()
-                ) {
-                    throw ValidationException("Select a variant for ${product.name}")
-                }
-                if (variant != null && variant.status != ProductStatus.ACTIVE) {
-                    throw ValidationException(Message.Products.OUT_OF_STOCK)
-                }
-                if (item.quantity < product.minOrderQuantity) {
-                    throw ValidationException(
-                        "Minimum order quantity for ${product.name} is ${product.minOrderQuantity}",
-                    )
-                }
-                if (!product.isDigital) {
-                    val stock =
-                        if (variant == null) {
-                            product.effectiveStock()
-                        } else {
-                            product.effectiveStockFor(variant.id.value)
-                        }
-                    if (item.quantity > stock) {
-                        throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
-                    }
-                }
-                val unitUsd = PricingService.unitPriceUsd(product, variant)
-                subtotalUsd = subtotalUsd.add(Money.unitTotal(unitUsd, item.quantity))
-                itemCount += item.quantity
-                product.shopId?.value?.let { shopId ->
-                    shopIds.add(shopId)
-                    if (!product.isDigital && !product.freeShipping) shopsWithShipping.add(shopId)
-                }
-                couponLines +=
-                    CouponLine(
-                        productShopId = product.shopId?.value,
-                        productCategoryId = product.categoryId.value,
-                        unitPriceUsd = unitUsd,
-                        quantity = item.quantity,
-                    )
-
-                // Convert the unit price first so the quote matches the persisted order line.
-                val line = Money.unitTotal(Money.scale2(unitUsd.multiply(fxRate)), item.quantity)
-                subTotal = subTotal.add(line)
-                val taxQuote =
-                    taxService.resolve(
-                        country = request.country,
-                        region = request.state,
-                        categoryId = product.categoryId.value,
-                        taxClassId = product.taxClassId?.value,
-                    )
-                val amounts = taxService.apply(line, taxQuote)
-                taxInclusive = taxInclusive || taxQuote.inclusive
-                tax = tax.add(amounts.tax)
-                if (!taxQuote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
-            }
+            val lines = quoteLines(request, products, variants, fxRate)
 
             var shipping =
-                if (shopsWithShipping.isEmpty() || StorefrontSettings.freeShippingReached(subtotalUsd)) {
+                if (lines.shopsWithShipping.isEmpty() || StorefrontSettings.freeShippingReached(lines.subtotalUsd)) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
-                    Money.scale2(
-                        shippingMethod.price
-                            .multiply(BigDecimal(shopsWithShipping.size))
-                            .multiply(fxRate),
+                    PricingService.toCurrency(
+                        shippingMethod.price.multiply(BigDecimal(lines.shopsWithShipping.size)),
+                        fxRate,
                     )
                 }
 
             var discount = BigDecimal.ZERO.setScale(2)
             var couponError: String? = null
             if (couponCode != null) {
-                val quote = couponQuote(couponCode, couponLines, fxRate)
+                val quote = couponQuote(couponCode, lines.couponLines, fxRate)
                 discount = quote.discount
                 couponError = quote.error
             } else {
-                promotionService.evaluateTx(subtotalUsd, shopIds)?.let { promotion ->
+                promotionService.evaluateTx(lines.subtotalUsd, lines.shopIds)?.let { promotion ->
                     if (promotion.freeShipping) shipping = BigDecimal.ZERO.setScale(2)
-                    discount = Money.scale2(promotion.discount.multiply(fxRate))
+                    discount = PricingService.toCurrency(promotion.discount, fxRate)
                 }
             }
 
             // Coupons/promotions reduce the taxable base. Recompute tax on the
             // discounted line so the quote matches placeOrder (which does the
             // same in OrderRepositoryImpl.recalculateTaxes).
-            if (discount > BigDecimal.ZERO && subTotal > BigDecimal.ZERO) {
-                tax = BigDecimal.ZERO
-                exclusiveTax = BigDecimal.ZERO
-                taxInclusive = false
-                request.items.forEach { item ->
-                    val product = products[item.productId] ?: return@forEach
-                    val variant =
-                        item.variantId?.takeIf(String::isNotBlank)?.let { variants[it] }
-                    val unitUsd = PricingService.unitPriceUsd(product, variant)
-                    val line = Money.unitTotal(Money.scale2(unitUsd.multiply(fxRate)), item.quantity)
-                    val share = Money.proportionalSplit(discount, line, subTotal)
-                    val quote =
-                        taxService.resolve(
-                            country = request.country,
-                            region = request.state,
-                            categoryId = product.categoryId.value,
-                            taxClassId = product.taxClassId?.value,
-                        )
-                    val amounts = taxService.apply(line.subtract(share).max(BigDecimal.ZERO), quote)
-                    taxInclusive = taxInclusive || quote.inclusive
-                    tax = tax.add(amounts.tax)
-                    if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            val finalTaxTotals =
+                if (discount > BigDecimal.ZERO && lines.subTotal > BigDecimal.ZERO) {
+                    discountedTaxTotals(request, products, variants, discount, lines.subTotal, fxRate)
+                } else {
+                    lines.taxTotals
                 }
-            }
 
+            val totals = finalTaxTotals.normalized()
             val total =
                 Money.scale2(
-                    subTotal.add(shipping).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
+                    lines.subTotal.add(shipping).add(totals.exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
                 )
             CheckoutSummaryResponse(
-                subTotal = subTotal.toPlainString(),
+                subTotal = lines.subTotal.toPlainString(),
                 shippingCost = shipping.toPlainString(),
-                taxAmount = tax.toPlainString(),
+                taxAmount = totals.tax.toPlainString(),
                 discountAmount = discount.toPlainString(),
                 total = total.toPlainString(),
-                itemCount = itemCount,
+                itemCount = lines.itemCount,
                 currency = currency,
-                taxInclusive = taxInclusive,
+                taxInclusive = totals.inclusive,
                 couponCode = couponCode,
                 couponValid = couponCode?.let { couponError == null },
                 couponError = couponError,
                 freeShippingThreshold =
-                    Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
+                    PricingService.toCurrency(StorefrontSettings.freeShippingThreshold, fxRate).toPlainString(),
                 freeShippingRemaining =
-                    Money.scale2(StorefrontSettings.freeShippingRemaining(subtotalUsd).multiply(fxRate)).toPlainString(),
+                    PricingService.toCurrency(StorefrontSettings.freeShippingRemaining(lines.subtotalUsd), fxRate).toPlainString(),
                 locale = request.locale,
             )
         }
+    }
+
+    private data class QuoteLines(
+        val subtotalUsd: BigDecimal,
+        val subTotal: BigDecimal,
+        val itemCount: Int,
+        val shopsWithShipping: Set<String>,
+        val shopIds: Set<String>,
+        val couponLines: List<CouponLine>,
+        val taxTotals: TaxTotals,
+    )
+
+    private fun quoteLines(
+        request: GuestCheckoutRequest,
+        products: Map<String, ProductDAO>,
+        variants: Map<String, ProductVariantDAO>,
+        fxRate: BigDecimal,
+    ): QuoteLines {
+        var subtotalUsd = BigDecimal.ZERO
+        var subTotal = BigDecimal.ZERO
+        var taxTotals = TaxTotals()
+        var itemCount = 0
+        val shopsWithShipping = mutableSetOf<String>()
+        val shopIds = mutableSetOf<String>()
+        val couponLines = mutableListOf<CouponLine>()
+
+        request.items.forEach { item ->
+            val product =
+                products[item.productId]
+                    ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+            if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
+                throw ValidationException(Message.Products.OUT_OF_STOCK)
+            }
+            val variant =
+                item.variantId?.takeIf(String::isNotBlank)?.let { id ->
+                    variants[id] ?: id.throwNotFound("Product variant")
+                }
+            if (variant != null && variant.productId.value != product.id.value) {
+                throw ValidationException("Variant does not belong to this product")
+            }
+            if (variant == null &&
+                ProductVariantDAO.find { ProductVariantTable.productId eq product.id }.any()
+            ) {
+                throw ValidationException("Select a variant for ${product.name}")
+            }
+            if (variant != null && variant.status != ProductStatus.ACTIVE) {
+                throw ValidationException(Message.Products.OUT_OF_STOCK)
+            }
+            if (item.quantity < product.minOrderQuantity) {
+                throw ValidationException(
+                    "Minimum order quantity for ${product.name} is ${product.minOrderQuantity}",
+                )
+            }
+            if (!product.isDigital) {
+                val stock =
+                    if (variant == null) {
+                        product.effectiveStock()
+                    } else {
+                        product.effectiveStockFor(variant.id.value)
+                    }
+                if (item.quantity > stock) {
+                    throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+                }
+            }
+            val unitUsd = PricingService.unitPriceUsd(product, variant)
+            subtotalUsd = subtotalUsd.add(Money.unitTotal(unitUsd, item.quantity))
+            itemCount += item.quantity
+            product.shopId?.value?.let { shopId ->
+                shopIds.add(shopId)
+                if (!product.isDigital && !product.freeShipping) shopsWithShipping.add(shopId)
+            }
+            couponLines +=
+                CouponLine(
+                    productShopId = product.shopId?.value,
+                    productCategoryId = product.categoryId.value,
+                    unitPriceUsd = unitUsd,
+                    quantity = item.quantity,
+                )
+
+            // Convert the unit price first so the quote matches the persisted order line.
+            val line = PricingService.lineTotal(unitUsd, item.quantity, fxRate)
+            subTotal = subTotal.add(line)
+            val taxQuote =
+                taxService.resolve(
+                    country = request.country,
+                    region = request.state,
+                    categoryId = product.categoryId.value,
+                    taxClassId = product.taxClassId?.value,
+                )
+            taxTotals = taxTotals.add(line, taxQuote)
+        }
+
+        return QuoteLines(
+            subtotalUsd = subtotalUsd,
+            subTotal = subTotal,
+            itemCount = itemCount,
+            shopsWithShipping = shopsWithShipping,
+            shopIds = shopIds,
+            couponLines = couponLines,
+            taxTotals = taxTotals,
+        )
+    }
+
+    private fun discountedTaxTotals(
+        request: GuestCheckoutRequest,
+        products: Map<String, ProductDAO>,
+        variants: Map<String, ProductVariantDAO>,
+        discount: BigDecimal,
+        subTotal: BigDecimal,
+        fxRate: BigDecimal,
+    ): TaxTotals {
+        var taxTotals = TaxTotals()
+        request.items.forEach { item ->
+            val product = products[item.productId] ?: return@forEach
+            val variant = item.variantId?.takeIf(String::isNotBlank)?.let { variants[it] }
+            val unitUsd = PricingService.unitPriceUsd(product, variant)
+            val line = PricingService.lineTotal(unitUsd, item.quantity, fxRate)
+            val share = Money.proportionalSplit(discount, line, subTotal)
+            val quote =
+                taxService.resolve(
+                    country = request.country,
+                    region = request.state,
+                    categoryId = product.categoryId.value,
+                    taxClassId = product.taxClassId?.value,
+                )
+            taxTotals = taxTotals.add(line.subtract(share).max(BigDecimal.ZERO), quote)
+        }
+        return taxTotals
     }
 
     suspend fun placeOrder(request: GuestCheckoutRequest): GuestCheckoutResult {

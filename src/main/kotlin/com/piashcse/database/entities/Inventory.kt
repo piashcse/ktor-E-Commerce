@@ -8,6 +8,7 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.event.LowStockEvent
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
@@ -90,39 +91,28 @@ fun ProductDAO.decrementStockAt(
     warehouseId: String,
     variantId: String?,
     quantity: Int,
-): List<StockAllocation> {
-    val rows = inventories(forUpdate = true).filter { it.warehouseId.value == warehouseId && it.variantId?.value == variantId }
-    if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
-    val available = rows.sumOf { it.stockQuantity }
-    if (available < quantity) {
-        throw ValidationException(Message.Validation.insufficientStock(name, available))
-    }
-    val previousStatuses = rows.associate { it.id.value to it.status }
-    val allocations = mutableListOf<StockAllocation>()
-    var remaining = quantity
-    rows.forEach { inv ->
-        if (remaining <= 0) return@forEach
-        val take = minOf(inv.stockQuantity, remaining)
-        if (take > 0) {
-            inv.stockQuantity -= take
-            inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
-            allocations += StockAllocation(inv.warehouseId.value, take)
-            remaining -= take
-        }
-    }
-    enqueueLowStock(rows, previousStatuses)
-    if (deletedAt == null) {
-        status = if (inventories().sumOf { it.stockQuantity } <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
-    }
-    return allocations
-}
+): List<StockAllocation> =
+    allocateStock(
+        inventories(forUpdate = true).filter {
+            it.warehouseId.value == warehouseId && it.variantId?.value == variantId
+        },
+        quantity,
+    )
 
 fun ProductDAO.decrementStockFor(
     variantId: String?,
     quantity: Int,
+): List<StockAllocation> =
+    allocateStock(
+        inventories(forUpdate = true).filter { it.variantId?.value == variantId },
+        quantity,
+    )
+
+/** Shared allocation: validate, decrement oldest rows first, then sync statuses. */
+private fun ProductDAO.allocateStock(
+    rows: List<InventoryDAO>,
+    quantity: Int,
 ): List<StockAllocation> {
-    val allRows = inventories(forUpdate = true)
-    val rows = allRows.filter { it.variantId?.value == variantId }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
     val available = rows.sumOf { it.stockQuantity }
     if (available < quantity) {
@@ -142,7 +132,7 @@ fun ProductDAO.decrementStockFor(
         }
     }
     enqueueLowStock(rows, previousStatuses)
-    syncProductStatus(allRows.sumOf { it.stockQuantity })
+    syncProductStatus(inventories().sumOf { it.stockQuantity })
     return allocations
 }
 
@@ -153,7 +143,7 @@ private fun ProductDAO.enqueueLowStock(
     rows.filter { it.status.needsAttention && previousStatuses[it.id.value] != it.status }
         .forEach { inventory ->
             OutboxPublisher.enqueueTx(
-                "PRODUCT",
+                OutboxAggregate.PRODUCT,
                 id.value,
                 LowStockEvent(
                     productId = id.value,

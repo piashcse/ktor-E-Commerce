@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.AvsResult
 import com.piashcse.constants.CvvResult
 import com.piashcse.constants.PaymentMethod
@@ -14,7 +15,7 @@ data class PaymentResponse(
     val id: String,
     val orderId: String,
     val amount: String,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val status: PaymentStatus,
     val paymentMethod: PaymentMethod,
     val transactionId: String?,

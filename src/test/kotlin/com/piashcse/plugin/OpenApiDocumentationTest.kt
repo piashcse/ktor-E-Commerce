@@ -46,6 +46,7 @@ class OpenApiDocumentationTest {
             assertContains(body, "openapi: 3.1.1")
             assertContains(body, "Ktor E-Commerce API")
             assertContains(body, "Sample operation")
+            assertContains(body, "operationId: getSample")
             assertContains(body, "jwt-auth")
             assertContains(body, "bearer")
             assertContains(body, "/sample")

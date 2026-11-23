@@ -1,299 +1,80 @@
 package com.piashcse.feature.auth
 
-import at.favre.lib.crypto.bcrypt.BCrypt
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.RbacDefaults
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
-import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.feature.rbac.RbacService
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
-import com.piashcse.service.CacheService
-import com.piashcse.utils.common.constantTimeEquals
-import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.isNull
-import java.security.MessageDigest
-import java.time.Instant
 import java.util.*
 
-@Suppress("TooManyFunctions")
 class AuthRepositoryImpl : AuthRepository {
-    private fun hashPassword(password: String) = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, password.toCharArray())
+    private val otpVerification = OtpVerificationService()
+    private val sessions = AuthSessionService()
+    private val passwords = PasswordService()
 
-    private fun verifyPassword(
-        raw: String,
-        hash: String,
-    ) = BCrypt.verifyer().verify(raw.toCharArray(), hash).verified
+    private val registration = RegistrationService()
+
+    private val otpAttempts = OtpAttemptService()
+
+    private val loginAttempts = LoginAttemptService()
+
+    private val tokens = AuthTokenService()
 
     private fun userTypeOrNull(raw: String): UserType? = runCatching { UserType.valueOf(raw.uppercase()) }.getOrNull()
 
     private fun normalizeEmail(value: String): String = value.trim().lowercase()
 
-    // ── Token helpers ─────────────────────────────────────────────────────
-
     override suspend fun generateTokenPair(
         userId: String,
         email: String,
         userType: String,
-    ): TokenPair =
-        query {
-            val tokenVersion = UserDAO.findById(userId)?.tokenVersion ?: 0
-            newTokenPair(userId, email, userType, tokenVersion)
-        }
-
-    private fun newTokenPair(
-        userId: String,
-        email: String,
-        userType: String,
-        tokenVersion: Int,
-    ): TokenPair {
-        val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType), tokenVersion)
-        return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 900)
-    }
-
-    private fun hashRefreshToken(token: String): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        return md.digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
-    }
-
-    /** OTPs are bearer secrets; only a keyed digest is persisted. */
-    private fun hashOtp(otp: String): String =
-        com.piashcse.utils.common.hmacSha256Hex(
-            com.piashcse.config.DotEnvConfig.jwtSecret,
-            "otp:$otp",
-        )
+    ): TokenPair = tokens.generateTokenPair(userId, email, userType)
 
     override suspend fun storeRefreshToken(
         userId: String,
         refreshToken: String,
-    ) = query {
-        storeRefreshTokenTx(userId, refreshToken)
-    }
-
-    private fun storeRefreshTokenTx(
-        userId: String,
-        refreshToken: String,
-    ) {
-        val tokenHash = hashRefreshToken(refreshToken)
-        val expiresAt = Instant.now().plusSeconds(AppConstants.Authentication.REFRESH_TOKEN_EXPIRY_SECONDS)
-        RefreshTokenDAO.new {
-            this.userId = userId.entityID(UserTable)
-            this.tokenHash = tokenHash
-            this.expiresAt = expiresAt
-        }
-    }
-
-    override suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? =
-        query {
-            RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
-        }
-
-    override suspend fun revokeRefreshToken(tokenHash: String): Boolean =
-        query {
-            RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
-                ?.let {
-                    it.revokedAt = Instant.now()
-                    true
-                } ?: false
-        }
-
-    override suspend fun revokeAllUserTokens(userId: String): Boolean =
-        query {
-            revokeAllUserTokensTx(userId)
-            true
-        }
-
-    private fun revokeAllUserTokensTx(userId: String) {
-        RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
-            .forEach { it.revokedAt = Instant.now() }
-        // Role changes, password resets and deactivation must invalidate API keys
-        // as well; otherwise an old key keeps the previous role's access.
-        ApiKeyDAO.find {
-            (ApiKeyTable.userId eq userId.entityID(UserTable)) and (ApiKeyTable.isActive eq true)
-        }.forEach { it.isActive = false }
-    }
-
-    private fun registrationAttempt(
-        userId: EntityID<String>,
-        forUpdate: Boolean = false,
-    ) = (
-        if (forUpdate) {
-            OtpAttemptDAO.find {
-                (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "GENERAL")
-            }.forUpdate()
-        } else {
-            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "GENERAL") }
-        }
-    ).singleOrNull()
-
-    private fun resetAttempt(
-        userId: EntityID<String>,
-        forUpdate: Boolean = false,
-    ) = (
-        if (forUpdate) {
-            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }.forUpdate()
-        } else {
-            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }
-        }
-    ).singleOrNull()
+    ) = tokens.storeRefreshToken(userId, refreshToken)
 
     // ── Login attempt helpers ────────────────────────────────────────────
-
-    private fun loginAttemptPredicate(
-        email: String,
-        userType: UserType,
-        ipAddress: String? = null,
-    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and
-        (LoginAttemptTable.userType eq userType) and
-        if (ipAddress == null) {
-            LoginAttemptTable.ipAddress.isNull()
-        } else {
-            LoginAttemptTable.ipAddress eq ipAddress
-        }
 
     override suspend fun recordFailedAttempt(
         email: String,
         userType: UserType,
         ipAddress: String?,
-    ): Int =
-        query {
-            val existing =
-                LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }
-                    .forUpdate()
-                    .singleOrNull()
-            if (existing != null) {
-                existing.attemptCount++
-                existing.ipAddress = ipAddress
-                existing.attemptCount
-            } else {
-                LoginAttemptDAO.new {
-                    this.email = normalizeEmail(email)
-                    this.userType = userType
-                    this.ipAddress = ipAddress
-                    this.attemptCount = 1
-                }
-                1
-            }
-        }
+    ): Int = loginAttempts.recordFailedAttempt(email, userType, ipAddress)
 
     override suspend fun resetLoginAttempts(
         email: String,
         userType: UserType,
         ipAddress: String?,
-    ) = query {
-        LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()?.apply {
-            attemptCount = 0
-            lockedUntil = null
-        }
-        Unit
-    }
+    ) = loginAttempts.resetLoginAttempts(email, userType, ipAddress)
 
     override suspend fun getLoginAttempt(
         email: String,
         userType: UserType,
         ipAddress: String?,
-    ): LoginAttemptDAO? =
-        query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
-        }
+    ): LoginAttemptDAO? = loginAttempts.getLoginAttempt(email, userType, ipAddress)
 
     override suspend fun lockAccount(
         email: String,
         userType: UserType,
         lockDurationMinutes: Long,
         ipAddress: String?,
-    ): Boolean =
-        query {
-            LoginAttemptDAO.find { loginAttemptPredicate(email, userType, ipAddress) }.singleOrNull()
-                ?.apply { lockedUntil = Instant.now().plusSeconds(lockDurationMinutes * 60) } != null
-        }
+    ): Boolean = loginAttempts.lockAccount(email, userType, lockDurationMinutes, ipAddress)
 
     // ── Registration ──────────────────────────────────────────────────────
 
-    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
-        val userTypeEnum = userTypeOrNull(registerRequest.userType) ?: UserType.CUSTOMER
-        val normalizedEmail = normalizeEmail(registerRequest.email)
-
-        val (email, otp, result) =
-            query {
-                val existingUser =
-                    UserDAO.find { UserTable.email eq normalizedEmail and (UserTable.userType eq userTypeEnum) }
-                        .firstOrNull()
-
-                val otp = generateOTP()
-                val otpExpiryTime = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
-
-                if (existingUser != null) {
-                    if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
-                    if (existingUser.otpExpiry?.isAfter(currentUtc()) == true) {
-                        throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
-                    }
-                    // Guest-checkout rows have a server-generated random password, so
-                    // the first real registration may claim them. Any other unverified
-                    // row must prove knowledge of the existing password: otherwise an
-                    // attacker could register a victim's email and swap in their own
-                    // password before the victim completes the OTP (pre-hijacking).
-                    val mayReplacePassword =
-                        existingUser.isGuest ||
-                            verifyPassword(registerRequest.password, existingUser.password)
-                    if (!mayReplacePassword) {
-                        throw ValidationException(Message.Auth.USE_PASSWORD_RESET)
-                    }
-                    existingUser.otpCode = hashOtp(otp)
-                    existingUser.otpExpiry = otpExpiryTime
-                    existingUser.password = hashPassword(registerRequest.password)
-                    Triple(
-                        existingUser.email,
-                        otp,
-                        RegistrationResult.OtpResent(
-                            existingUser.id.value,
-                            existingUser.email,
-                            Message.Auth.OTP_SENT,
-                            otp = otp,
-                        ),
-                    )
-                } else {
-                    val inserted =
-                        UserDAO.new {
-                            email = normalizedEmail
-                            otpCode = hashOtp(otp)
-                            otpExpiry = otpExpiryTime
-                            password = hashPassword(registerRequest.password)
-                            userType = userTypeEnum
-                        }
-                    UserProfileDAO.new { userId = inserted.id }
-                    if (userTypeEnum == UserType.SELLER) {
-                        SellerDAO.new {
-                            userId = inserted.id
-                            status = ShopStatus.PENDING
-                        }
-                    }
-                    Triple(
-                        inserted.email,
-                        otp,
-                        RegistrationResult.Created(
-                            inserted.id.value,
-                            normalizedEmail,
-                            Message.Auth.OTP_SENT,
-                            otp = otp,
-                        ),
-                    )
-                }
-            }
-        return result
-    }
+    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult = registration.register(registerRequest)
 
     // ── User helpers ──────────────────────────────────────────────────────
 
@@ -303,11 +84,6 @@ class AuthRepositoryImpl : AuthRepository {
     ): UserDAO? =
         query {
             UserDAO.find { UserTable.email eq normalizeEmail(email) and (UserTable.userType eq userTypeEnum) }.firstOrNull()
-        }
-
-    override suspend fun findUserById(userId: String): UserDAO? =
-        query {
-            UserDAO.findById(userId)
         }
 
     override suspend fun recordMfaStep(
@@ -327,7 +103,7 @@ class AuthRepositoryImpl : AuthRepository {
     ): Boolean =
         query {
             val user = UserDAO.findById(userId) ?: return@query false
-            verifyPassword(rawPassword, user.password)
+            PasswordHasher.verify(rawPassword, user.password)
         }
 
     override suspend fun getRegistrationOtp(userId: String): String? =
@@ -353,279 +129,26 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun changePassword(
         userId: String,
         changePassword: ChangePassword,
-    ): Boolean =
-        query {
-            val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            if (!verifyPassword(changePassword.oldPassword, userEntity.password)) return@query false
-            if (changePassword.oldPassword == changePassword.newPassword) throw ValidationException(Message.Auth.PASSWORD_SAME)
-            userEntity.password = hashPassword(changePassword.newPassword)
-            userEntity.tokenVersion += 1
-            // A password change must invalidate every existing session.
-            revokeAllUserTokensTx(userId)
-            true
-        }
+    ): Boolean = passwords.changePassword(userId, changePassword)
 
     override suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): String =
-        query {
-            val entities = UserDAO.find { UserTable.email eq normalizeEmail(forgotPasswordRequest.email) }.toList()
-            if (entities.isEmpty()) forgotPasswordRequest.email.throwNotFound("User")
-            val type =
-                userTypeOrNull(forgotPasswordRequest.userType)
-                    ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
-            val user =
-                entities.find { it.userType == type }
-                    ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
-            val otp = generateOTP()
-            user.resetOtpCode = hashOtp(otp)
-            user.resetOtpExpiry = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
-            otp
-        }
+        passwords.forgotPassword(forgotPasswordRequest)
 
-    override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult =
-        query {
-            // Anti-enumeration: unknown email/role behaves exactly like a bad OTP.
-            val entities = UserDAO.find { UserTable.email eq normalizeEmail(resetPasswordRequest.email) }.toList()
-            if (entities.isEmpty()) return@query ResetResult.InvalidOrExpiredOtp
-            val type = userTypeOrNull(resetPasswordRequest.userType) ?: return@query ResetResult.InvalidOrExpiredOtp
-            val user =
-                entities.find { it.userType == type } ?: return@query ResetResult.InvalidOrExpiredOtp
-
-            val otpAttempt = resetAttempt(user.id, forUpdate = true)
-            if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
-
-            if (user.resetOtpExpiry?.isBefore(currentUtc()) != false) {
-                return@query ResetResult.InvalidOrExpiredOtp
-            }
-
-            if (!constantTimeEquals(user.resetOtpCode.orEmpty(), hashOtp(resetPasswordRequest.verificationCode))) {
-                val attemptRecord =
-                    if (otpAttempt != null) {
-                        otpAttempt.attemptCount = otpAttempt.attemptCount + 1
-                        otpAttempt
-                    } else {
-                        OtpAttemptDAO.new {
-                            this.userId = user.id
-                            this.purpose = "RESET"
-                            this.attemptCount = 1
-                        }
-                    }
-                if (attemptRecord.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-                    attemptRecord.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
-                    user.resetOtpCode = null
-                    user.resetOtpExpiry = null
-                }
-                return@query ResetResult.InvalidOrExpiredOtp
-            }
-
-            if (verifyPassword(resetPasswordRequest.newPassword, user.password)) {
-                throw ValidationException(Message.Auth.PASSWORD_SAME)
-            }
-
-            // Update the attempt row in place: never delete a row that may carry a live lock,
-            // otherwise a concurrent locker would be silently no-op'd.
-            otpAttempt?.let {
-                it.attemptCount = 0
-                it.lockedUntil = null
-            }
-            user.resetOtpCode = null
-            user.resetOtpExpiry = null
-            user.password = hashPassword(resetPasswordRequest.newPassword)
-            user.tokenVersion += 1
-            // Password reset must invalidate every existing session.
-            revokeAllUserTokensTx(user.id.value)
-            ResetResult.Success
-        }
-
-    // ── OTP ───────────────────────────────────────────────────────────────
+    override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = passwords.resetPassword(resetPasswordRequest)
 
     override suspend fun verifyOtp(
         userId: String,
         otp: String,
-    ): Boolean =
-        query {
-            // Single-transaction check + count + lock under row-level locks. The attempt row
-            // and the user row are both locked here, closing the TOCTOU window that separate
-            // isLocked / count / verify / lock transactions left open to concurrent verifiers.
-            val userEntity =
-                UserDAO.find { UserTable.id eq userId.entityID(UserTable) }.forUpdate().singleOrNull()
-                    ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            val attempt = registrationAttempt(userEntity.id, forUpdate = true)
-            if (attempt?.isLocked == true) {
-                throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
-            }
-            if (attempt != null && (attempt.isLockExpired || attempt.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS)) {
-                // Time-based lockout: an expired (or stale saturated) counter decays instead of locking forever.
-                attempt.attemptCount = 0
-                attempt.lockedUntil = null
-            }
-            if (userEntity.otpExpiry?.isBefore(currentUtc()) != false ||
-                !constantTimeEquals(userEntity.otpCode.orEmpty(), hashOtp(otp))
-            ) {
-                recordLockedOtpFailure(userEntity, attempt)
-                return@query false
-            }
-            userEntity.isVerified = true
-            // A guest checkout account becomes a normal account after OTP verification.
-            userEntity.isGuest = false
-            userEntity.otpCode = null
-            userEntity.otpExpiry = null
-            attempt?.let {
-                it.attemptCount = 0
-                it.lockedUntil = null
-            }
-            true
-        }
+    ): Boolean = otpVerification.verifyOtp(userId, otp)
 
-    private fun recordLockedOtpFailure(
-        user: UserDAO,
-        attempt: OtpAttemptDAO?,
-    ) {
-        val record =
-            attempt ?: OtpAttemptDAO.new {
-                this.userId = user.id
-                this.purpose = "GENERAL"
-                this.attemptCount = 0
-            }
-        record.attemptCount = record.attemptCount + 1
-        if (record.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-            record.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
-            user.otpCode = null
-            user.otpExpiry = null
-        }
-    }
-
-    override suspend fun invalidateOtp(userId: String) =
-        query {
-            val userEntity = UserDAO.findById(userId) ?: return@query
-            userEntity.otpCode = null
-            userEntity.otpExpiry = null
-        }
-
-    // ── OTP attempt tracking (persistent) ─────────────────────────────────
-
-    override suspend fun getOtpAttempt(userId: String): Int =
-        query {
-            registrationAttempt(userId.entityID(UserTable))?.attemptCount ?: 0
-        }
-
-    override suspend fun isOtpLocked(userId: String): Boolean =
-        query {
-            registrationAttempt(userId.entityID(UserTable))?.isLocked == true
-        }
-
-    override suspend fun recordFailedOtpAttempt(userId: String): Int =
-        query {
-            val existing = registrationAttempt(userId.entityID(UserTable), forUpdate = true)
-            if (existing != null) {
-                existing.attemptCount++
-                existing.attemptCount
-            } else {
-                OtpAttemptDAO.new {
-                    this.userId = userId.entityID(UserTable)
-                    this.purpose = "GENERAL"
-                    this.attemptCount = 1
-                }
-                1
-            }
-        }
-
-    override suspend fun resetOtpAttempts(userId: String) {
-        query {
-            // Locked read + locked-aware reset: never delete a row carrying a live lock,
-            // otherwise a concurrent lockOtpAttempts would be silently no-op'd.
-            val existing = registrationAttempt(userId.entityID(UserTable), forUpdate = true)
-            if (existing?.isLocked == true) return@query
-            existing?.let {
-                it.attemptCount = 0
-                it.lockedUntil = null
-            }
-        }
-    }
-
-    override suspend fun lockOtpAttempts(userId: String) {
-        query {
-            val id = userId.entityID(UserTable)
-            val lockUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
-            val existing = registrationAttempt(id, forUpdate = true)
-            if (existing != null) {
-                existing.lockedUntil = lockUntil
-            } else {
-                // Create the locked row so a concurrent reset cannot no-op this lock.
-                OtpAttemptDAO.new {
-                    this.userId = id
-                    this.purpose = "GENERAL"
-                    this.attemptCount = AppConstants.Authentication.MAX_OTP_ATTEMPTS
-                    this.lockedUntil = lockUntil
-                }
-            }
-        }
-    }
-
-    // ── Token refresh ─────────────────────────────────────────────────────
-
-    override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair =
-        query {
-            val tokenHash = hashRefreshToken(request.refreshToken)
-            val storedToken =
-                RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
-                    ?: throw UnauthorizedException(Message.Auth.INVALID_REFRESH_TOKEN)
-
-            // A normally expired token is stale, not evidence of theft. Only a
-            // revoked token indicates replay/reuse and should kill the family.
-            if (storedToken.isExpired) {
-                throw UnauthorizedException(Message.Auth.INVALID_REFRESH_TOKEN)
-            }
-            if (storedToken.isRevoked) {
-                UserDAO.findById(storedToken.userId.value)?.tokenVersion += 1
-                runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
-                throw UnauthorizedException(Message.Auth.TOKEN_EXPIRED)
-            }
-
-            val user = UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
-            if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
-
-            // Rotate old + persist replacement in the same transaction so a
-            // concurrent password reset cannot leave a freshly minted token live.
-            storedToken.revokedAt = Instant.now()
-            val newTokenPair = newTokenPair(user.id.value, user.email, user.userType.name, user.tokenVersion)
-            storeRefreshTokenTx(user.id.value, newTokenPair.refreshToken)
-            newTokenPair
-        }
-
-    // ── Logout / Blacklist ────────────────────────────────────────────────
+    override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair = sessions.refreshAccessToken(request)
 
     override suspend fun logout(
         userId: String,
         refreshToken: String?,
-    ): Boolean {
-        if (!refreshToken.isNullOrBlank()) {
-            revokeRefreshToken(hashRefreshToken(refreshToken))
-        } else {
-            // Logging out a browser session must not deactivate machine API
-            // keys; those are revoked by password/role changes or explicitly.
-            query {
-                RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
-                    .forEach { it.revokedAt = Instant.now() }
-            }
-        }
-        return true
-    }
+    ): Boolean = sessions.logout(userId, refreshToken)
 
-    override suspend fun blacklistToken(token: String): Boolean {
-        val result =
-            query {
-                if (BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() == null) {
-                    BlacklistedTokenDAO.new {
-                        this.token = token
-                        this.blacklistedAt = Instant.now()
-                    }
-                }
-                true
-            }
-        CacheService.cache.set("blacklisted_token:$token", true, AppConstants.Authentication.JWT_EXPIRY_SECONDS)
-        return result
-    }
+    override suspend fun blacklistToken(token: String): Boolean = sessions.blacklistToken(token)
 
     // ── Admin: User Management ────────────────────────────────────────────
 
@@ -706,7 +229,7 @@ class AuthRepositoryImpl : AuthRepository {
                     }
                 }
                 targetUser.isActive = false
-                revokeAllUserTokensTx(targetUser.id.value)
+                tokens.revokeAllUserTokensTx(targetUser.id.value)
                 Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
             }
         EventBus.publishAdminAction(actor, "USER_DEACTIVATE", "USER", targetUserId)

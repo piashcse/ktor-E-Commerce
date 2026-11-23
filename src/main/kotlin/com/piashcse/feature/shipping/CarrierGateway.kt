@@ -1,5 +1,6 @@
 package com.piashcse.feature.shipping
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.ShipmentStatus
 import com.piashcse.utils.common.sha256Hex
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +64,7 @@ data class CarrierRate(
     val carrier: String,
     val service: String,
     @Contextual val amount: BigDecimal,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val estimatedDays: Int? = null,
 )
 
@@ -80,7 +81,7 @@ data class CarrierLabelResult(
     val labelUrl: String? = null,
     val providerReference: String? = null,
     val amount: BigDecimal? = null,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val message: String? = null,
 )
 
@@ -219,7 +220,7 @@ class ShippoCarrierGateway(
                 carrier = rate.string("provider") ?: "unknown",
                 service = rate.string("servicelevel_name") ?: "standard",
                 amount = amount,
-                currency = rate.string("currency") ?: "USD",
+                currency = rate.string("currency") ?: AppConstants.DEFAULT_CURRENCY,
                 estimatedDays = rate.string("estimated_days")?.toIntOrNull(),
             )
         } ?: emptyList()
@@ -262,7 +263,7 @@ class ShippoCarrierGateway(
             labelUrl = root?.string("label_url"),
             providerReference = root?.string("object_id"),
             amount = rate?.string("amount")?.toBigDecimalOrNull(),
-            currency = rate?.string("currency") ?: "USD",
+            currency = rate?.string("currency") ?: AppConstants.DEFAULT_CURRENCY,
         )
     }
 

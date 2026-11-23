@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.GiftCardStatus
 import com.piashcse.constants.ReferralStatus
 import com.piashcse.constants.WalletEntryType
@@ -77,7 +78,7 @@ object GiftCardTable : BaseIdTable("gift_card") {
     val code = varchar("code", 50).uniqueIndex()
     val initialBalance = decimal("initial_balance", 12, 2)
     val balance = decimal("balance", 12, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = enumerationByName("status", 20, GiftCardStatus::class).default(GiftCardStatus.ACTIVE).index()
     val issuedBy = reference("issued_by", UserTable.id).nullable()
     val expiresAt = datetime("expires_at").nullable()

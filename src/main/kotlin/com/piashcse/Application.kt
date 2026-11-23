@@ -1,5 +1,6 @@
 package com.piashcse
 
+import com.piashcse.config.AppConfig
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.database.closeDataSource
 import com.piashcse.database.configureDatabase
@@ -23,6 +24,7 @@ import io.ktor.server.netty.*
 import org.koin.ktor.ext.get
 
 fun main() {
+    AppConfig.validate()
     val port = DotEnvConfig.serverPort
     val host = DotEnvConfig.serverHost
     // Graceful shutdown: Ktor stops accepting connections on SIGTERM and drains in-flight
@@ -71,8 +73,7 @@ fun Application.configureAll() {
     StockReservationCleanup.start(this)
     MaintenanceCleanup.start(this)
     SubscriptionBillingWorker.start(this, get<SubscriptionService>())
-    @Suppress("DEPRECATION")
-    environment.monitor.subscribe(ApplicationStopping) {
+    monitor.subscribe(ApplicationStopping) {
         // Stop producers and consumers before tearing down the datasource.
         OutboxPoller.stop()
         AsyncWorker.stop()
@@ -81,8 +82,7 @@ fun Application.configureAll() {
         SubscriptionBillingWorker.stop()
         EventBus.stop()
     }
-    @Suppress("DEPRECATION")
-    environment.monitor.subscribe(ApplicationStopped) {
+    monitor.subscribe(ApplicationStopped) {
         closeDataSource()
     }
 }

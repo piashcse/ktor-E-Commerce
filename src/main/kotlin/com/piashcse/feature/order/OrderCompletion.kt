@@ -10,10 +10,11 @@ import com.piashcse.database.entities.ReservationStatus
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
-import com.piashcse.feature.seller.PayoutLedger
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
@@ -45,11 +46,11 @@ object OrderCompletion {
             }
         loyalty.earnForPaidOrderTx(order.userId.value, order.id.value, totalUsd)
         digital.grantForOrderTx(order)
-        PayoutLedger.createForOrderTx(order)
+        SellerLedger.createPayout(order)
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.FINALIZED }
         OutboxPublisher.enqueueTx(
-            "PAYMENT",
+            OutboxAggregate.PAYMENT,
             payment.id.value,
             PaymentCompletedEvent(
                 paymentId = payment.id.value,

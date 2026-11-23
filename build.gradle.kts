@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.valiktor.core)
     implementation(libs.commons.io)
     implementation(libs.dotenv.kotlin)
+    implementation(libs.kaml)
 
     // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)
@@ -202,7 +203,7 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             limit {
                 counter = "BRANCH"
                 value = "COVEREDRATIO"
-                minimum = "0.08".toBigDecimal()
+                minimum = "0.10".toBigDecimal()
             }
         }
 

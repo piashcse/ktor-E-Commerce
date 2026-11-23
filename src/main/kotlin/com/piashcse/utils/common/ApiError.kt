@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApiError(
     val message: String,
-    val code: String = "BAD_REQUEST",
+    val code: String = ApiErrorCode.BAD_REQUEST,
     val errors: List<FieldError>? = null,
     val requestId: String? = null,
     // RFC 9457 / Spring-Boot compat aliases — additive only, message/code stay canonical.
@@ -26,7 +26,7 @@ data class ApiError(
         /** Build the canonical error envelope with RFC 9457 aliases filled in. */
         fun of(
             message: String,
-            code: String = "BAD_REQUEST",
+            code: String = ApiErrorCode.BAD_REQUEST,
             status: HttpStatusCode = HttpStatusCode.BadRequest,
             requestId: String? = null,
             errors: List<FieldError>? = null,

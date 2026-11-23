@@ -39,20 +39,8 @@ object PayoutLedger {
         // Seller is paid on the net product amount after seller-funded discounts
         // only. Wallet points/credit and gift cards are platform payment
         // instruments; they must not reduce seller pay.
-        val sellerFundedDiscount =
-            order.discountAmount
-                .subtract(order.walletDiscount)
-                .subtract(order.giftCardDiscount)
-                .max(BigDecimal.ZERO)
-        val inclusiveTax =
-            OrderItemDAO.itemsForOrder(order.id)
-                .filter { it.taxInclusive }
-                .fold(BigDecimal.ZERO) { acc, item -> acc.add(item.taxAmount) }
         val netSubTotal =
-            order.subTotal
-                .subtract(sellerFundedDiscount)
-                .subtract(inclusiveTax)
-                .max(BigDecimal.ZERO)
+            SellerTotals.netSales(order, OrderItemDAO.itemsForOrder(order.id))
         val commission = CommissionService().commissionForOrderTx(order, seller)
         val effectiveRate =
             if (netSubTotal > BigDecimal.ZERO) {

@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
 import kotlinx.serialization.Serializable
@@ -18,7 +19,7 @@ data class RefundRequestResponse(
     val images: String?,
     val decisionReason: String? = null,
     val status: RefundStatus,
-    val currency: String = "USD",
+    val currency: String = AppConstants.DEFAULT_CURRENCY,
     val quantity: Int = 1,
     val refundAmount: String?,
     val shippingRefund: String = "0.00",

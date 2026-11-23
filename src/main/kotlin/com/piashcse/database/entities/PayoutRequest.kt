@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -14,7 +15,7 @@ object PayoutRequestTable : BaseIdTable("payout_request") {
     val sellerId = reference("seller_id", SellerTable.id).index()
     val idempotencyKey = varchar("idempotency_key", 100).nullable()
     val amount = decimal("amount", 12, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = varchar("status", 20).default("REQUESTED").index()
     val rejectionReason = text("rejection_reason").nullable()
 

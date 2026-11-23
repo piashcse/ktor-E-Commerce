@@ -7,6 +7,7 @@ import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.calcCommission
 import com.piashcse.utils.extension.entityID
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import java.math.BigDecimal
 
@@ -62,5 +63,27 @@ object SellerTotals {
             .subtract(sellerFundedDiscount)
             .subtract(inclusiveTax)
             .max(BigDecimal.ZERO)
+    }
+
+    /** Reverses the same net basis applied by [applyOrderTx] (cancellation/full refund). */
+    fun reverseOrderTx(
+        order: OrderDAO,
+        items: List<OrderItemDAO>? = null,
+    ) {
+        val lines = items ?: OrderItemDAO.itemsForOrder(order.id)
+        val seller = SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull() ?: return
+        val net = netSales(order, lines)
+        seller.totalSales = seller.totalSales.subtract(net).max(BigDecimal.ZERO)
+        seller.totalCommission = seller.totalCommission.subtract(seller.calcCommission(net)).max(BigDecimal.ZERO)
+    }
+
+    /** Reverses an already-computed partial refund share (line-level refunds). */
+    fun reversePartialTx(
+        seller: SellerDAO,
+        salesAmount: BigDecimal,
+        commissionAmount: BigDecimal,
+    ) {
+        seller.totalSales = seller.totalSales.subtract(salesAmount).max(BigDecimal.ZERO)
+        seller.totalCommission = seller.totalCommission.subtract(commissionAmount).max(BigDecimal.ZERO)
     }
 }

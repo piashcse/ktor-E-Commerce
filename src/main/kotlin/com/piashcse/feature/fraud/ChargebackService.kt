@@ -1,10 +1,13 @@
 package com.piashcse.feature.fraud
 
 import com.piashcse.constants.ChargebackStatus
+import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.ChargebackDAO
 import com.piashcse.database.entities.ChargebackTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.SellerBalanceAdjustmentDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.base.currentUtc
@@ -13,7 +16,9 @@ import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.applyCreatedRange
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
@@ -21,7 +26,6 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -70,7 +74,7 @@ class ChargebackService {
         openedFrom: java.time.Instant? = null,
         openedTo: java.time.Instant? = null,
     ): PaginatedResponse<ChargebackResponse> =
-        query {
+        readQuery {
             ChargebackTable.selectAll()
                 .also { query ->
                     status?.let { query.andWhere { ChargebackTable.status eq it } }
@@ -80,18 +84,7 @@ class ChargebackService {
                                 java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
                         }
                     }
-                    openedFrom?.let { date ->
-                        query.andWhere {
-                            ChargebackTable.openedAt greaterEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
-                    openedTo?.let { date ->
-                        query.andWhere {
-                            ChargebackTable.openedAt lessEq
-                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
-                        }
-                    }
+                    query.applyCreatedRange(ChargebackTable.openedAt, openedFrom, openedTo)
                 }
                 .orderBy(ChargebackTable.evidenceDueAt to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { ChargebackDAO.wrapRow(it).toResponse() }
@@ -156,15 +149,15 @@ class ChargebackService {
                 // A lost dispute is a realised loss. Reverse the seller ledger
                 // and mark the payment so another refund cannot pay it twice.
                 PaymentDAO.findById(chargeback.paymentId.value)?.let { payment ->
-                    payment.status = com.piashcse.constants.PaymentStatus.REFUNDED
+                    payment.status = PaymentStatus.REFUNDED
                     payment.providerStatus = "chargeback-lost"
                 }
                 SellerPayoutDAO.find {
                     SellerPayoutTable.orderId eq chargeback.orderId
                 }.forEach { payout ->
-                    val alreadyPaid = payout.status == com.piashcse.constants.PayoutStatus.PAID.name
+                    val alreadyPaid = payout.status == PayoutStatus.PAID.name
                     if (alreadyPaid) {
-                        com.piashcse.database.entities.SellerBalanceAdjustmentDAO.new {
+                        SellerBalanceAdjustmentDAO.new {
                             this.sellerId = payout.sellerId
                             this.orderId = payout.orderId
                             amount = payout.payoutAmount.negate()
@@ -174,11 +167,11 @@ class ChargebackService {
                     } else {
                         payout.payoutAmount = java.math.BigDecimal.ZERO.setScale(2)
                         payout.commissionAmount = java.math.BigDecimal.ZERO.setScale(2)
-                        payout.status = com.piashcse.constants.PayoutStatus.REFUNDED.name
+                        payout.status = PayoutStatus.REFUNDED.name
                     }
                 }
                 OrderDAO.findById(chargeback.orderId.value)?.let { order ->
-                    order.paymentStatus = com.piashcse.constants.PaymentStatus.REFUNDED
+                    order.paymentStatus = PaymentStatus.REFUNDED
                 }
             }
             chargeback.toResponse()

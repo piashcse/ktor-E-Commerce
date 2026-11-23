@@ -2,8 +2,15 @@ package com.piashcse.utils.extension
 
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.Query
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 /**
  * Returns the total count and paginated rows from a query.
@@ -39,4 +46,18 @@ fun <R, D> Query.paginateWithPreload(
 ): PaginatedResponse<D> {
     val (totalCount, rows) = toPaginatedList(limit, offset, rowMapper)
     return PaginatedResponse(preloadAndMap(rows), PaginationMetadata(totalCount, limit, offset))
+}
+
+/**
+ * Applies an inclusive UTC created-at range to a query.
+ * Centralizes the Instant → LocalDateTime conversion used by admin/seller lists.
+ */
+fun Query.applyCreatedRange(
+    column: Column<LocalDateTime>,
+    from: Instant?,
+    to: Instant?,
+): Query {
+    from?.let { andWhere { column greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+    to?.let { andWhere { column lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+    return this
 }

@@ -16,6 +16,7 @@ koin-version = "4.2.2"
 dotenv-version = "6.5.1"
 ktlint-version = "12.3.0"
 detekt-version = "1.23.8"
+kaml-version = "0.79.0"
 mockk-version = "1.14.12"
 testcontainers-version = "1.21.4"
 micrometer-version = "1.17.2"
@@ -59,6 +60,7 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv-version" }
+kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml-version" }
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
 micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer-version" }
 ktor-server-metrics-micrometer = { module = "io.ktor:ktor-server-metrics-micrometer", version.ref = "ktor-version" }

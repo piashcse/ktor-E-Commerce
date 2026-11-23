@@ -4,9 +4,9 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.common.AppClock
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.timestamp
-import java.time.Instant
 
 object LoginAttemptTable : BaseIdTable("login_attempt") {
     val email = varchar("email", 255)
@@ -30,6 +30,6 @@ class LoginAttemptDAO(id: EntityID<String>) : BaseEntity(id, LoginAttemptTable) 
     var attemptCount by LoginAttemptTable.attemptCount
     var lockedUntil by LoginAttemptTable.lockedUntil
 
-    val isLocked: Boolean get() = lockedUntil?.isAfter(Instant.now()) == true
-    val isLockExpired: Boolean get() = lockedUntil?.isBefore(Instant.now()) == true
+    val isLocked: Boolean get() = lockedUntil?.isAfter(AppClock.now()) == true
+    val isLockExpired: Boolean get() = lockedUntil?.isBefore(AppClock.now()) == true
 }

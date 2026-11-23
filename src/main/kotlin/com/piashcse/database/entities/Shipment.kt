@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.ShipmentStatus
 import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.database.entities.base.BaseEntity
@@ -19,7 +20,7 @@ object ShipmentTable : BaseIdTable("shipment") {
     val idempotencyKey = varchar("idempotency_key", 100).nullable()
     val rateId = varchar("rate_id", 150).nullable()
     val rateAmount = decimal("rate_amount", 10, 2).nullable()
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = enumerationByName("status", 30, ShipmentStatus::class).default(ShipmentStatus.PENDING)
     val shippedAt = datetime("shipped_at").nullable()
     val deliveredAt = datetime("delivered_at").nullable()

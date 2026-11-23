@@ -10,15 +10,14 @@ import java.math.RoundingMode
  * promises the checkout cannot honour.
  */
 object StorefrontSettings {
-    val freeShippingThreshold: BigDecimal
-        get() =
-            DotEnv.get("FREE_SHIPPING_THRESHOLD", "75")
-                .toBigDecimalOrNull()
-                ?.max(BigDecimal.ZERO)
-                ?: BigDecimal("75")
+    val freeShippingThreshold: BigDecimal by lazy {
+        DotEnv.get("FREE_SHIPPING_THRESHOLD", "75")
+            .toBigDecimalOrNull()
+            ?.max(BigDecimal.ZERO)
+            ?: BigDecimal("75")
+    }
 
-    val returnWindowDays: Int
-        get() = DotEnv.getInt("RETURN_WINDOW_DAYS", 30).coerceAtLeast(0)
+    val returnWindowDays: Int by lazy { DotEnv.getInt("RETURN_WINDOW_DAYS", 30).coerceAtLeast(0) }
 
     fun freeShippingReached(subtotalUsd: BigDecimal): Boolean =
         freeShippingThreshold <= BigDecimal.ZERO || subtotalUsd >= freeShippingThreshold

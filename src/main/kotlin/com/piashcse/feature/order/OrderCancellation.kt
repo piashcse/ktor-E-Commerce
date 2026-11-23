@@ -4,6 +4,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.CouponDAO
+import com.piashcse.database.entities.CouponUsageDAO
 import com.piashcse.database.entities.CouponUsageTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
@@ -15,19 +16,17 @@ import com.piashcse.database.entities.PaymentTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReservationStatus
-import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
-import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.database.entities.calcCommission
 import com.piashcse.database.entities.removeSales
 import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.seller.SellerLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
@@ -129,7 +128,7 @@ object OrderCancellation {
 
     /** Releases coupon redemption rows for an order (used by cancellation and full refund). */
     fun reverseCouponUsageForOrder(orderId: String) {
-        com.piashcse.database.entities.CouponUsageDAO.find {
+        CouponUsageDAO.find {
             CouponUsageTable.orderId eq orderId.entityID(OrderTable)
         }.forEach { usage ->
             CouponDAO.findById(usage.couponId.value)?.let { coupon ->
@@ -139,13 +138,7 @@ object OrderCancellation {
         }
     }
 
-    private fun reverseSellerTotals(order: OrderDAO) {
-        val seller =
-            SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull() ?: return
-        val subtract = order.subTotal.max(BigDecimal.ZERO)
-        seller.totalSales = seller.totalSales.subtract(subtract).max(BigDecimal.ZERO)
-        seller.totalCommission = seller.totalCommission.subtract(seller.calcCommission(subtract)).max(BigDecimal.ZERO)
-    }
+    private fun reverseSellerTotals(order: OrderDAO) = SellerLedger.reverseOrder(order)
 
     private fun reverseSellerPayout(order: OrderDAO) {
         SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->

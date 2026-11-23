@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.AvsResult
 import com.piashcse.constants.CvvResult
 import com.piashcse.constants.PaymentMethod
@@ -16,7 +17,7 @@ object PaymentTable : BaseIdTable("payment") {
     val orderId = reference("order_id", OrderTable.id)
     val userId = reference("user_id", UserTable.id)
     val amount = decimal("amount", 10, 2)
-    val currency = varchar("currency", 3).default("USD")
+    val currency = varchar("currency", 3).default(AppConstants.DEFAULT_CURRENCY)
     val status = enumerationByName("status", 30, PaymentStatus::class).clientDefault { PaymentStatus.PENDING }
     val paymentMethod = enumerationByName("payment_method", 50, PaymentMethod::class)
     val transactionId = varchar("transaction_id", 100).nullable().uniqueIndex()

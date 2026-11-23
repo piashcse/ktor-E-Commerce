@@ -135,7 +135,7 @@ class ApiKeyService {
                 val user = UserDAO.findById(key.userId.value) ?: return@query null
                 if (!user.isActiveAndVerified()) return@query null
                 val now = currentUtc()
-                if (key.lastUsedAt == null || key.lastUsedAt!!.isBefore(now.minusMinutes(5))) {
+                if (key.lastUsedAt?.isBefore(now.minusMinutes(5)) ?: true) {
                     key.lastUsedAt = now
                 }
                 key to user

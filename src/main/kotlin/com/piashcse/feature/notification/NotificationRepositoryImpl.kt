@@ -13,6 +13,7 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.cursorPage
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -59,7 +60,7 @@ class NotificationRepositoryImpl : NotificationRepository {
         limit: Int,
         offset: Int,
         unreadOnly: Boolean,
-    ) = query {
+    ) = readQuery {
         NotificationTable.selectAll().andWhere { NotificationTable.userId eq userId }
             .also { q ->
                 // Preference rows share this table (no extra migration); they are
@@ -77,7 +78,7 @@ class NotificationRepositoryImpl : NotificationRepository {
         cursor: String?,
         unreadOnly: Boolean,
     ): CursorPage<NotificationResponse> =
-        query {
+        readQuery {
             val query =
                 NotificationTable.selectAll().andWhere {
                     (NotificationTable.userId eq userId) and (NotificationTable.type neq PREFS_TYPE)
@@ -89,7 +90,7 @@ class NotificationRepositoryImpl : NotificationRepository {
         }
 
     override suspend fun unreadCount(userId: String): Long =
-        query {
+        readQuery {
             NotificationDAO.find {
                 (NotificationTable.userId eq userId) and
                     (NotificationTable.isRead eq false) and
@@ -185,7 +186,7 @@ class NotificationRepositoryImpl : NotificationRepository {
     }
 
     override suspend fun getPreferences(userId: String) =
-        query {
+        readQuery {
             NotificationPreferencesResponse(userId, storedChannel(userId))
         }
 
