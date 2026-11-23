@@ -71,8 +71,7 @@ fun Application.configureAll() {
     StockReservationCleanup.start(this)
     MaintenanceCleanup.start(this)
     SubscriptionBillingWorker.start(this, get<SubscriptionService>())
-    @Suppress("DEPRECATION")
-    environment.monitor.subscribe(ApplicationStopping) {
+    monitor.subscribe(ApplicationStopping) {
         // Stop producers and consumers before tearing down the datasource.
         OutboxPoller.stop()
         AsyncWorker.stop()
@@ -81,8 +80,7 @@ fun Application.configureAll() {
         SubscriptionBillingWorker.stop()
         EventBus.stop()
     }
-    @Suppress("DEPRECATION")
-    environment.monitor.subscribe(ApplicationStopped) {
+    monitor.subscribe(ApplicationStopped) {
         closeDataSource()
     }
 }
