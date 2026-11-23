@@ -196,8 +196,41 @@ class ProductRepositoryImpl : ProductRepository {
             }
         }
 
+    private fun ProductDAO.applyUpdate(updateProduct: UpdateProductRequest) {
+        categoryId = updateProduct.categoryId?.let { it.entityID(ProductCategoryTable) } ?: categoryId
+        subCategoryId = updateProduct.subCategoryId?.let { it.entityID(ProductSubCategoryTable) } ?: subCategoryId
+        brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
+        name = updateProduct.name ?: name
+        description = updateProduct.description ?: description
+        updateProduct.productCode?.let { sku = it.takeIf { value -> value.isNotBlank() } ?: sku }
+        updateProduct.barcode?.let { barcode = it.takeIf { value -> value.isNotBlank() } }
+        updateProduct.weight?.let { weight = BigDecimal.valueOf(it) }
+        updateProduct.dimensions?.let { dimensions = it.takeIf { value -> value.isNotBlank() } }
+        updateProduct.minOrderQuantity?.let { minOrderQuantity = it.coerceAtLeast(1) }
+        val effectivePrice = updateProduct.price?.let { Money.scale2(it) } ?: price
+        val effectiveDiscount =
+            when {
+                updateProduct.clearDiscountPrice -> null
+                updateProduct.discountPrice != null -> Money.scale2(updateProduct.discountPrice)
+                else -> discountPrice
+            }
+        if (effectiveDiscount != null && effectiveDiscount >= effectivePrice) {
+            throw ValidationException("Discount price must be lower than the regular price")
+        }
+        price = effectivePrice
+        discountPrice = effectiveDiscount
+        status = updateProduct.status ?: status
+        discountPercentage = Money.discountPercent(price, discountPrice)
+        videoLink = updateProduct.videoLink ?: videoLink
+        // hotDeal/featured are admin-curated; seller updates cannot change them.
+        freeShipping = updateProduct.freeShipping ?: freeShipping
+        isDigital = updateProduct.isDigital ?: isDigital
+        updateProduct.digitalAssetUrl?.let { digitalAssetUrl = it.takeIf { value -> value.isNotBlank() } }
+        updateProduct.digitalFileName?.let { digitalFileName = it.takeIf { value -> value.isNotBlank() } }
+        if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
+    }
+
     /** Legacy update path kept together for atomic validation. */
-    @Suppress("CyclomaticComplexMethod")
     override suspend fun updateProduct(
         userId: String,
         productId: String,
@@ -208,39 +241,8 @@ class ProductRepositoryImpl : ProductRepository {
             val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
             product.verifyOwnership(userId, "product") { it.userId.value }
 
-            product.apply {
-                categoryId = updateProduct.categoryId?.let { it.entityID(ProductCategoryTable) } ?: categoryId
-                subCategoryId = updateProduct.subCategoryId?.let { it.entityID(ProductSubCategoryTable) } ?: subCategoryId
-                brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
-                name = updateProduct.name ?: name
-                description = updateProduct.description ?: description
-                updateProduct.productCode?.let { sku = it.takeIf { value -> value.isNotBlank() } ?: sku }
-                updateProduct.barcode?.let { barcode = it.takeIf { value -> value.isNotBlank() } }
-                updateProduct.weight?.let { weight = BigDecimal.valueOf(it) }
-                updateProduct.dimensions?.let { dimensions = it.takeIf { value -> value.isNotBlank() } }
-                updateProduct.minOrderQuantity?.let { minOrderQuantity = it.coerceAtLeast(1) }
-                val effectivePrice = updateProduct.price?.let { Money.scale2(it) } ?: price
-                val effectiveDiscount =
-                    when {
-                        updateProduct.clearDiscountPrice -> null
-                        updateProduct.discountPrice != null -> Money.scale2(updateProduct.discountPrice)
-                        else -> discountPrice
-                    }
-                if (effectiveDiscount != null && effectiveDiscount >= effectivePrice) {
-                    throw ValidationException("Discount price must be lower than the regular price")
-                }
-                price = effectivePrice
-                discountPrice = effectiveDiscount
-                status = updateProduct.status ?: status
-                discountPercentage = Money.discountPercent(price, discountPrice)
-                videoLink = updateProduct.videoLink ?: videoLink
-                // hotDeal/featured are admin-curated; seller updates cannot change them.
-                freeShipping = updateProduct.freeShipping ?: freeShipping
-                isDigital = updateProduct.isDigital ?: isDigital
-                updateProduct.digitalAssetUrl?.let { digitalAssetUrl = it.takeIf { value -> value.isNotBlank() } }
-                updateProduct.digitalFileName?.let { digitalFileName = it.takeIf { value -> value.isNotBlank() } }
-                if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
-            }.toProductResponse(
+            product.applyUpdate(updateProduct)
+            product.toProductResponse(
                 stockQuantity = stockByProductIds(listOf(product.id.value))[product.id.value] ?: 0,
             )
         }
