@@ -16,13 +16,13 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object DatabaseLeadership {
     private val log = LoggerFactory.getLogger(DatabaseLeadership::class.java)
-    private val connections = ConcurrentHashMap<String, Connection>()
+    private val connections = ConcurrentHashMap<String, Pair<Connection, Long>>()
 
     fun tryAcquire(
         name: String,
         lockId: Long,
     ): Boolean {
-        connections[name]?.let { return !it.isClosed }
+        connections[name]?.let { return !it.first.isClosed }
         return runCatching {
             val connection = getHikariDataSource().connection
             val acquired =
@@ -31,7 +31,7 @@ object DatabaseLeadership {
                     statement.executeQuery().use { rows -> rows.next() && rows.getBoolean(1) }
                 }
             if (acquired) {
-                connections[name] = connection
+                connections[name] = connection to lockId
                 log.info("Acquired worker leadership lock '$name' ($lockId)")
                 true
             } else {
@@ -44,10 +44,10 @@ object DatabaseLeadership {
     }
 
     fun release(name: String) {
-        connections.remove(name)?.let { connection ->
+        connections.remove(name)?.let { (connection, lockId) ->
             runCatching {
                 connection.prepareStatement("SELECT pg_advisory_unlock(?)").use { statement ->
-                    statement.setLong(1, LOCK_IDS[name] ?: return@use)
+                    statement.setLong(1, lockId)
                     statement.executeQuery().close()
                 }
             }.onFailure { log.warn("Failed to release worker leadership lock '$name'", it) }
@@ -58,13 +58,4 @@ object DatabaseLeadership {
     fun releaseAll() {
         connections.keys.toList().forEach(::release)
     }
-
-    private val LOCK_IDS =
-        mapOf(
-            "outbox-poller" to 7_100_001L,
-            "async-worker" to 7_100_002L,
-            "stock-reservation-cleanup" to 7_100_003L,
-            "maintenance-cleanup" to 7_100_004L,
-            "subscription-billing" to 7_100_005L,
-        )
 }
