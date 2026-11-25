@@ -6,6 +6,8 @@ import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.checkout.GuestCheckoutService
 import com.piashcse.feature.cms.CmsService
+import com.piashcse.feature.featureflag.FeatureFlagRepository
+import com.piashcse.feature.featureflag.FeatureFlagRepositoryImpl
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.fraud.ChargebackService
 import com.piashcse.feature.fraud.FraudService
@@ -76,7 +78,8 @@ val featureServiceModule =
         single { PromotionService() }
         single { FxService() }
         single { TaxService() }
-        single { FeatureFlags() }
+        single<FeatureFlagRepository> { FeatureFlagRepositoryImpl() }
+        single { FeatureFlags(get()) }
         single { OutboxService() }
 
         // Catalog services

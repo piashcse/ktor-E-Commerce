@@ -17,12 +17,14 @@ import com.piashcse.feature.apikey.ApiKeyCreateRequest
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.MfaService
+import com.piashcse.feature.featureflag.FeatureFlagRepositoryImpl
 import com.piashcse.feature.featureflag.FeatureFlagUpdateRequest
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.i18n.ProductTranslationRequest
 import com.piashcse.feature.i18n.ProductTranslationService
 import com.piashcse.feature.kyc.KycService
 import com.piashcse.feature.kyc.SellerKycSubmitRequest
+import com.piashcse.feature.notification.NotificationPreferenceRepositoryImpl
 import com.piashcse.feature.notification.NotificationPreferencesService
 import com.piashcse.feature.outbox.OutboxService
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
@@ -223,7 +225,7 @@ class ServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { fx.listRates() }.any { it.targetCurrency == "EUR" })
 
         // Feature flags
-        val flags = FeatureFlags()
+        val flags = FeatureFlags(FeatureFlagRepositoryImpl())
         val flagKey = "service_flag_$suffix"
         kotlinx.coroutines.runBlocking { flags.set(flagKey, FeatureFlagUpdateRequest(true, "integration")) }
         assertTrue(kotlinx.coroutines.runBlocking { flags.isEnabled(flagKey) })
@@ -253,7 +255,7 @@ class ServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { shipping.deleteShippingMethod(method.id) })
 
         // Notification preferences
-        val prefs = NotificationPreferencesService()
+        val prefs = NotificationPreferencesService(NotificationPreferenceRepositoryImpl())
         val saved = kotlinx.coroutines.runBlocking { prefs.set(customerId, "ORDER_PLACED", "EMAIL") }
         assertEquals("EMAIL", saved.channel)
         assertEquals("EMAIL", kotlinx.coroutines.runBlocking { prefs.get(customerId, "ORDER_PLACED") }.channel)
