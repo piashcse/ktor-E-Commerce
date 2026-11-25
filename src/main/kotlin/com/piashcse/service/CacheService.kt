@@ -1,5 +1,6 @@
 package com.piashcse.service
 
+import com.piashcse.utils.common.AppClock
 import java.util.concurrent.ConcurrentHashMap
 
 interface Cache {
@@ -40,7 +41,7 @@ class MemoryCache(
 
     override suspend fun <T> get(key: String): T? {
         val entry = store[key] ?: return null
-        if (System.currentTimeMillis() > entry.expiresAt) {
+        if (AppClock.now().toEpochMilli() > entry.expiresAt) {
             store.remove(key)
             return null
         }
@@ -54,12 +55,12 @@ class MemoryCache(
         ttlSeconds: Long,
     ) {
         val ttl = if (ttlSeconds > 0) ttlSeconds else defaultTtlSeconds
-        store[key] = CacheEntry(value, System.currentTimeMillis() + ttl * 1000)
+        store[key] = CacheEntry(value, AppClock.now().toEpochMilli() + ttl * 1000)
         if (store.size > maxEntries) evict()
     }
 
     private fun evict() {
-        val now = System.currentTimeMillis()
+        val now = AppClock.now().toEpochMilli()
         store.entries.removeIf { it.value.expiresAt < now }
         if (store.size <= maxEntries) return
         // Still over the cap: drop arbitrary entries until under the limit.
