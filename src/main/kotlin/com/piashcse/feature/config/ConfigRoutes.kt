@@ -6,30 +6,16 @@ package com.piashcse.feature.config
 
 import com.piashcse.config.DotEnv
 import com.piashcse.constants.AppConstants
-import com.piashcse.constants.PaymentMethod
 import com.piashcse.feature.featureflag.FeatureFlags
-import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.availablePaymentMethods
 import com.piashcse.plugin.generalRateLimit
+import com.piashcse.service.payment.*
+import com.piashcse.service.payment.PaymentGateway
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class PublicConfigResponse(
-    val guestCheckout: Boolean,
-    val requirePolicyConsent: Boolean,
-    val supportedCurrencies: List<String>,
-    val baseCurrency: String = AppConstants.DEFAULT_CURRENCY,
-    /** Methods the checkout may offer right now (prevents unpayable orders). */
-    val paymentMethods: List<PaymentMethod> = emptyList(),
-    val paymentProvider: String = "MANUAL",
-    val freeShippingThreshold: String = "75.00",
-    val returnWindowDays: Int = 30,
-)
 
 /** Read-only runtime configuration safe for unauthenticated storefront clients. */
 fun Route.configRoutes() {

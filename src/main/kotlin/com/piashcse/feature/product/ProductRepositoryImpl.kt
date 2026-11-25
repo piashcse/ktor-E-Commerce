@@ -14,6 +14,7 @@ import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchResponse
 import com.piashcse.model.response.SearchSuggestionsResponse
 import com.piashcse.model.response.SuggestionItem
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -39,7 +40,7 @@ class ProductRepositoryImpl : ProductRepository {
 
     private fun generateSKU(name: String) =
         name.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase() +
-            System.currentTimeMillis().toString().takeLast(6)
+            AppClock.now().toEpochMilli().toString().takeLast(6)
 
     private fun calcDiscountPct(
         price: BigDecimal,

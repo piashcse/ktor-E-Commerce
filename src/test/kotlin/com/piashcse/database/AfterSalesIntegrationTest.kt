@@ -26,6 +26,7 @@ import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderPlacementService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
@@ -34,7 +35,6 @@ import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
@@ -43,6 +43,7 @@ import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ConflictException
@@ -171,7 +172,10 @@ class AfterSalesIntegrationTest {
             }
         val methodId = kotlinx.coroutines.runBlocking { ShippingMethodRepositoryImpl().getShippingMethods(10, 0) }.data.first().id
         val cart = CartRepositoryImpl()
-        val orders = OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService())
+        val orders =
+            OrderRepositoryImpl(
+                OrderPlacementService(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()),
+            )
         val payments =
             PaymentRepositoryImpl(
                 ManualPaymentGateway(),

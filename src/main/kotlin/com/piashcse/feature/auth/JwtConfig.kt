@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.common.AppClock
 import java.util.*
 
 object JwtConfig {
@@ -29,6 +30,6 @@ object JwtConfig {
             .withClaim("userId", jwtTokenBody.userId)
             .withClaim("userType", jwtTokenBody.userType)
             .withClaim("tokenVersion", tokenVersion)
-            .withExpiresAt(Date(System.currentTimeMillis() + VALIDITY_MS))
+            .withExpiresAt(Date(AppClock.now().toEpochMilli() + VALIDITY_MS))
             .sign(algorithm)
 }

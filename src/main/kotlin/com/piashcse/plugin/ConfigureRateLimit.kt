@@ -4,6 +4,7 @@ package com.piashcse.plugin
 
 import com.piashcse.config.DotEnv
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.service.RedisRateLimiter
 import com.piashcse.utils.extension.clientIp
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -41,24 +42,27 @@ fun Application.configureRateLimiting() {
     val adminCfg = DotEnv.getRateLimit("RATE_LIMIT_ADMIN_WRITE", 100, 1)
     val generalCfg = DotEnv.getRateLimit("RATE_LIMIT_GENERAL", 100, 1)
 
+    val redisUrl = DotEnv.get("REDIS_URL", "")
+
     install(RateLimit) {
-        registerGlobalZone(RateLimitNames.AUTH, authCfg)
-        registerGlobalZone(RateLimitNames.OTP, otpCfg)
-        registerGlobalZone(RateLimitNames.REFRESH_TOKEN, refreshCfg)
-        registerPerUserZone(RateLimitNames.WRITE, writeCfg)
-        registerGlobalZone(RateLimitNames.SEARCH, searchCfg)
-        registerPerUserZone(RateLimitNames.SELLER_WRITE, sellerCfg)
-        registerPerUserZone(RateLimitNames.ADMIN_WRITE, adminCfg)
-        registerGlobalZone(RateLimitNames.GENERAL, generalCfg)
+        registerGlobalZone(RateLimitNames.AUTH, authCfg, redisUrl)
+        registerGlobalZone(RateLimitNames.OTP, otpCfg, redisUrl)
+        registerGlobalZone(RateLimitNames.REFRESH_TOKEN, refreshCfg, redisUrl)
+        registerPerUserZone(RateLimitNames.WRITE, writeCfg, redisUrl)
+        registerGlobalZone(RateLimitNames.SEARCH, searchCfg, redisUrl)
+        registerPerUserZone(RateLimitNames.SELLER_WRITE, sellerCfg, redisUrl)
+        registerPerUserZone(RateLimitNames.ADMIN_WRITE, adminCfg, redisUrl)
+        registerGlobalZone(RateLimitNames.GENERAL, generalCfg, redisUrl)
     }
 }
 
 private fun RateLimitConfig.registerGlobalZone(
     name: String,
     cfg: DotEnv.RateLimitConfig,
+    redisUrl: String,
 ) {
     register(RateLimitName(name)) {
-        rateLimiter(limit = cfg.limit, refillPeriod = cfg.refillMinutes.minutes)
+        rateLimiter(name, cfg, redisUrl)
         requestKey { call -> call.clientIp }
     }
 }
@@ -66,12 +70,32 @@ private fun RateLimitConfig.registerGlobalZone(
 private fun RateLimitConfig.registerPerUserZone(
     name: String,
     cfg: DotEnv.RateLimitConfig,
+    redisUrl: String,
 ) {
     register(RateLimitName(name)) {
-        rateLimiter(limit = cfg.limit, refillPeriod = cfg.refillMinutes.minutes)
+        rateLimiter(name, cfg, redisUrl)
         requestKey { call ->
             call.principal<JwtTokenRequest>()?.userId?.let { "user:$it" }
                 ?: call.clientIp
+        }
+    }
+}
+
+private fun RateLimitProviderConfig.rateLimiter(
+    zone: String,
+    cfg: DotEnv.RateLimitConfig,
+    redisUrl: String,
+) {
+    if (redisUrl.isBlank()) {
+        rateLimiter(limit = cfg.limit, refillPeriod = cfg.refillMinutes.minutes)
+    } else {
+        rateLimiter { _, key ->
+            RedisRateLimiter(
+                zone = zone,
+                key = key.toString(),
+                limit = cfg.limit,
+                refillMillis = cfg.refillMinutes * 60_000,
+            )
         }
     }
 }

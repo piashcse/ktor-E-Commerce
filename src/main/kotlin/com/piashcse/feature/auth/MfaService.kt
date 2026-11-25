@@ -1,6 +1,7 @@
 package com.piashcse.feature.auth
 
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.utils.common.AppClock
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.ValidationException
@@ -91,26 +92,26 @@ class MfaService(
     fun verifyStoredSecret(
         storedSecret: String,
         code: String,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = AppClock.now().toEpochMilli(),
     ): Boolean = verifyStoredStep(storedSecret, code, nowMillis) != null
 
     fun verifyStoredStep(
         storedSecret: String,
         code: String,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = AppClock.now().toEpochMilli(),
     ): Long? = verifyStep(cipher.decrypt(storedSecret), code, nowMillis)
 
     fun verify(
         secret: String,
         code: String,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = AppClock.now().toEpochMilli(),
     ): Boolean = verifyStep(secret, code, nowMillis) != null
 
     /** Returns the matched TOTP step so callers can reject replay of the same step. */
     fun verifyStep(
         secret: String,
         code: String,
-        nowMillis: Long = System.currentTimeMillis(),
+        nowMillis: Long = AppClock.now().toEpochMilli(),
     ): Long? {
         if (!code.matches(Regex("\\d{6}"))) return null
         val current = nowMillis / 1000 / 30

@@ -52,14 +52,6 @@ enum class RefundMethod {
 }
 
 @Serializable
-enum class KycStatus {
-    NOT_SUBMITTED,
-    PENDING,
-    VERIFIED,
-    REJECTED,
-}
-
-@Serializable
 enum class RmaType {
     RETURN,
     EXCHANGE,
@@ -143,64 +135,6 @@ enum class ShipmentStatus {
     FAILED,
 }
 
-/** Fraud metric evaluated by a velocity rule. */
-@Serializable
-enum class FraudMetric {
-    ORDER_COUNT,
-    ORDER_AMOUNT,
-    PAYMENT_ATTEMPTS,
-}
-
-/** Rule action when a fraud threshold is met. */
-@Serializable
-enum class RiskAction {
-    ALLOW,
-    REVIEW,
-    REQUIRE_3DS,
-    BLOCK,
-}
-
-/** Final risk decision stored on the payment. */
-@Serializable
-enum class RiskDecision {
-    ALLOW,
-    REVIEW,
-    BLOCK,
-}
-
-/** Address Verification System result supplied by the processor. */
-@Serializable
-enum class AvsResult {
-    MATCH,
-    PARTIAL,
-    MISMATCH,
-    UNKNOWN,
-}
-
-/** Card Verification Value result supplied by the processor. */
-@Serializable
-enum class CvvResult {
-    MATCH,
-    MISMATCH,
-    UNKNOWN,
-}
-
-@Serializable
-enum class BlocklistType {
-    USER,
-    EMAIL,
-    IP,
-}
-
-@Serializable
-enum class ChargebackStatus {
-    OPEN,
-    UNDER_REVIEW,
-    WON,
-    LOST,
-    CLOSED,
-}
-
 @Serializable
 enum class WalletEntryType {
     POINTS_EARN,
@@ -238,23 +172,6 @@ enum class AnalyticsEventType {
     CHECKOUT_START,
     PURCHASE,
     SIGNUP,
-}
-
-/** Buyer/seller dispute categories. */
-@Serializable
-enum class DisputeType {
-    ORDER_ISSUE,
-    PAYOUT,
-    REVIEW,
-    OTHER,
-}
-
-@Serializable
-enum class DisputeStatus {
-    OPEN,
-    UNDER_REVIEW,
-    RESOLVED,
-    REJECTED,
 }
 
 @Serializable
@@ -329,70 +246,6 @@ enum class PickupStatus {
 enum class PosSessionStatus {
     OPEN,
     CLOSED,
-}
-
-@Serializable
-enum class CmsPageStatus {
-    DRAFT,
-    PUBLISHED,
-    ARCHIVED,
-}
-
-@Serializable
-enum class SeoEntityType {
-    HOME,
-    PAGE,
-    PRODUCT,
-    CATEGORY,
-    SHOP,
-}
-
-@Serializable
-enum class TicketCategory {
-    ORDER,
-    PAYMENT,
-    ACCOUNT,
-    PRODUCT,
-    OTHER,
-}
-
-@Serializable
-enum class TicketPriority {
-    LOW,
-    NORMAL,
-    HIGH,
-    URGENT,
-}
-
-@Serializable
-enum class TicketStatus {
-    OPEN,
-    PENDING,
-    RESOLVED,
-    CLOSED,
-}
-
-@Serializable
-enum class SupportSenderRole {
-    CUSTOMER,
-    SELLER,
-    ADMIN,
-    SYSTEM,
-}
-
-@Serializable
-enum class PolicyType {
-    PRIVACY_POLICY,
-    TERMS_CONDITIONS,
-    REFUND_POLICY,
-    COOKIE_POLICY,
-    DISCLAIMER,
-    EULA,
-    SHIPPING_POLICY,
-    ;
-
-    val isLegalPolicy get() = this in listOf(PRIVACY_POLICY, TERMS_CONDITIONS, DISCLAIMER, EULA)
-    val requiresConsent get() = this != SHIPPING_POLICY
 }
 
 /**
@@ -507,45 +360,5 @@ enum class InventoryStatus {
                 stock <= minLevel -> LOW_STOCK
                 else -> IN_STOCK
             }
-    }
-}
-
-/**
- * User role hierarchy and permissions
- */
-@Serializable
-enum class UserType {
-    SUPER_ADMIN,
-    ADMIN,
-    SELLER,
-    CUSTOMER,
-    ;
-
-    val isSuperAdmin get() = this == SUPER_ADMIN
-    val isAdminOrHigher get() = this in listOf(SUPER_ADMIN, ADMIN)
-    val isSellerOrHigher get() = this in listOf(SUPER_ADMIN, ADMIN, SELLER)
-    val isCustomerOrHigher get() = true // All roles can act as customers
-
-    fun canManage(targetUserType: UserType): Boolean =
-        when (this) {
-            SUPER_ADMIN -> true
-            ADMIN -> targetUserType != SUPER_ADMIN && targetUserType != ADMIN
-            SELLER -> targetUserType == CUSTOMER
-            CUSTOMER -> targetUserType == CUSTOMER
-        }
-
-    fun hasAccessTo(role: UserType): Boolean =
-        when (role) {
-            SUPER_ADMIN -> this == SUPER_ADMIN
-            ADMIN -> this.isAdminOrHigher
-            SELLER -> this.isSellerOrHigher
-            CUSTOMER -> this.isCustomerOrHigher
-        }
-
-    /** Strict least-privilege check: exact role match, no hierarchy. Used by customerOnlyAuth. */
-    fun hasExactRole(role: UserType): Boolean = this == role
-
-    companion object {
-        fun fromString(role: String): UserType? = values().find { it.name.equals(role.trim(), ignoreCase = true) }
     }
 }

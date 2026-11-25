@@ -8,10 +8,9 @@ import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminAudit
 import com.piashcse.feature.loyalty.LoyaltyService
-import com.piashcse.feature.refund_request.RefundRequestRepository
-import com.piashcse.feature.subscription.DigitalDeliveryService
-import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.service.AppMetrics
+import com.piashcse.service.DigitalDeliveryService
+import com.piashcse.service.payment.*
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
 import com.piashcse.utils.validator.NotFoundException
@@ -23,8 +22,8 @@ import org.jetbrains.exposed.v1.core.or
 /** Payment provider webhook verification, state reconciliation and replay. */
 class PaymentWebhookService(
     private val gateway: PaymentGateway,
-    private val refunds: RefundRequestRepository,
-    private val subscriptionBilling: SubscriptionBillingService,
+    private val refunds: com.piashcse.service.payment.RefundReconciliationPort,
+    private val subscriptionBilling: com.piashcse.service.payment.SubscriptionBillingPort,
     private val loyaltyService: LoyaltyService,
     private val digitalDelivery: DigitalDeliveryService,
     private val gatewayBreaker: CircuitBreaker,

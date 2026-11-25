@@ -7,7 +7,6 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.order.OrderRepository
-import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.availablePaymentMethods
 import com.piashcse.feature.payment.isMethodAllowed
 import com.piashcse.feature.policy.PolicyRepository
@@ -26,6 +25,8 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.service.payment.*
+import com.piashcse.service.payment.PaymentGateway
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey

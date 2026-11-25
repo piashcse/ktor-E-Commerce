@@ -9,7 +9,7 @@ import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.utils.common.PaginatedResponse
 import java.time.Instant
 
-interface RefundRequestRepository {
+interface RefundRequestRepository : com.piashcse.service.payment.RefundReconciliationPort {
     suspend fun createRefundRequest(
         userId: String,
         orderId: String,
@@ -74,7 +74,7 @@ interface RefundRequestRepository {
      * Reconciles a provider-initiated refund update. Idempotent: once the local
      * request is REFUNDED, repeat updates only refresh the provider status.
      */
-    suspend fun reconcileProviderRefund(
+    override suspend fun reconcileProviderRefund(
         providerRefundId: String,
         status: String,
         amount: java.math.BigDecimal?,

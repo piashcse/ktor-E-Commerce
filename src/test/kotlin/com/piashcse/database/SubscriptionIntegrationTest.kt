@@ -25,16 +25,17 @@ import com.piashcse.database.entities.SubscriptionInvoiceTable
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.feature.payment.GatewayChargeResult
-import com.piashcse.feature.payment.GatewayRefundResult
-import com.piashcse.feature.payment.GatewayWebhookEvent
 import com.piashcse.feature.payment.ManualPaymentGateway
-import com.piashcse.feature.payment.PaymentGateway
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscribeRequest
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionPlanRequest
 import com.piashcse.feature.subscription.SubscriptionService
+import com.piashcse.service.DigitalDeliveryService
+import com.piashcse.service.payment.*
+import com.piashcse.service.payment.GatewayChargeResult
+import com.piashcse.service.payment.GatewayRefundResult
+import com.piashcse.service.payment.GatewayWebhookEvent
+import com.piashcse.service.payment.PaymentGateway
 import com.piashcse.utils.extension.entityID
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
@@ -79,7 +80,7 @@ class SubscriptionIntegrationTest {
         ): Boolean = false
 
         override fun parseWebhook(payload: String): GatewayWebhookEvent =
-            GatewayWebhookEvent("fake", PaymentProvider.STRIPE, com.piashcse.feature.payment.GatewayEventType.UNKNOWN)
+            GatewayWebhookEvent("fake", PaymentProvider.STRIPE, com.piashcse.service.payment.GatewayEventType.UNKNOWN)
 
         override suspend fun chargeSubscription(
             subscriptionId: String,

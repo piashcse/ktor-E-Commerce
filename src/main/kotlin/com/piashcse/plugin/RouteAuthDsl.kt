@@ -309,17 +309,3 @@ fun Route.sellerWriteRateLimit(build: Route.() -> Unit) {
 fun Route.adminWriteRateLimit(build: Route.() -> Unit) {
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) { build() }
 }
-
-/**
- * Combined auth + rate-limit scope: folds requireRole + rateLimit into one nest.
- * Identical semantics to `requireRole(*roles) { rateLimit(limitName) { build() } }`.
- */
-fun Route.authenticatedWrite(
-    vararg roles: UserType,
-    limitName: RateLimitName,
-    build: Route.() -> Unit,
-) {
-    requireRole(*roles) {
-        rateLimit(limitName) { build() }
-    }
-}

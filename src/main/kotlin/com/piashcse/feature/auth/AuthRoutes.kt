@@ -41,14 +41,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class OtpVerificationRequest(val userId: String, val otp: String)
-
-@Serializable
-data class SocialLoginRequest(val idToken: String, val mfaCode: String? = null)
 
 /**
  * Authentication and registration routes.

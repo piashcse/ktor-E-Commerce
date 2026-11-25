@@ -23,7 +23,6 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
 /** Admin velocity rules, blocklists and high-risk payment feed. */
@@ -102,9 +101,6 @@ fun Route.paymentRiskAdminRoutes() {
         }
     }
 }
-
-@Serializable
-data class ChargebackEvidenceRequest(val evidenceUrl: String)
 
 /** Admin chargeback/dispute workflow. */
 fun Route.chargebackAdminRoutes() {

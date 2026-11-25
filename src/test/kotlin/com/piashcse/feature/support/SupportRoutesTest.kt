@@ -23,6 +23,7 @@ import kotlin.test.assertEquals
 
 class SupportRoutesTest {
     private val service: SupportService = mockk()
+    private val adminService: SupportAdminService = mockk()
 
     private fun summary() =
         TicketSummaryResponse(
@@ -48,7 +49,12 @@ class SupportRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(module { single { service } })
+            installTestInfra(
+                module {
+                    single { service }
+                    single { adminService }
+                },
+            )
             routing {
                 route("/api/v1/support/tickets") { supportRoutes() }
                 route("/api/v1/admin/support/tickets") { adminAuth { supportAdminRoutes() } }
@@ -125,8 +131,8 @@ class SupportRoutesTest {
     @Test
     fun `admin replies internally and updates status`() =
         testApplication {
-            coEvery { service.adminReply("admin-1", "ticket-1", any()) } returns ticket()
-            coEvery { service.adminUpdate("ticket-1", any(), "admin-1") } returns summary().copy(status = TicketStatus.RESOLVED)
+            coEvery { adminService.adminReply("admin-1", "ticket-1", any()) } returns ticket()
+            coEvery { adminService.adminUpdate("ticket-1", any(), "admin-1") } returns summary().copy(status = TicketStatus.RESOLVED)
             setup()
             val reply =
                 client.post("/api/v1/admin/support/tickets/ticket-1/messages") {

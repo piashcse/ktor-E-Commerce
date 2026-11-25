@@ -19,7 +19,7 @@ import com.piashcse.event.SendEmailEvent
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.feature.order.OrderCompletion
-import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse

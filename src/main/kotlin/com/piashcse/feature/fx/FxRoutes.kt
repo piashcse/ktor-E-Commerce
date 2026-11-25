@@ -3,6 +3,7 @@
 package com.piashcse.feature.fx
 
 import com.piashcse.database.entities.SupportedCurrencies
+import com.piashcse.model.request.FxRateRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.service.FxService
@@ -13,22 +14,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 import java.math.BigDecimal
-
-@Serializable
-data class FxRateRequest(
-    @Contextual val rate: BigDecimal,
-)
-
-@Serializable
-data class FxRateResponse(
-    val targetCurrency: String,
-    val rate: String,
-    val effectiveAt: String,
-)
 
 /** Public FX rates for storefront currency selection. */
 fun Route.fxPublicRoutes() {

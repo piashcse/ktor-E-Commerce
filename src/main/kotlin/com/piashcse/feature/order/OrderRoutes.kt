@@ -26,26 +26,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class ShipOrderRequest(val trackingNumber: String)
-
-@Serializable
-data class OrderMilestone(
-    val key: String,
-    val label: String,
-    val occurredAt: String? = null,
-)
-
-@Serializable
-data class OrderTimelineResponse(
-    val orderNumber: String,
-    val status: OrderStatus,
-    val trackingNumber: String? = null,
-    val milestones: List<OrderMilestone>,
-)
 
 private fun ApplicationCall.guestOrderCredentials(): Pair<String, String> =
     requireQueryParameter("orderNumber") to requireQueryParameter("email")

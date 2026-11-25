@@ -92,3 +92,6 @@ data class RiskAssessment(
 ) {
     val blocked: Boolean get() = decision == RiskDecision.BLOCK
 }
+
+@Serializable
+data class ChargebackEvidenceRequest(val evidenceUrl: String)

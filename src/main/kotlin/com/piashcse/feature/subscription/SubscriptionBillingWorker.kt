@@ -1,6 +1,5 @@
-package com.piashcse.service
+package com.piashcse.feature.subscription
 
-import com.piashcse.feature.subscription.SubscriptionService
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.time.Duration

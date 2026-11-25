@@ -9,8 +9,10 @@ import com.piashcse.database.entities.SubscriptionInvoiceTable
 import com.piashcse.database.entities.SubscriptionPlanDAO
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.service.AppMetrics
+import com.piashcse.service.DigitalDeliveryService
+import com.piashcse.service.payment.*
+import com.piashcse.service.payment.PaymentGateway
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -45,7 +47,7 @@ class SubscriptionBillingService(
     private val gateway: PaymentGateway,
     private val graceDays: Long = 3,
     private val maxAttempts: Int = 3,
-) {
+) : com.piashcse.service.payment.SubscriptionBillingPort {
     private data class RenewalSnapshot(
         val subscriptionId: String,
         val amount: BigDecimal,
@@ -297,11 +299,11 @@ class SubscriptionBillingService(
     ): Boolean = query { applyPaidInvoiceTx(invoiceId, providerReference) }
 
     /** Must run inside the invoice transaction. */
-    fun applyPaidInvoiceTx(
+    override fun applyPaidInvoiceTx(
         invoiceId: String,
         providerReference: String?,
-        paidAmount: BigDecimal? = null,
-        currency: String? = null,
+        paidAmount: BigDecimal?,
+        currency: String?,
     ): Boolean {
         val invoice =
             SubscriptionInvoiceDAO.find {
@@ -333,7 +335,7 @@ class SubscriptionBillingService(
     }
 
     /** Applies a provider failure event. Safe to call twice. */
-    fun applyFailedInvoiceTx(
+    override fun applyFailedInvoiceTx(
         invoiceId: String,
         reason: String,
     ): Boolean {

@@ -20,14 +20,15 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderPlacementService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import org.flywaydb.core.Flyway
@@ -156,11 +157,7 @@ class WarehouseAllocationIntegrationTest {
         val order =
             kotlinx.coroutines.runBlocking {
                 OrderRepositoryImpl(
-                    FxService(),
-                    TaxService(),
-                    PromotionService(),
-                    LoyaltyService(),
-                    DigitalDeliveryService(),
+                    OrderPlacementService(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()),
                 ).placeOrder(customerId, checkout)
             }.first()
 
@@ -178,11 +175,7 @@ class WarehouseAllocationIntegrationTest {
         val canceled =
             kotlinx.coroutines.runBlocking {
                 OrderRepositoryImpl(
-                    FxService(),
-                    TaxService(),
-                    PromotionService(),
-                    LoyaltyService(),
-                    DigitalDeliveryService(),
+                    OrderPlacementService(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()),
                 ).cancelOrder(order.orderId, customerId, "allocation test", UserType.CUSTOMER)
             }
         assertEquals(OrderStatus.CANCELED, canceled.status)
