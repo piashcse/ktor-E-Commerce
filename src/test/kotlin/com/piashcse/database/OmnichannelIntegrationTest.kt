@@ -23,13 +23,18 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.omnichannel.OmnichannelService
 import com.piashcse.feature.omnichannel.PosSaleItem
 import com.piashcse.feature.omnichannel.PosSaleRequest
 import com.piashcse.feature.omnichannel.PosSessionCloseRequest
 import com.piashcse.feature.omnichannel.PosSessionOpenRequest
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
+import com.piashcse.service.FxService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -192,7 +197,7 @@ class OmnichannelIntegrationTest {
             }
         }
 
-        val service = OmnichannelService()
+        val service = OmnichannelService(DigitalDeliveryService(), TaxService(), LoyaltyService())
         val stores = kotlinx.coroutines.runBlocking { service.stores(23.80, 90.40, 5.0, 10) }
         assertTrue(stores.any { it.id == warehouseId && it.distanceKm != null && it.distanceKm!! < 5.0 })
 
@@ -251,7 +256,7 @@ class OmnichannelIntegrationTest {
         kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }
         val bopis =
             kotlinx.coroutines.runBlocking {
-                OrderRepositoryImpl().placeOrder(
+                OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()).placeOrder(
                     customerId,
                     CheckoutRequest(
                         fulfillmentType = FulfillmentType.PICKUP,

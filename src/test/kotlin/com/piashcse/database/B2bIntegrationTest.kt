@@ -28,6 +28,8 @@ import com.piashcse.feature.b2b.QuoteItemRequest
 import com.piashcse.feature.b2b.QuotePricedItem
 import com.piashcse.feature.b2b.QuoteRequest
 import com.piashcse.feature.b2b.QuoteRespondRequest
+import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.validator.ValidationException
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -167,7 +169,7 @@ class B2bIntegrationTest {
             }
         }
 
-        val b2b = B2bService()
+        val b2b = B2bService(LoyaltyService(), DigitalDeliveryService())
         val applied =
             kotlinx.coroutines.runBlocking {
                 b2b.apply(buyerId, B2bAccountRequest("Acme Wholesale $suffix", "TAX-$suffix"))

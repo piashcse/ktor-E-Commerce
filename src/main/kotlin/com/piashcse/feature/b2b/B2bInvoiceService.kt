@@ -16,8 +16,10 @@ import com.piashcse.event.AdminAudit
 import com.piashcse.event.OutboxAggregate
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.SendEmailEvent
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.feature.order.OrderCompletion
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -39,7 +41,10 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.LocalDateTime
 
 /** B2B invoice lifecycle: listing, settlement, voiding and dunning. */
-class B2bInvoiceService {
+class B2bInvoiceService(
+    private val loyaltyService: LoyaltyService,
+    private val digitalDelivery: DigitalDeliveryService,
+) {
     suspend fun voidInvoice(
         invoiceId: String,
         actorUserId: String? = null,
@@ -152,7 +157,7 @@ class B2bInvoiceService {
                     } else {
                         // Same completion effects as card/offline payments: loyalty,
                         // payout ledger, digital delivery and reservation finalization.
-                        OrderCompletion.completeTx(order, payment)
+                        OrderCompletion.completeTx(order, payment, loyaltyService, digitalDelivery)
                     }
                 }
             }

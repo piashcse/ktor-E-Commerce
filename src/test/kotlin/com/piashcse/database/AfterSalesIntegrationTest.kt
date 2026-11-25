@@ -24,19 +24,26 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.payout.PayoutRepositoryImpl
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
+import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
@@ -194,8 +201,16 @@ class AfterSalesIntegrationTest {
             }
         val methodId = kotlinx.coroutines.runBlocking { ShippingMethodRepositoryImpl().getShippingMethods(10, 0) }.data.first().id
         val cart = CartRepositoryImpl()
-        val orders = OrderRepositoryImpl()
-        val payments = PaymentRepositoryImpl(ManualPaymentGateway())
+        val orders = OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService())
+        val payments =
+            PaymentRepositoryImpl(
+                ManualPaymentGateway(),
+                FraudService(),
+                LoyaltyService(),
+                DigitalDeliveryService(),
+                SubscriptionBillingService(DigitalDeliveryService(), ManualPaymentGateway()),
+                RefundRequestRepositoryImpl(ManualPaymentGateway()),
+            )
 
         kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }
         val checkout =
@@ -219,7 +234,7 @@ class AfterSalesIntegrationTest {
         kotlinx.coroutines.runBlocking { orders.updateOrderStatus(sellerUserId, order.orderId, OrderStatus.DELIVERED) }
 
         val itemId = assertNotNull(order.items?.firstOrNull()).id
-        val refunds = RefundRequestRepositoryImpl()
+        val refunds = RefundRequestRepositoryImpl(ManualPaymentGateway())
         val refund =
             kotlinx.coroutines.runBlocking {
                 refunds.createRefundRequest(customerId, order.orderId, RefundRequestRequest(itemId, "damaged", null, 1))

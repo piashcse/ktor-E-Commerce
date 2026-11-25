@@ -9,7 +9,6 @@ import com.piashcse.database.entities.SubscriptionInvoiceTable
 import com.piashcse.database.entities.SubscriptionPlanDAO
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.extension.entityID
@@ -42,8 +41,8 @@ data class SubscriptionBillingResult(
  * through [applyPaidInvoiceTx].
  */
 class SubscriptionBillingService(
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
-    private val gateway: PaymentGateway = ManualPaymentGateway(),
+    private val digitalDelivery: DigitalDeliveryService,
+    private val gateway: PaymentGateway,
     private val graceDays: Long = 3,
     private val maxAttempts: Int = 3,
 ) {

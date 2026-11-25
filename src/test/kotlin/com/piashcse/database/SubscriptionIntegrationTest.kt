@@ -28,6 +28,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.payment.GatewayChargeResult
 import com.piashcse.feature.payment.GatewayRefundResult
 import com.piashcse.feature.payment.GatewayWebhookEvent
+import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscribeRequest
@@ -218,7 +219,8 @@ class SubscriptionIntegrationTest {
             }
         }
 
-        val plans = SubscriptionService()
+        val plans =
+            SubscriptionService(DigitalDeliveryService(), SubscriptionBillingService(DigitalDeliveryService(), ManualPaymentGateway()))
         val plan =
             kotlinx.coroutines.runBlocking {
                 plans.createPlan(

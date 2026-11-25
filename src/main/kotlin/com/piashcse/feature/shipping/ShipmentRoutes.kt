@@ -8,7 +8,8 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireAdminPermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
-import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.common.ApiErrorCode
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondMessage
@@ -85,7 +86,10 @@ fun Route.shipmentRoutes() {
         } else {
             // 5xx tells the carrier to retry; 200 would permanently drop a
             // transient failure.
-            call.respond(HttpStatusCode.InternalServerError, MessageResponse(result.message))
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ApiError.of(result.message, ApiErrorCode.INTERNAL_SERVER_ERROR, HttpStatusCode.InternalServerError),
+            )
         }
     }.describe {
         summary = "Carrier tracking webhook"

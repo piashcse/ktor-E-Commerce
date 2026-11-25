@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 /** Gateway charge authorization/risk checks and compensation refunds. */
 internal class PaymentChargeService(
     private val gateway: PaymentGateway,
-    private val fraudService: FraudService = FraudService(),
+    private val fraudService: FraudService,
     private val gatewayBreaker: CircuitBreaker,
 ) {
     private val log = LoggerFactory.getLogger(PaymentChargeService::class.java)

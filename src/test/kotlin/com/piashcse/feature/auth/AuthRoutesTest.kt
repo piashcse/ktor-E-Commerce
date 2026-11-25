@@ -25,7 +25,7 @@ import kotlin.test.assertEquals
 
 class AuthRoutesTest {
     private val authRepo: AuthRepository = mockk()
-    private val userAuthService = UserAuthenticationService(authRepo)
+    private val userAuthService = UserAuthenticationService(authRepo, MfaService())
 
     private fun mockUser() =
         mockk<UserDAO> {

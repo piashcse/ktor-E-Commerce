@@ -30,7 +30,7 @@ import java.time.LocalDateTime
 
 /** Subscription enrollment, activation, cancellation, billing and invoices. */
 internal class SubscriptionLifecycleService(
-    private val billing: SubscriptionBillingService = SubscriptionBillingService(),
+    private val billing: SubscriptionBillingService,
 ) {
     suspend fun subscribe(
         userId: String,

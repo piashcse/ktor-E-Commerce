@@ -10,7 +10,6 @@ import com.piashcse.event.OutboxPublisher
 import com.piashcse.feature.config.StorefrontSettings
 import com.piashcse.feature.coupon.CouponRules
 import com.piashcse.feature.coupon.toSnapshot
-import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
@@ -40,14 +39,12 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-private val i18n = I18nService()
-
 class OrderRepositoryImpl(
-    private val fxService: FxService = FxService(),
-    private val taxService: TaxService = TaxService(),
-    private val promotionService: PromotionService = PromotionService(),
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
+    private val fxService: FxService,
+    private val taxService: TaxService,
+    private val promotionService: PromotionService,
+    private val loyaltyService: LoyaltyService,
+    private val digitalDelivery: DigitalDeliveryService,
 ) : OrderRepository {
     private val checkoutPreview = CheckoutPreviewService(fxService, taxService, promotionService, loyaltyService)
 

@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.PasskeyDeleteRequest
 import com.piashcse.feature.auth.PasskeyLoginOptionsRequest
 import com.piashcse.feature.auth.PasskeyLoginRequest
@@ -90,9 +91,9 @@ class PasskeyIntegrationTest {
             email = customer.email
         }
 
-        val service = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
+        val service = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000", MfaService())
         // A second instance simulates another node: the DB challenge store must be shared.
-        val otherNode = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
+        val otherNode = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000", MfaService())
         val keyPair = generateKeyPair()
         val credentialId = "cred-$suffix"
 

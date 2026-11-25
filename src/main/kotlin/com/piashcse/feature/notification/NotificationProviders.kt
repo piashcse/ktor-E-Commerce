@@ -83,7 +83,7 @@ class PushNotificationProvider : NotificationProvider {
  * channel. IN_APP is the default so the API-reported default and delivery agree.
  */
 class NotificationDispatcher(
-    private val preferences: NotificationPreferencesService = NotificationPreferencesService(),
+    private val preferences: NotificationPreferencesService,
 ) {
     private val providers =
         listOf(

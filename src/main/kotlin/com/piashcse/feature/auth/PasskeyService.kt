@@ -117,7 +117,7 @@ class PasskeyService(
     private val rpId: String,
     private val rpName: String,
     private val origin: String,
-    private val mfaService: MfaService = MfaService(),
+    private val mfaService: MfaService,
     private val requireUserVerification: Boolean = DotEnvConfig.webauthnRequireUv,
 ) {
     private val json = Json { ignoreUnknownKeys = true }

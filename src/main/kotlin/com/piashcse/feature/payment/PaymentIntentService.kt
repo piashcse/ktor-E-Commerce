@@ -28,9 +28,9 @@ import java.util.UUID
 /** Payment intent creation, risk checks, charge locking and confirmation. */
 class PaymentIntentService(
     private val gateway: PaymentGateway,
-    private val fraudService: FraudService = FraudService(),
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
+    private val fraudService: FraudService,
+    private val loyaltyService: LoyaltyService,
+    private val digitalDelivery: DigitalDeliveryService,
     private val gatewayBreaker: CircuitBreaker,
 ) {
     private val charges = PaymentChargeService(gateway, fraudService, gatewayBreaker)

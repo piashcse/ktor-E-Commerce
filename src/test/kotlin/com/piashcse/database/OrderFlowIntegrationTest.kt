@@ -21,6 +21,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.loyalty.AdminCreditRequest
 import com.piashcse.feature.loyalty.LoyaltyService
@@ -29,11 +30,16 @@ import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.promotion.PromotionRequest
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.service.FxService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -175,8 +181,16 @@ class OrderFlowIntegrationTest {
         methodId = kotlinx.coroutines.runBlocking { ShippingMethodRepositoryImpl().getShippingMethods(10, 0) }.data.first().id
 
         val cart = CartRepositoryImpl()
-        val orders = OrderRepositoryImpl()
-        val payments = PaymentRepositoryImpl(ManualPaymentGateway())
+        val orders = OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService())
+        val payments =
+            PaymentRepositoryImpl(
+                ManualPaymentGateway(),
+                FraudService(),
+                LoyaltyService(),
+                DigitalDeliveryService(),
+                SubscriptionBillingService(DigitalDeliveryService(), ManualPaymentGateway()),
+                RefundRequestRepositoryImpl(ManualPaymentGateway()),
+            )
         val promotions = PromotionService()
         kotlinx.coroutines.runBlocking {
             promotions.create(

@@ -436,7 +436,7 @@ class CommerceServiceIntegrationTest {
         assertNotNull(kotlinx.coroutines.runBlocking { recommendations.bestSellers(5) })
 
         // Notifications + privacy export
-        val notifications = NotificationRepositoryImpl()
+        val notifications = NotificationRepositoryImpl(dispatcher)
         assertNotNull(kotlinx.coroutines.runBlocking { notifications.list(customerId, 10, 0, false) })
         assertNotNull(kotlinx.coroutines.runBlocking { PrivacyService().export(customerId) })
 

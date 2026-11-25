@@ -19,11 +19,16 @@ import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
@@ -178,7 +183,16 @@ class WarehouseAllocationIntegrationTest {
                 paymentMethod = PaymentMethod.COD,
                 idempotencyKey = "alloc-$suffix",
             )
-        val order = kotlinx.coroutines.runBlocking { OrderRepositoryImpl().placeOrder(customerId, checkout) }.first()
+        val order =
+            kotlinx.coroutines.runBlocking {
+                OrderRepositoryImpl(
+                    FxService(),
+                    TaxService(),
+                    PromotionService(),
+                    LoyaltyService(),
+                    DigitalDeliveryService(),
+                ).placeOrder(customerId, checkout)
+            }.first()
 
         transaction {
             val reservations =
@@ -193,7 +207,13 @@ class WarehouseAllocationIntegrationTest {
 
         val canceled =
             kotlinx.coroutines.runBlocking {
-                OrderRepositoryImpl().cancelOrder(order.orderId, customerId, "allocation test", UserType.CUSTOMER)
+                OrderRepositoryImpl(
+                    FxService(),
+                    TaxService(),
+                    PromotionService(),
+                    LoyaltyService(),
+                    DigitalDeliveryService(),
+                ).cancelOrder(order.orderId, customerId, "allocation test", UserType.CUSTOMER)
             }
         assertEquals(OrderStatus.CANCELED, canceled.status)
         transaction {

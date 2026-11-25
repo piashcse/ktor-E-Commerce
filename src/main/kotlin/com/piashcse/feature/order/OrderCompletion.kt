@@ -31,8 +31,8 @@ object OrderCompletion {
     fun completeTx(
         order: OrderDAO,
         payment: PaymentDAO,
-        loyalty: LoyaltyService = LoyaltyService(),
-        digital: DigitalDeliveryService = DigitalDeliveryService(),
+        loyalty: LoyaltyService,
+        digital: DigitalDeliveryService,
     ) {
         order.paymentStatus = PaymentStatus.COMPLETED
         if (order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED) {
@@ -65,8 +65,8 @@ object OrderCompletion {
     /** Wallet/gift/coupon can settle an order without a provider charge. */
     fun completeZeroTotalTx(
         order: OrderDAO,
-        loyalty: LoyaltyService = LoyaltyService(),
-        digital: DigitalDeliveryService = DigitalDeliveryService(),
+        loyalty: LoyaltyService,
+        digital: DigitalDeliveryService,
     ) {
         if (order.paymentStatus == PaymentStatus.COMPLETED) return
         val payment =

@@ -66,7 +66,7 @@ fun Application.configureAll() {
     configureRoute()
     EventBus.subscribe(EmailSubscriber())
     EventBus.subscribe(AuditLogSubscriber(get<AuditLogRepository>()))
-    EventBus.subscribe(NotificationSubscriber())
+    EventBus.subscribe(get<NotificationSubscriber>())
     EventBus.start(this)
     configureOutboxPoller()
     AsyncWorker.start(this)

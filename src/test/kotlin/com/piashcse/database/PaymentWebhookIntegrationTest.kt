@@ -12,12 +12,17 @@ import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentWebhookEventDAO
 import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.payment.GatewayChargeResult
 import com.piashcse.feature.payment.GatewayEventType
 import com.piashcse.feature.payment.GatewayRefundResult
 import com.piashcse.feature.payment.GatewayWebhookEvent
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
+import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.utils.validator.ValidationException
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
@@ -184,7 +189,17 @@ class PaymentWebhookIntegrationTest {
                     )
             }
 
-        val result = kotlinx.coroutines.runBlocking { PaymentRepositoryImpl(gateway).handleWebhook("stripe", "{}", "sig") }
+        val result =
+            kotlinx.coroutines.runBlocking {
+                PaymentRepositoryImpl(
+                    gateway,
+                    FraudService(),
+                    LoyaltyService(),
+                    DigitalDeliveryService(),
+                    SubscriptionBillingService(DigitalDeliveryService(), gateway),
+                    RefundRequestRepositoryImpl(gateway),
+                ).handleWebhook("stripe", "{}", "sig")
+            }
         assertTrue(result.accepted)
         assertEquals(1, refunds)
         transaction {
@@ -296,7 +311,15 @@ class PaymentWebhookIntegrationTest {
                     )
             }
 
-        val repo = PaymentRepositoryImpl(gateway)
+        val repo =
+            PaymentRepositoryImpl(
+                gateway,
+                FraudService(),
+                LoyaltyService(),
+                DigitalDeliveryService(),
+                SubscriptionBillingService(DigitalDeliveryService(), gateway),
+                RefundRequestRepositoryImpl(gateway),
+            )
         val first = kotlinx.coroutines.runBlocking { repo.handleWebhook("stripe", "{}", "sig") }
         assertTrue(first.accepted)
         assertTrue(!first.duplicate)
