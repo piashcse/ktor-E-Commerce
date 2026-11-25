@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.commons.io)
     implementation(libs.dotenv.kotlin)
     implementation(libs.kaml)
+    implementation(libs.lettuce.core)
 
     // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)

@@ -1,6 +1,8 @@
 package com.piashcse.service
 
+import com.piashcse.config.DotEnv
 import com.piashcse.utils.common.AppClock
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 interface Cache {
@@ -84,13 +86,20 @@ class MemoryCache(
  * Pluggable cache service.
  *
  * Default backend: [MemoryCache] (in-memory, single-instance).
- * To use Redis, implement [Cache] with a Redis client (e.g., Lettuce/Jedis)
- * and change [cache] to return a Redis-backed instance.
- *
- * Redis was intentionally omitted from the base project to keep dependencies
- * minimal. For multi-instance deployments, add the Redis dependency and
- * implement a Redis-backed [Cache].
+ * Set `REDIS_URL` to use [RedisCache] for multi-instance deployments. If Redis
+ * is configured but unreachable at startup, the app logs and falls back to the
+ * in-memory cache so a cache outage does not take the API down.
  */
 object CacheService {
-    val cache: Cache = MemoryCache(defaultTtlSeconds = 300)
+    private val log = LoggerFactory.getLogger(CacheService::class.java)
+    private const val DEFAULT_TTL_SECONDS = 300L
+
+    val cache: Cache =
+        DotEnv.get("REDIS_URL", "")
+            .takeIf { it.isNotBlank() }
+            ?.let { url ->
+                runCatching { RedisCache(url).also { it.ping() } }
+                    .onFailure { log.warn("Redis cache unavailable; falling back to in-memory cache", it) }
+                    .getOrNull()
+            } ?: MemoryCache(defaultTtlSeconds = DEFAULT_TTL_SECONDS)
 }
