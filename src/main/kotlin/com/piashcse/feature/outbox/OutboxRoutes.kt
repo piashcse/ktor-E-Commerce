@@ -13,11 +13,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class RequeueDeadLettersRequest(val ids: List<String>)
 
 /** Admin visibility into outbox rows retired after max delivery attempts. */
 fun Route.outboxAdminRoutes() {

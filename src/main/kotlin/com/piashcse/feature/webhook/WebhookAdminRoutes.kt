@@ -16,14 +16,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class BulkWebhookReplayRequest(
-    val source: WebhookSource,
-    val ids: List<String>,
-)
 
 fun Route.webhookAdminRoutes() {
     val service: WebhookAdminService by inject()
