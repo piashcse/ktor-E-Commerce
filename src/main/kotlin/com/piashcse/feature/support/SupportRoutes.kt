@@ -125,7 +125,7 @@ fun Route.supportRoutes() {
 
 /** Admin support queue. */
 fun Route.supportAdminRoutes() {
-    val service: SupportService by inject()
+    val service: SupportAdminService by inject()
     get {
         val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<TicketStatus>("ticket status")

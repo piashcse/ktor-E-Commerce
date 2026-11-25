@@ -11,6 +11,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.support.CreateTicketRequest
+import com.piashcse.feature.support.SupportAdminService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.support.TicketReplyRequest
 import com.piashcse.feature.support.TicketSatisfactionRequest
@@ -80,6 +81,7 @@ class SupportIntegrationTest {
         }
 
         val support = SupportService()
+        val supportAdmin = SupportAdminService()
         val created =
             kotlinx.coroutines.runBlocking {
                 support.create(
@@ -123,12 +125,12 @@ class SupportIntegrationTest {
 
         val internal =
             kotlinx.coroutines.runBlocking {
-                support.adminReply(adminId, created.ticket.id, TicketReplyRequest("Checking with carrier", isInternal = true))
+                supportAdmin.adminReply(adminId, created.ticket.id, TicketReplyRequest("Checking with carrier", isInternal = true))
             }
         assertEquals(3, internal.messages.size)
         val publicReply =
             kotlinx.coroutines.runBlocking {
-                support.adminReply(adminId, created.ticket.id, TicketReplyRequest("We are reshipping it"))
+                supportAdmin.adminReply(adminId, created.ticket.id, TicketReplyRequest("We are reshipping it"))
             }
         assertEquals(4, publicReply.messages.size)
 
@@ -139,7 +141,7 @@ class SupportIntegrationTest {
 
         val updated =
             kotlinx.coroutines.runBlocking {
-                support.adminUpdate(
+                supportAdmin.adminUpdate(
                     created.ticket.id,
                     TicketUpdateRequest(
                         status = TicketStatus.RESOLVED,
@@ -168,7 +170,7 @@ class SupportIntegrationTest {
         assertEquals(1, kotlinx.coroutines.runBlocking { support.myTickets(customerId, 10, 0) }.data.size)
         assertEquals(
             1,
-            kotlinx.coroutines.runBlocking { support.adminTickets(null, null, null, 10, 0) }.data
+            kotlinx.coroutines.runBlocking { supportAdmin.adminTickets(null, null, null, 10, 0) }.data
                 .count { it.id == created.ticket.id },
         )
     }

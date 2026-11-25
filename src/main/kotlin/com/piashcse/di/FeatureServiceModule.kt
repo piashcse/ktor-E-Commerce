@@ -31,6 +31,7 @@ import com.piashcse.feature.seller.SellerToolsService
 import com.piashcse.feature.stockalert.StockAlertService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionService
+import com.piashcse.feature.support.SupportAdminService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.user.AdminUserService
@@ -57,6 +58,7 @@ val featureServiceModule =
         single { OmnichannelService(get(), get(), get()) }
         single { CmsService() }
         single { SupportService() }
+        single { SupportAdminService() }
         single { ProductTranslationService() }
         single { FraudService() }
         single { ChargebackService() }
