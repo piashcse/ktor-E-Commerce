@@ -20,27 +20,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class ConsentCheckResponse(val hasConsented: Boolean)
-
-@Serializable
-data class RequiredPolicyResponse(
-    val type: String,
-    val policyId: String,
-    val title: String,
-    val version: String,
-    val effectiveDate: String,
-    val hasConsented: Boolean,
-)
-
-@Serializable
-data class ConsentRequirementsResponse(
-    val required: List<RequiredPolicyResponse>,
-    val complete: Boolean,
-)
 
 /**
  * Routes for managing user policy consents.

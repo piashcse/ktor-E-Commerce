@@ -98,3 +98,6 @@ data class DisputeResponse(
     val resolvedAt: String?,
     val createdAt: String?,
 )
+
+@Serializable
+data class SellerReviewReplyRequest(val reply: String)

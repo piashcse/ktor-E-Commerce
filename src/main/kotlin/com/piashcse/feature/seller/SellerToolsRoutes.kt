@@ -26,11 +26,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class SellerReviewReplyRequest(val reply: String)
 
 /** Public seller review listings. */
 fun Route.sellerPublicRoutes() {

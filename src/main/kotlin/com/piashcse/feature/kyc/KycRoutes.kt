@@ -20,11 +20,7 @@ import io.ktor.server.request.requirePathParameter
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class KycRejectRequest(val reason: String)
 
 fun Route.sellerKycRoutes() {
     val service: KycService by inject()

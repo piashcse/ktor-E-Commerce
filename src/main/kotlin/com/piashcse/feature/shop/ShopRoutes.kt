@@ -20,11 +20,7 @@ import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
-import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-
-@Serializable
-data class ShopDecisionRequest(val reason: String? = null)
 
 /**
  * Shop Discovery Routes.
