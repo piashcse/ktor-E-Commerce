@@ -8,7 +8,7 @@ import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCompletion
-import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.service.DigitalDeliveryService
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq

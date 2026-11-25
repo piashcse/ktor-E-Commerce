@@ -4,11 +4,10 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
-import com.piashcse.feature.refund_request.RefundRequestRepository
-import com.piashcse.feature.subscription.DigitalDeliveryService
-import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
+import com.piashcse.service.DigitalDeliveryService
+import com.piashcse.service.payment.PaymentGateway
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
@@ -27,8 +26,8 @@ class PaymentRepositoryImpl(
     private val fraudService: FraudService,
     private val loyaltyService: LoyaltyService,
     private val digitalDelivery: DigitalDeliveryService,
-    private val subscriptionBilling: SubscriptionBillingService,
-    private val refunds: RefundRequestRepository,
+    private val subscriptionBilling: com.piashcse.service.payment.SubscriptionBillingPort,
+    private val refunds: com.piashcse.service.payment.RefundReconciliationPort,
 ) : PaymentRepository {
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
 

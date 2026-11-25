@@ -29,14 +29,15 @@ import com.piashcse.feature.rma.RmaService
 import com.piashcse.feature.seller.CommissionService
 import com.piashcse.feature.seller.SellerToolsService
 import com.piashcse.feature.stockalert.StockAlertService
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.user.AdminUserService
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import com.piashcse.service.UploadService
+import com.piashcse.service.payment.SubscriptionBillingPort
 import org.koin.dsl.module
 
 /** Feature/use-case services. */
@@ -50,6 +51,7 @@ val featureServiceModule =
         single { SellerToolsService() }
         single { DigitalDeliveryService() }
         single { SubscriptionBillingService(get(), get()) }
+        single<SubscriptionBillingPort> { get<SubscriptionBillingService>() }
         single { SubscriptionService(get(), get()) }
         single { B2bService(get(), get()) }
         single { OmnichannelService(get(), get(), get()) }
