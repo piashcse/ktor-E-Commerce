@@ -29,6 +29,7 @@ import com.piashcse.feature.omnichannel.PosSaleItem
 import com.piashcse.feature.omnichannel.PosSaleRequest
 import com.piashcse.feature.omnichannel.PosSessionCloseRequest
 import com.piashcse.feature.omnichannel.PosSessionOpenRequest
+import com.piashcse.feature.order.OrderPlacementService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
@@ -226,7 +227,9 @@ class OmnichannelIntegrationTest {
         kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }
         val bopis =
             kotlinx.coroutines.runBlocking {
-                OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()).placeOrder(
+                OrderRepositoryImpl(
+                    OrderPlacementService(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()),
+                ).placeOrder(
                     customerId,
                     CheckoutRequest(
                         fulfillmentType = FulfillmentType.PICKUP,

@@ -25,6 +25,7 @@ import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.loyalty.AdminCreditRequest
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.order.OrderPlacementService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
@@ -151,7 +152,10 @@ class OrderFlowIntegrationTest {
         methodId = kotlinx.coroutines.runBlocking { ShippingMethodRepositoryImpl().getShippingMethods(10, 0) }.data.first().id
 
         val cart = CartRepositoryImpl()
-        val orders = OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService())
+        val orders =
+            OrderRepositoryImpl(
+                OrderPlacementService(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()),
+            )
         val payments =
             PaymentRepositoryImpl(
                 ManualPaymentGateway(),

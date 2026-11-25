@@ -20,6 +20,7 @@ import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationPreferencesService
 import com.piashcse.feature.notification.NotificationRepository
 import com.piashcse.feature.notification.NotificationRepositoryImpl
+import com.piashcse.feature.order.OrderPlacementService
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payout.PayoutRepository
@@ -67,7 +68,8 @@ val repositoryModule =
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
-        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get(), get()) }
+        single { OrderPlacementService(get(), get(), get(), get(), get()) }
+        single<OrderRepository> { OrderRepositoryImpl(get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }
