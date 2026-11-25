@@ -2,6 +2,7 @@ package com.piashcse.feature.fx
 
 import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
+import com.piashcse.model.response.FxRateResponse
 import com.piashcse.plugin.adminAuth
 import com.piashcse.service.FxService
 import io.ktor.client.request.*

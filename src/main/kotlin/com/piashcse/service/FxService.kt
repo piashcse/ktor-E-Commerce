@@ -6,7 +6,7 @@ import com.piashcse.database.entities.FxRateDAO
 import com.piashcse.database.entities.FxRateTable
 import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.feature.fx.FxRateResponse
+import com.piashcse.model.response.FxRateResponse
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.validator.ValidationException
