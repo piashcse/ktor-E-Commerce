@@ -6,6 +6,7 @@ import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.receiveSingleImage
@@ -69,8 +70,8 @@ fun Route.profileRoutes() {
                 val imageUrl =
                     call.receiveSingleImage(
                         purpose = "profile image",
-                        upload = UploadService::uploadProfileImage,
-                        publicUrl = UploadService::getProfileImageUrl,
+                        upload = { file, bytes -> UploadService.upload(UploadPurpose.PROFILE, file, bytes) },
+                        publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.PROFILE, fileName) },
                     )
                 userProfileService.updateProfileImage(call.currentUserId, imageUrl)
                 call.respondOk(imageUrl)

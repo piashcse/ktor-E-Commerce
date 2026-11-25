@@ -1,6 +1,7 @@
 package com.piashcse.feature.profile
 
 import com.piashcse.model.response.UserProfileResponse
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 
 class ProfileService(private val repo: ProfileRepository) : ProfileRepository by repo {
@@ -11,7 +12,7 @@ class ProfileService(private val repo: ProfileRepository) : ProfileRepository by
         val oldProfile = repo.getProfile(userId)
         oldProfile.image?.let { oldImageUrl ->
             val oldFileName = oldImageUrl.substringAfterLast("/")
-            UploadService.deleteProfileImage(oldFileName)
+            UploadService.delete(UploadPurpose.PROFILE, oldFileName)
         }
         return repo.updateProfileImage(userId, imageUrl)
     }

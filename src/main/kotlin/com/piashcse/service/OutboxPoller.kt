@@ -78,7 +78,6 @@ object OutboxPoller {
         // the transaction because it waits for subscribers; a crashed instance's
         // claim expires after five minutes.
         // Must exceed the worst-case batch drain (batchSize * publish timeout).
-        // Must exceed the worst-case batch drain (batchSize * publish timeout).
         val claimCutoff = currentUtc().minusMinutes(60)
         val pending =
             query {
