@@ -2,7 +2,6 @@
 
 package com.piashcse.plugin
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Permission
 import com.piashcse.feature.analytics.analyticsAdminRoutes
 import com.piashcse.feature.analytics.analyticsRoutes
@@ -129,9 +128,6 @@ import com.piashcse.feature.user.adminUserRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.webhook.webhookAdminRoutes
 import com.piashcse.feature.wishlist.wishlistRoutes
-import com.piashcse.utils.common.ApiError
-import com.piashcse.utils.common.MessageResponse
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -139,73 +135,13 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.server.routing.openapi.describe
 import io.ktor.utils.io.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
-import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-
-/** Minimal liveness payload — service/infra detail stays out of the public contract. */
-@Serializable
-private data class HealthStatusResponse(val status: String, val version: String)
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
     routing {
         seoSiteRoutes()
+        healthRoutes()
         get("/") { call.respondRedirect("/swagger") }.hide()
-        get("/health") {
-            call.respond(
-                HealthStatusResponse(status = "UP", version = AppConstants.APP_VERSION),
-            )
-        }.describe {
-            summary = "Service health"
-            description = "Version and overall status"
-            tag(ApiTags.HEALTH)
-        }
-        get("/health/live") {
-            call.respond(
-                MessageResponse("UP"),
-            )
-        }.describe {
-            summary = "Liveness probe"
-            tag(ApiTags.HEALTH)
-        }
-        get("/health/ready") {
-            val dbOk =
-                runCatching {
-                    withTimeout(3_000) {
-                        withContext(Dispatchers.IO) {
-                            transaction {
-                                exec("SELECT 1")
-                            }
-                            // Reads are routed to the replica when configured;
-                            // readiness must fail if it is unreachable.
-                            com.piashcse.database.getReadDatabase()?.let { replica ->
-                                transaction(replica) { exec("SELECT 1") }
-                            }
-                        }
-                    }
-                }.isSuccess
-            if (dbOk) {
-                call.respond(MessageResponse("READY"))
-            } else {
-                call.respond(
-                    HttpStatusCode.ServiceUnavailable,
-                    ApiError.of(
-                        message = "Database unreachable",
-                        code = "SERVICE_UNAVAILABLE",
-                        status = HttpStatusCode.ServiceUnavailable,
-                        requestId = runCatching { call.requestId() }.getOrNull(),
-                    ),
-                )
-            }
-        }.describe {
-            summary = "Readiness probe"
-            description = "Checks database connectivity"
-            tag(ApiTags.HEALTH)
-        }
-
         route("/api") {
             route("v1") {
                 customerRoutes()

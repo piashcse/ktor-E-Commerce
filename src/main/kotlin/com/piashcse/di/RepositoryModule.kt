@@ -1,0 +1,83 @@
+package com.piashcse.di
+
+import com.piashcse.feature.audit_log.AuditLogRepository
+import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
+import com.piashcse.feature.auth.AuthRepository
+import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.brand.BrandRepository
+import com.piashcse.feature.brand.BrandRepositoryImpl
+import com.piashcse.feature.cart.CartRepository
+import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.consent.ConsentRepository
+import com.piashcse.feature.consent.ConsentRepositoryImpl
+import com.piashcse.feature.coupon.CouponRepository
+import com.piashcse.feature.coupon.CouponRepositoryImpl
+import com.piashcse.feature.dashboard.DashboardRepository
+import com.piashcse.feature.dashboard.DashboardRepositoryImpl
+import com.piashcse.feature.inventory.InventoryRepository
+import com.piashcse.feature.inventory.InventoryRepositoryImpl
+import com.piashcse.feature.notification.NotificationDispatcher
+import com.piashcse.feature.notification.NotificationPreferencesService
+import com.piashcse.feature.notification.NotificationRepository
+import com.piashcse.feature.notification.NotificationRepositoryImpl
+import com.piashcse.feature.order.OrderRepository
+import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.payout.PayoutRepository
+import com.piashcse.feature.payout.PayoutRepositoryImpl
+import com.piashcse.feature.policy.PolicyRepository
+import com.piashcse.feature.policy.PolicyRepositoryImpl
+import com.piashcse.feature.product.ProductRepository
+import com.piashcse.feature.product.ProductRepositoryImpl
+import com.piashcse.feature.product_category.ProductCategoryRepository
+import com.piashcse.feature.product_category.ProductCategoryRepositoryImpl
+import com.piashcse.feature.product_sub_category.ProductSubCategoryRepository
+import com.piashcse.feature.product_sub_category.ProductSubCategoryRepositoryImpl
+import com.piashcse.feature.profile.ProfileRepository
+import com.piashcse.feature.profile.ProfileRepositoryImpl
+import com.piashcse.feature.refund_request.RefundRequestRepository
+import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
+import com.piashcse.feature.review_rating.ReviewRatingRepository
+import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
+import com.piashcse.feature.shipping_address.ShippingAddressRepository
+import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
+import com.piashcse.feature.shipping_method.ShippingMethodRepository
+import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.shop.ShopRepository
+import com.piashcse.feature.shop.ShopRepositoryImpl
+import com.piashcse.feature.shop_category.ShopCategoryRepository
+import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
+import com.piashcse.feature.warehouse.WarehouseRepository
+import com.piashcse.feature.wishlist.WishlistRepository
+import com.piashcse.feature.wishlist.WishlistRepositoryImpl
+import org.koin.dsl.module
+
+/** Persistence adapters. Resolve these through interfaces, never implementations. */
+val repositoryModule =
+    module {
+        single<AuthRepository> { AuthRepositoryImpl() }
+        single<AuditLogRepository> { AuditLogRepositoryImpl() }
+        single<BrandRepository> { BrandRepositoryImpl() }
+        single<CartRepository> { CartRepositoryImpl() }
+        single<ConsentRepository> { ConsentRepositoryImpl() }
+        single<NotificationRepository> { NotificationRepositoryImpl(get()) }
+        single { NotificationPreferencesService() }
+        single { NotificationDispatcher(get()) }
+        single<PayoutRepository> { PayoutRepositoryImpl() }
+        single<CouponRepository> { CouponRepositoryImpl() }
+        single<DashboardRepository> { DashboardRepositoryImpl() }
+        single<InventoryRepository> { InventoryRepositoryImpl() }
+        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get(), get()) }
+        single<PolicyRepository> { PolicyRepositoryImpl() }
+        single<ProductRepository> { ProductRepositoryImpl() }
+        single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }
+        single<ProductSubCategoryRepository> { ProductSubCategoryRepositoryImpl() }
+        single<ProfileRepository> { ProfileRepositoryImpl() }
+        single<RefundRequestRepository> { RefundRequestRepositoryImpl(get()) }
+        single<ReviewRatingRepository> { ReviewRatingRepositoryImpl() }
+        single<ShippingAddressRepository> { ShippingAddressRepositoryImpl() }
+        single<ShippingMethodRepository> { ShippingMethodRepositoryImpl() }
+        single<ShopRepository> { ShopRepositoryImpl() }
+        single<ShopCategoryRepository> { ShopCategoryRepositoryImpl() }
+        single<WishlistRepository> { WishlistRepositoryImpl() }
+        single { WarehouseRepository() }
+    }
