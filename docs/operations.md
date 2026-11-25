@@ -33,6 +33,7 @@ Configuration is loaded from the environment (`.env` locally). `.env.example` is
 | `ALLOWED_ORIGINS` | local origins | Comma-separated CORS allowlist |
 | `FORCE_HTTPS` | `false` | Emit HSTS only behind TLS termination |
 | `TRUST_PROXY` | `false` | Trust `X-Forwarded-*`; enable only behind a sanitizing proxy |
+| `REDIS_URL` | unset | Optional Redis cache for multi-instance deployments; falls back to memory if unreachable |
 
 ### Providers
 
@@ -77,7 +78,7 @@ A `Dockerfile` and `docker-compose.yml` are provided.
 | `MaintenanceCleanup` | Retention cleanup for old operational rows |
 | `SubscriptionBillingWorker` | Renewals, dunning and invoice generation |
 
-Workers run in-process and have no leader election. Run **one** active application instance unless you move rate limiting, cache and event delivery to shared infrastructure.
+Workers run in-process and have no leader election. Set `REDIS_URL` to share the cache between instances; rate limiting, the event bus and workers are still in-process, so run **one** active instance until those are moved to shared infrastructure.
 
 ## Runbook
 

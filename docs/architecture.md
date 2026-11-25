@@ -64,7 +64,7 @@ Event type names and serializers are registered once in `OutboxPublisher`. Add a
 
 - Order placement now lives in `OrderPlacementService`; other repositories may still mix orchestration and persistence, so extract use cases incrementally.
 - `service/` mixes domain services, infrastructure adapters and background jobs. Prefer `infrastructure/` and `jobs/` subpackages when touching it.
-- In-process state (rate limits, cache, event bus, workers) means the app currently assumes a single active instance for those features.
+- In-process state (rate limits, event bus, workers) means the app currently assumes a single active instance for those features. The cache can be shared via `REDIS_URL`.
 - Some services still hold Exposed queries; moving them into feature repositories is an incremental cleanup.
 
 Payment no longer imports subscription or refund features: the gateway contract,
