@@ -7,6 +7,8 @@ import com.piashcse.feature.analytics.AnalyticsService
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.checkout.GuestCheckoutService
+import com.piashcse.feature.cms.CmsRepository
+import com.piashcse.feature.cms.CmsRepositoryImpl
 import com.piashcse.feature.cms.CmsService
 import com.piashcse.feature.featureflag.FeatureFlagRepository
 import com.piashcse.feature.featureflag.FeatureFlagRepositoryImpl
@@ -63,7 +65,8 @@ val featureServiceModule =
         single { SubscriptionService(get(), get()) }
         single { B2bService(get(), get()) }
         single { OmnichannelService(get(), get(), get()) }
-        single { CmsService() }
+        single<CmsRepository> { CmsRepositoryImpl() }
+        single { CmsService(get()) }
         single { SupportService() }
         single { SupportAdminService() }
         single { ProductTranslationService() }
