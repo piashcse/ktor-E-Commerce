@@ -1,10 +1,14 @@
 package com.piashcse.di
 
 import com.piashcse.event.subscriber.NotificationSubscriber
+import com.piashcse.feature.analytics.AnalyticsRepository
+import com.piashcse.feature.analytics.AnalyticsRepositoryImpl
 import com.piashcse.feature.analytics.AnalyticsService
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.checkout.GuestCheckoutService
+import com.piashcse.feature.cms.CmsRepository
+import com.piashcse.feature.cms.CmsRepositoryImpl
 import com.piashcse.feature.cms.CmsService
 import com.piashcse.feature.featureflag.FeatureFlagRepository
 import com.piashcse.feature.featureflag.FeatureFlagRepositoryImpl
@@ -26,6 +30,8 @@ import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.rbac.RbacService
 import com.piashcse.feature.rbac.ShopMembershipService
+import com.piashcse.feature.recommendation.RecommendationRepository
+import com.piashcse.feature.recommendation.RecommendationRepositoryImpl
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.rma.RmaService
 import com.piashcse.feature.seller.CommissionService
@@ -49,7 +55,8 @@ val featureServiceModule =
         single { NotificationSubscriber(get()) }
         single { LoyaltyService() }
         single { I18nService() }
-        single { AnalyticsService() }
+        single<AnalyticsRepository> { AnalyticsRepositoryImpl() }
+        single { AnalyticsService(get()) }
         single { CommissionService() }
         single { SellerToolsService() }
         single { DigitalDeliveryService() }
@@ -58,7 +65,8 @@ val featureServiceModule =
         single { SubscriptionService(get(), get()) }
         single { B2bService(get(), get()) }
         single { OmnichannelService(get(), get(), get()) }
-        single { CmsService() }
+        single<CmsRepository> { CmsRepositoryImpl() }
+        single { CmsService(get()) }
         single { SupportService() }
         single { SupportAdminService() }
         single { ProductTranslationService() }
@@ -86,7 +94,8 @@ val featureServiceModule =
         single { ProductCatalogService(get()) }
         single { ProductCrudService(get()) }
         single { ProductVariantService() }
-        single { RecommendationService() }
+        single<RecommendationRepository> { RecommendationRepositoryImpl() }
+        single { RecommendationService(get()) }
 
         single { UploadService }
     }

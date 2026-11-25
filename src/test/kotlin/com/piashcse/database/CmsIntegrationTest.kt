@@ -11,6 +11,7 @@ import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.cms.CmsPageRequest
+import com.piashcse.feature.cms.CmsRepositoryImpl
 import com.piashcse.feature.cms.CmsService
 import com.piashcse.feature.cms.SeoMetadataRequest
 import com.piashcse.utils.validator.NotFoundException
@@ -78,7 +79,7 @@ class CmsIntegrationTest {
                 }.id.value
         }
 
-        val cms = CmsService()
+        val cms = CmsService(CmsRepositoryImpl())
         val published =
             kotlinx.coroutines.runBlocking {
                 cms.create(
