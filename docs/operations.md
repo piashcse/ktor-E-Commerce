@@ -33,7 +33,7 @@ Configuration is loaded from the environment (`.env` locally). `.env.example` is
 | `ALLOWED_ORIGINS` | local origins | Comma-separated CORS allowlist |
 | `FORCE_HTTPS` | `false` | Emit HSTS only behind TLS termination |
 | `TRUST_PROXY` | `false` | Trust `X-Forwarded-*`; enable only behind a sanitizing proxy |
-| `REDIS_URL` | unset | Optional Redis cache for multi-instance deployments; falls back to memory if unreachable |
+| `REDIS_URL` | unset | Optional Redis cache and shared rate limiter; falls back to in-process state if unreachable |
 
 ### Providers
 
@@ -78,7 +78,7 @@ A `Dockerfile` and `docker-compose.yml` are provided.
 | `MaintenanceCleanup` | Retention cleanup for old operational rows |
 | `SubscriptionBillingWorker` | Renewals, dunning and invoice generation |
 
-Workers run in-process and have no leader election. Set `REDIS_URL` to share the cache between instances; rate limiting, the event bus and workers are still in-process, so run **one** active instance until those are moved to shared infrastructure.
+Each background worker acquires a Postgres advisory lock at startup, so only one replica runs the outbox poller, billing loop or cleanup jobs. Set `REDIS_URL` to share the cache and rate limits. The `EventBus` remains in-process, so outbox events are handled by the poller leader; if the leader exits, restart/redeploy to re-elect (runtime re-election is not implemented).
 
 ## Runbook
 
