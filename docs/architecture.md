@@ -31,6 +31,7 @@ Each `feature/<domain>` folder is the default home for new code. Keep route, use
 | HTTP edge depends on services/repositories through Koin | Convention |
 | Services return DTOs, not DAOs | Convention; a few legacy paths still expose DAOs internally |
 | Cross-feature calls go through a service interface or an event | Convention |
+| Payment depends on `service.payment` ports, not on subscription/refund features | Enforced by package layout |
 
 Some services still use Exposed directly. That is a known transitional state, not the target. When touching such a service, prefer moving the query into the feature repository.
 
@@ -61,10 +62,14 @@ Event type names and serializers are registered once in `OutboxPublisher`. Add a
 
 ## Known architectural debt
 
-- `payment` ↔ `subscription` and `payment` ↔ `refund_request` have bidirectional dependencies. The target is a shared payment port plus events for renewal/refund reactions.
 - Some `*RepositoryImpl` classes (notably order checkout) still contain use-case orchestration. Extract use cases incrementally.
 - `service/` mixes domain services, infrastructure adapters and background jobs. Prefer `infrastructure/` and `jobs/` subpackages when touching it.
 - In-process state (rate limits, cache, event bus, workers) means the app currently assumes a single active instance for those features.
+- Some services still hold Exposed queries; moving them into feature repositories is an incremental cleanup.
+
+Payment no longer imports subscription or refund features: the gateway contract,
+subscription billing and refund reconciliation live behind ports in
+`service.payment`, with the feature modules providing the implementations.
 
 ## Decision records
 
