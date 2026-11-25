@@ -2,6 +2,7 @@ package com.piashcse
 
 import com.piashcse.config.AppConfig
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.database.DatabaseLeadership
 import com.piashcse.database.closeDataSource
 import com.piashcse.database.configureDatabase
 import com.piashcse.event.EventBus
@@ -68,11 +69,13 @@ fun Application.configureAll() {
     EventBus.subscribe(AuditLogSubscriber(get<AuditLogRepository>()))
     EventBus.subscribe(get<NotificationSubscriber>())
     EventBus.start(this)
-    configureOutboxPoller()
-    AsyncWorker.start(this)
-    StockReservationCleanup.start(this)
-    MaintenanceCleanup.start(this)
-    SubscriptionBillingWorker.start(this, get<SubscriptionService>())
+    if (DatabaseLeadership.tryAcquire("outbox-poller", 7_100_001L)) configureOutboxPoller()
+    if (DatabaseLeadership.tryAcquire("async-worker", 7_100_002L)) AsyncWorker.start(this)
+    if (DatabaseLeadership.tryAcquire("stock-reservation-cleanup", 7_100_003L)) StockReservationCleanup.start(this)
+    if (DatabaseLeadership.tryAcquire("maintenance-cleanup", 7_100_004L)) MaintenanceCleanup.start(this)
+    if (DatabaseLeadership.tryAcquire("subscription-billing", 7_100_005L)) {
+        SubscriptionBillingWorker.start(this, get<SubscriptionService>())
+    }
     monitor.subscribe(ApplicationStopping) {
         // Stop producers and consumers before tearing down the datasource.
         OutboxPoller.stop()
@@ -80,6 +83,7 @@ fun Application.configureAll() {
         StockReservationCleanup.stop()
         MaintenanceCleanup.stop()
         SubscriptionBillingWorker.stop()
+        DatabaseLeadership.releaseAll()
         EventBus.stop()
     }
     monitor.subscribe(ApplicationStopped) {
