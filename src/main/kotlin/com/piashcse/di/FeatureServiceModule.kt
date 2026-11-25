@@ -1,6 +1,8 @@
 package com.piashcse.di
 
 import com.piashcse.event.subscriber.NotificationSubscriber
+import com.piashcse.feature.analytics.AnalyticsRepository
+import com.piashcse.feature.analytics.AnalyticsRepositoryImpl
 import com.piashcse.feature.analytics.AnalyticsService
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.b2b.B2bService
@@ -49,7 +51,8 @@ val featureServiceModule =
         single { NotificationSubscriber(get()) }
         single { LoyaltyService() }
         single { I18nService() }
-        single { AnalyticsService() }
+        single<AnalyticsRepository> { AnalyticsRepositoryImpl() }
+        single { AnalyticsService(get()) }
         single { CommissionService() }
         single { SellerToolsService() }
         single { DigitalDeliveryService() }
