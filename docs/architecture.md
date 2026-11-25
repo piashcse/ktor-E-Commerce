@@ -62,7 +62,7 @@ Event type names and serializers are registered once in `OutboxPublisher`. Add a
 
 ## Known architectural debt
 
-- Some `*RepositoryImpl` classes (notably order checkout) still contain use-case orchestration. Extract use cases incrementally.
+- Order placement now lives in `OrderPlacementService`; other repositories may still mix orchestration and persistence, so extract use cases incrementally.
 - `service/` mixes domain services, infrastructure adapters and background jobs. Prefer `infrastructure/` and `jobs/` subpackages when touching it.
 - In-process state (rate limits, cache, event bus, workers) means the app currently assumes a single active instance for those features.
 - Some services still hold Exposed queries; moving them into feature repositories is an incremental cleanup.
