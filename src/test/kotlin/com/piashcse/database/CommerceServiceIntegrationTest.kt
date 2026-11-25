@@ -35,6 +35,7 @@ import com.piashcse.feature.policy.PolicyRepositoryImpl
 import com.piashcse.feature.privacy.PrivacyService
 import com.piashcse.feature.product.ProductRepositoryImpl
 import com.piashcse.feature.profile.ProfileRepositoryImpl
+import com.piashcse.feature.recommendation.RecommendationRepositoryImpl
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
@@ -399,7 +400,7 @@ class CommerceServiceIntegrationTest {
         assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getSellerReadiness(sellerUserId) })
 
         // Recommendations
-        val recommendations = RecommendationService()
+        val recommendations = RecommendationService(RecommendationRepositoryImpl())
         assertNotNull(kotlinx.coroutines.runBlocking { recommendations.personalized(customerId, 5) })
         assertNotNull(kotlinx.coroutines.runBlocking { recommendations.related(productId, 5) })
         assertNotNull(kotlinx.coroutines.runBlocking { recommendations.alsoBought(productId, 5) })

@@ -1,36 +1,11 @@
 package com.piashcse.feature.recommendation
 
-import com.piashcse.constants.OrderStatus
-import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.ProductStatus
-import com.piashcse.constants.ShopStatus
-import com.piashcse.database.entities.CartItemDAO
-import com.piashcse.database.entities.CartItemTable
-import com.piashcse.database.entities.OrderDAO
-import com.piashcse.database.entities.OrderItemDAO
-import com.piashcse.database.entities.OrderItemTable
-import com.piashcse.database.entities.OrderTable
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductImageDAO
-import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
-import com.piashcse.database.entities.UserTable
-import com.piashcse.database.entities.WishlistDAO
-import com.piashcse.database.entities.WishlistTable
-import com.piashcse.database.entities.stockByProductIds
-import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.service.Cache
 import com.piashcse.service.CacheService
-import com.piashcse.utils.extension.entityID
-import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.neq
 
 @Serializable
 data class RecommendationResponse(
@@ -66,6 +41,7 @@ object RecommendationRanking {
 }
 
 class RecommendationService(
+    private val repository: RecommendationRepository,
     private val cache: Cache = CacheService.cache,
 ) {
     suspend fun related(
@@ -73,18 +49,11 @@ class RecommendationService(
         limit: Int,
     ): RecommendationResponse =
         cached("recommendations:related:$productId:$limit") {
-            query {
-                val target = requireProduct(productId)
-                val candidates =
-                    validProducts(
-                        ProductDAO.find {
-                            (ProductTable.categoryId eq target.categoryId) and (ProductTable.id neq target.id)
-                        }.toList(),
-                    )
-                val ranked = rankCandidates(target, candidates, limit)
-                val products = loadOrdered(ranked)
-                if (products.isEmpty()) fallbackResponse(productId, "related", limit) else response("related", productId, products)
-            }
+            val target = requireProduct(productId)
+            val candidates = validProducts(repository.findByCategory(target.categoryId, productId))
+            val ranked = rankCandidates(target, candidates, limit)
+            val products = repository.loadResponses(ranked)
+            if (products.isEmpty()) fallbackResponse(productId, "related", limit) else response("related", productId, products)
         }
 
     suspend fun alsoBought(
@@ -92,57 +61,32 @@ class RecommendationService(
         limit: Int,
     ): RecommendationResponse =
         cached("recommendations:also-bought:$productId:$limit") {
-            val local =
-                query {
-                    val target = requireProduct(productId)
-                    val orderIds =
-                        OrderItemDAO.find { OrderItemTable.productId eq target.id }
-                            .map { it.orderId }
-                            .distinct()
-                    val paidOrderIds =
-                        if (orderIds.isEmpty()) {
-                            emptyList()
-                        } else {
-                            OrderDAO.find {
-                                (OrderTable.id inList orderIds) and
-                                    (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
-                                    (OrderTable.status neq OrderStatus.CANCELED)
-                            }.map { it.id }
-                        }
-                    val counts =
-                        if (paidOrderIds.isEmpty()) {
-                            emptyMap()
-                        } else {
-                            OrderItemDAO.find {
-                                (OrderItemTable.orderId inList paidOrderIds) and (OrderItemTable.productId neq target.id)
-                            }.groupingBy { it.productId.value }.eachCount()
-                        }
-                    val candidates =
-                        if (counts.isEmpty()) {
-                            emptyList()
-                        } else {
-                            validProducts(
-                                ProductDAO.find {
-                                    ProductTable.id inList counts.keys.map { it.entityID(ProductTable) }
-                                }.toList(),
-                            )
-                        }
-                    val ranked =
-                        RecommendationRanking.rank(
-                            candidates.map {
-                                RecommendationCandidate(
-                                    productId = it.id.value,
-                                    score = counts[it.id.value] ?: 0,
-                                    totalSales = it.totalSales,
-                                    rating = it.rating.toDouble(),
-                                )
-                            },
-                            limit,
+            val target = requireProduct(productId)
+            val orderIds = repository.orderIdsForProduct(target.id)
+            val paidOrderIds = repository.paidOrderIds(orderIds)
+            val counts = repository.coPurchaseCounts(paidOrderIds, target.id)
+            val candidates = validProducts(repository.findByIds(counts.keys))
+            val ranked =
+                RecommendationRanking.rank(
+                    candidates.map {
+                        RecommendationCandidate(
+                            productId = it.id,
+                            score = counts[it.id] ?: 0,
+                            totalSales = it.totalSales,
+                            rating = it.rating,
                         )
-                    val products = loadOrdered(ranked)
-                    if (products.isEmpty()) null else response("also-bought", productId, products)
-                }
-            local ?: related(productId, limit).copy(strategy = "also-bought")
+                    },
+                    limit,
+                )
+            val products = repository.loadResponses(ranked)
+            if (products.isEmpty()) {
+                related(
+                    productId,
+                    limit,
+                ).copy(strategy = "also-bought")
+            } else {
+                response("also-bought", productId, products)
+            }
         }
 
     suspend fun personalized(
@@ -150,139 +94,93 @@ class RecommendationService(
         limit: Int,
     ): RecommendationResponse =
         cached("recommendations:user:$userId:$limit") {
-            query {
-                val orderIds = OrderDAO.find { OrderTable.userId eq userId.entityID(UserTable) }.map { it.id }
-                val purchased =
-                    if (orderIds.isEmpty()) {
-                        emptySet()
-                    } else {
-                        OrderItemDAO.find { OrderItemTable.orderId inList orderIds }
-                            .map { it.productId.value }
-                            .toSet()
-                    }
-                val cartIds = CartItemDAO.find { CartItemTable.userId eq userId }.map { it.productId.value }.toSet()
-                val wishlistIds = WishlistDAO.find { WishlistTable.userId eq userId }.map { it.productId.value }.toSet()
-                val signalIds = (purchased + cartIds + wishlistIds).filter { it.isNotBlank() }.distinct()
-                val weights =
-                    if (signalIds.isEmpty()) {
-                        emptyMap()
-                    } else {
-                        ProductDAO.find { ProductTable.id inList signalIds.map { it.entityID(ProductTable) } }
-                            .groupingBy { it.categoryId.value }
-                            .eachCount()
-                    }
-                val excluded = purchased + cartIds + wishlistIds
-                val candidates =
-                    if (weights.isEmpty()) {
-                        emptyList()
-                    } else {
-                        validProducts(
-                            ProductDAO.find {
-                                ProductTable.categoryId inList weights.keys.map { it.entityID(ProductTable) }
-                            }.toList(),
-                        ).filterNot { it.id.value in excluded }
-                    }
-                val ranked =
-                    RecommendationRanking.rank(
-                        candidates.map {
-                            RecommendationCandidate(
-                                productId = it.id.value,
-                                score = weights[it.categoryId.value] ?: 0,
-                                totalSales = it.totalSales,
-                                rating = it.rating.toDouble(),
-                            )
-                        },
-                        limit,
-                    )
-                val products = loadOrdered(ranked).toMutableList()
-                if (products.size < limit) {
-                    val seen = products.map { it.id }.toSet()
-                    products += bestSellerProducts(limit).filterNot { it.id in seen }.take(limit - products.size)
-                }
-                if (products.isEmpty()) {
-                    response("best-sellers", null, bestSellerProducts(limit))
-                } else {
-                    response("personalized", null, products)
-                }
+            val purchased = repository.purchasedProductIds(userId)
+            val cartIds = repository.cartProductIds(userId)
+            val wishlistIds = repository.wishlistProductIds(userId)
+            val signalIds = (purchased + cartIds + wishlistIds).filter { it.isNotBlank() }.distinct()
+            val weights = repository.findByIds(signalIds).groupingBy { it.categoryId }.eachCount()
+            val excluded = purchased + cartIds + wishlistIds
+            val candidates =
+                validProducts(repository.findByCategories(weights.keys))
+                    .filterNot { it.id in excluded }
+            val ranked =
+                RecommendationRanking.rank(
+                    candidates.map {
+                        RecommendationCandidate(
+                            productId = it.id,
+                            score = weights[it.categoryId] ?: 0,
+                            totalSales = it.totalSales,
+                            rating = it.rating,
+                        )
+                    },
+                    limit,
+                )
+            val products = repository.loadResponses(ranked).toMutableList()
+            if (products.size < limit) {
+                val seen = products.map { it.id }.toSet()
+                products += bestSellerProducts(limit).filterNot { it.id in seen }.take(limit - products.size)
+            }
+            if (products.isEmpty()) {
+                response("best-sellers", null, bestSellerProducts(limit))
+            } else {
+                response("personalized", null, products)
             }
         }
 
     suspend fun bestSellers(limit: Int): RecommendationResponse =
         cached("recommendations:best-sellers:$limit") {
-            query { response("best-sellers", null, bestSellerProducts(limit)) }
+            response("best-sellers", null, bestSellerProducts(limit))
         }
 
-    private fun bestSellerProducts(limit: Int): List<ProductResponse> {
-        val products =
-            validProducts(
-                ProductDAO.find { ProductTable.status eq ProductStatus.ACTIVE }.toList(),
-            )
+    private suspend fun bestSellerProducts(limit: Int): List<ProductResponse> {
+        val products = validProducts(repository.activeProducts())
         val ranked =
             RecommendationRanking.rank(
                 products.map {
                     RecommendationCandidate(
-                        productId = it.id.value,
+                        productId = it.id,
                         score = if (it.bestSeller) 1 else 0,
                         totalSales = it.totalSales,
-                        rating = it.rating.toDouble(),
+                        rating = it.rating,
                     )
                 },
                 limit,
             )
-        return loadOrdered(ranked)
+        return repository.loadResponses(ranked)
     }
 
-    private fun requireProduct(productId: String): ProductDAO =
-        ProductDAO.findById(productId)?.takeIf { it.deletedAt == null && it.status == ProductStatus.ACTIVE }
-            ?: productId.throwNotFound("Product")
+    private suspend fun requireProduct(productId: String): RecommendationProduct =
+        repository.findActive(productId) ?: productId.throwNotFound("Product")
 
     private fun rankCandidates(
-        target: ProductDAO,
-        candidates: List<ProductDAO>,
+        target: RecommendationProduct,
+        candidates: List<RecommendationProduct>,
         limit: Int,
     ): List<String> =
         RecommendationRanking.rank(
             candidates.map {
                 RecommendationCandidate(
-                    productId = it.id.value,
-                    score = if (it.subCategoryId?.value == target.subCategoryId?.value) 2 else 1,
+                    productId = it.id,
+                    score = if (it.subCategoryId == target.subCategoryId) 2 else 1,
                     totalSales = it.totalSales,
-                    rating = it.rating.toDouble(),
+                    rating = it.rating,
                 )
             },
             limit,
         )
 
-    private fun fallbackResponse(
+    private suspend fun fallbackResponse(
         productId: String,
         strategy: String,
         limit: Int,
     ): RecommendationResponse = response(strategy, productId, bestSellerProducts(limit))
 
-    private fun loadOrdered(ids: List<String>): List<ProductResponse> {
-        if (ids.isEmpty()) return emptyList()
-        val products =
-            ProductDAO.find { ProductTable.id inList ids.map { it.entityID(ProductTable) } }
-                .associateBy { it.id.value }
-        val ordered = ids.mapNotNull { products[it] }
-        val images = ProductImageDAO.imagesForProducts(ordered.map { it.id })
-        val stock = stockByProductIds(ordered.map { it.id.value })
-        return ordered.map { it.toProductResponse(images[it.id.value], stockQuantity = stock[it.id.value] ?: 0) }
-    }
-
-    private fun validProducts(products: List<ProductDAO>): List<ProductDAO> {
-        val active =
-            products.filter {
-                it.status == ProductStatus.ACTIVE && it.deletedAt == null
-            }
-        val shopIds = active.mapNotNull { it.shopId?.value }.distinct()
+    private suspend fun validProducts(products: List<RecommendationProduct>): List<RecommendationProduct> {
+        val active = products.filter { it.status == ProductStatus.ACTIVE && it.deletedAt == null }
+        val shopIds = active.mapNotNull { it.shopId }.distinct()
         if (shopIds.isEmpty()) return active
-        val approved =
-            ShopDAO.find {
-                (ShopTable.id inList shopIds.map { it.entityID(ShopTable) }) and
-                    (ShopTable.status eq ShopStatus.APPROVED)
-            }.map { it.id.value }.toSet()
-        return active.filter { product -> product.shopId == null || product.shopId?.value in approved }
+        val approved = repository.approvedShopIds(shopIds)
+        return active.filter { product -> product.shopId == null || product.shopId in approved }
     }
 
     private fun response(

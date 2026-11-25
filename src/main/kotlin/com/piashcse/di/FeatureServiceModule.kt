@@ -28,6 +28,8 @@ import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.rbac.RbacService
 import com.piashcse.feature.rbac.ShopMembershipService
+import com.piashcse.feature.recommendation.RecommendationRepository
+import com.piashcse.feature.recommendation.RecommendationRepositoryImpl
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.rma.RmaService
 import com.piashcse.feature.seller.CommissionService
@@ -89,7 +91,8 @@ val featureServiceModule =
         single { ProductCatalogService(get()) }
         single { ProductCrudService(get()) }
         single { ProductVariantService() }
-        single { RecommendationService() }
+        single<RecommendationRepository> { RecommendationRepositoryImpl() }
+        single { RecommendationService(get()) }
 
         single { UploadService }
     }
