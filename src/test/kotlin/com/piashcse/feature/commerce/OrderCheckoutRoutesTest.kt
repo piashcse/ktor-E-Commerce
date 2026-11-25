@@ -12,6 +12,7 @@ import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.model.response.ShippingAddressResponse
 import com.piashcse.model.response.ShippingMethodResponse
+import com.piashcse.service.payment.*
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import io.ktor.client.request.*
@@ -154,7 +155,7 @@ class CheckoutRoutesTest {
                     single<com.piashcse.feature.checkout.GuestCheckoutService> { mockk() }
                     single { mockk<com.piashcse.feature.featureflag.FeatureFlags>(relaxed = true) }
                     single {
-                        mockk<com.piashcse.feature.payment.PaymentGateway>(relaxed = true).also { gateway ->
+                        mockk<com.piashcse.service.payment.PaymentGateway>(relaxed = true).also { gateway ->
                             every { gateway.provider } returns
                                 com.piashcse.constants.PaymentProvider.MANUAL
                             every { gateway.supports(any()) } returns true

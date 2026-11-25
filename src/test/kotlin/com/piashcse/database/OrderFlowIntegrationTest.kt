@@ -33,12 +33,12 @@ import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq

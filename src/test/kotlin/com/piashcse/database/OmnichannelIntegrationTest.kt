@@ -31,9 +31,9 @@ import com.piashcse.feature.omnichannel.PosSessionCloseRequest
 import com.piashcse.feature.omnichannel.PosSessionOpenRequest
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.promotion.PromotionService
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database

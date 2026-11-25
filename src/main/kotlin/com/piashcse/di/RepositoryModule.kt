@@ -49,6 +49,7 @@ import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.wishlist.WishlistRepository
 import com.piashcse.feature.wishlist.WishlistRepositoryImpl
+import com.piashcse.service.payment.RefundReconciliationPort
 import org.koin.dsl.module
 
 /** Persistence adapters. Resolve these through interfaces, never implementations. */
@@ -73,6 +74,7 @@ val repositoryModule =
         single<ProductSubCategoryRepository> { ProductSubCategoryRepositoryImpl() }
         single<ProfileRepository> { ProfileRepositoryImpl() }
         single<RefundRequestRepository> { RefundRequestRepositoryImpl(get()) }
+        single<RefundReconciliationPort> { get<RefundRequestRepository>() }
         single<ReviewRatingRepository> { ReviewRatingRepositoryImpl() }
         single<ShippingAddressRepository> { ShippingAddressRepositoryImpl() }
         single<ShippingMethodRepository> { ShippingMethodRepositoryImpl() }

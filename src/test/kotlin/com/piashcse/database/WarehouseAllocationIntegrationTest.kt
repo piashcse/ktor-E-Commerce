@@ -24,10 +24,10 @@ import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
-import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.service.DigitalDeliveryService
 import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import org.flywaydb.core.Flyway

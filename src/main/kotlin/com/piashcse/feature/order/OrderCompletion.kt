@@ -15,7 +15,7 @@ import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.seller.SellerLedger
-import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.service.DigitalDeliveryService
 import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
 import java.math.RoundingMode

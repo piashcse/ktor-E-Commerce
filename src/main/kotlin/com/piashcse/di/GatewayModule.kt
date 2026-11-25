@@ -2,7 +2,6 @@ package com.piashcse.di
 
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.feature.payment.ManualPaymentGateway
-import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.payment.StripePaymentGateway
@@ -11,6 +10,8 @@ import com.piashcse.feature.shipping.ManualCarrierGateway
 import com.piashcse.feature.shipping.ShipmentService
 import com.piashcse.feature.shipping.ShippoCarrierGateway
 import com.piashcse.feature.webhook.WebhookAdminService
+import com.piashcse.service.payment.*
+import com.piashcse.service.payment.PaymentGateway
 import org.koin.dsl.module
 
 /** External provider adapters and the services that depend on them. */
