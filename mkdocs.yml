@@ -80,6 +80,10 @@ plugins:
 nav:
   - Overview:
       - Overview: index.md
+      - Architecture: architecture.md
+      - API Contracts: api-contracts.md
+      - Development: development.md
+      - Operations: operations.md
       - Storefront Configuration: config.md
       - Health Checks & Monitoring: health.md
       - Error Handling & Status Codes: errors.md

@@ -106,7 +106,7 @@ See [Users, Roles & Permissions](rbac.md) for the model, permission catalog and 
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 - **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
 - **Health Checks**: Comprehensive health monitoring with `/health`, `/health/live`, and `/health/ready` endpoints.
-- **Structured Logging**: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.
+- **Structured Logging**: Correlation IDs (Request IDs) propagated through logs and responses. The default logback pattern is plain text; JSON encoding can be enabled with a logback encoder.
 
 ### 12. Dashboard Analytics
 
@@ -134,13 +134,13 @@ See [Users, Roles & Permissions](rbac.md) for the model, permission catalog and 
 <b>Fig.  Onion / Clean Architecture </b>
 </p>
 
-The project follows **Clean Architecture** with clear separation of concerns:
+The project is a **modular monolith** with a pragmatic layered structure. Vertical feature slices own their routes, DTOs and repositories, while shared cross-cutting helpers live outside `feature/`:
 
-- **Route Layer** — HTTP routing only, uses `by inject()` for dependency injection
-- **Service Layer** — Business logic orchestration, works with domain models and DTOs
-- **Repository Layer** — Data access with Exposed queries and transaction management
-- **Mapper Layer** — Object mapping between DAO entities and response DTOs
-- **Flyway** — Version-controlled database migrations for safe schema management
+- **Route Layer** (`feature/*/*Routes.kt`) — HTTP routing, OpenAPI metadata and auth/rate-limit scopes. Routes never import Exposed directly and are guarded by an architecture test.
+- **Service / Use Case Layer** (`*Service.kt`, `*RepositoryImpl.kt`) — Business orchestration. Some services are still persistence-aware; a staged refactor moves remaining Exposed access into repositories.
+- **Repository Layer** (`*Repository` interface + `*RepositoryImpl`) — Data access and transaction boundaries. Note that some `*RepositoryImpl` classes currently hold use-case logic (for example order checkout) and are being split into explicit use cases.
+- **Mapper Layer** (`mapper/` plus feature-local mapping) — DAO-to-DTO mapping. Both conventions exist today; new code should use feature-local mappers or `mapper/`, not private mapping inside services.
+- **Flyway** — Version-controlled database migrations for safe schema management.
 
 ### Requirements
 

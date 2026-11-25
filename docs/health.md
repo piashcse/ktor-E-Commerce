@@ -43,7 +43,7 @@ curl -i http://localhost:8080/health/live
 === "200 OK"
     ```json
     {
-      "message": "LIVE"
+      "message": "UP"
     }
     ```
 
