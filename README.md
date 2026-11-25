@@ -27,385 +27,78 @@
 
 ## 🚀 Overview
 
-**Ktor-E-Commerce** is a robust, scalable, and high-performance backend solution designed for modern e-commerce applications. Leveraging the power of [Kotlin](https://kotlinlang.org) and [Ktor](https://ktor.io), it provides an efficient service for handling complex e-commerce workflows, from multi-role authentication to advanced order processing and real-time inventory management.
+**Ktor-E-Commerce** is a production-oriented e-commerce backend built with Kotlin and Ktor: JWT/RBAC auth, catalog and variants, cart/checkout, orders, payments and refunds, inventory and warehouses, seller tools, B2B, subscriptions, notifications, audit logs and admin analytics.
 
-### Key Pillars
-- **Performance**: Built with Ktor's asynchronous engine for non-blocking I/O.
-- **Security**: JWT-based auth, rate limiting, and password complexity enforcement.
-- **Quality**: Strict static analysis with Ktlint and Detekt integrated.
+### Highlights
 
-# Features
+- **Secure by default**: JWT access/refresh tokens, scoped RBAC, API keys, rate limiting, account lockout and password policy.
+- **Commerce core**: multi-seller catalog, cart, tax/shipping quotes, coupons/promotions, wallet/loyalty, idempotent checkout and transactional outbox events.
+- **Operations ready**: Flyway migrations, health/readiness probes, Prometheus metrics, graceful shutdown, optional Redis cache/shared rate limits and worker leader election.
+- **Quality gates**: route/unit tests, PostgreSQL integration tests, JaCoCo coverage, ktlint, detekt and architecture tests.
 
-### 1. Role-Based Access Control
+## 🧱 Architecture
 
-- **Account Types**: Customer, Seller and Admin. `SUPER_ADMIN` is a legacy value mapped to the platform super-admin role.
-- **Database-Backed Roles**: Create custom roles, assign permission bundles and edit permissions without a deploy.
-- **Scoped Permissions**: Platform (`GLOBAL`) and shop (`SHOP`) roles using `resource:action` codes such as `order:manage`.
-- **Seller Staff**: Shop memberships, invitations and role-based staff access.
-- **Effective Permissions**: `GET /api/v1/me/permissions` exposes roles, memberships and resolved permissions.
-- **Least Privilege**: Admin route groups require explicit permissions; mixed customer/seller/admin routes guard admin access separately.
-- **Auditable Changes**: Role, permission and membership changes are audited and bump `authz_version` to invalidate cached permissions.
+A modular monolith organized into vertical feature slices:
 
-### 2. User Accounts and Authentication
+- **Routes** (`feature/*/*Routes.kt`) — HTTP wiring, auth scopes and OpenAPI metadata only.
+- **Services / use cases** — business orchestration and validation.
+- **Repositories** — Exposed queries and transaction boundaries.
+- **Mappers / DTOs** — DAO-to-API mapping and request/response models.
+- **Cross-cutting** — Ktor plugins, outbox/event bus, background workers and shared utilities.
 
-- **User Registration**: Allow customers to create accounts. Users can register with the same email for different roles (customer and seller).
-- **User Authentication**: Implement JWT-based authentication for user sessions.
-- **User Profiles**: Enable users to view and update their profiles.
+See [Architecture](docs/architecture.md) for dependency rules, events, transactions and decisions.
 
-### 3. Product Management
+## 🛠 Built with
 
-- **Product Listings**: Create, update, and delete product listings.
-- **Categories**: Organize products into categories and brands for easy navigation.
-- **Inventory Control**: Keep track of product availability and stock levels.
+Kotlin · Ktor · Exposed · PostgreSQL · Flyway · Koin · HikariCP · Micrometer/Prometheus · Swagger/OpenAPI · ktlint · Detekt · JaCoCo
 
-### 4. Shopping Cart and Checkout
+## ✅ Requirements
 
-- **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
-- **Checkout Summary**: Retrieve detailed checkout summary with subtotal, shipping, tax, and discount breakdown.
-- **Checkout**: Streamline the checkout process with consolidated shipping address and method selection.
-- **Stock Validation**: Automatic stock validation during checkout using effective inventory levels.
-- **Price Validation**: Order totals validated against database prices to prevent tampering.
-- **Cart Clearing**: Automatic cart clearing after successful order placement.
+- JDK 17+
+- PostgreSQL 14+ (tested on 14 and 16)
+- Docker (optional, for Testcontainers-based integration tests)
 
-### 5. Order Management
-
-- **Order Processing**: Handle order creation, status updates, and order history.
-- **Order Status History**: Comprehensive audit trail for every status transition (Placed, Confirmed, Shipped, etc.).
-- **Automatic Taxation**: Configurable tax calculation (default 5%) applied automatically during checkout.
-- **Order Cancellation**: Customers can cancel PENDING/CONFIRMED orders with automatic stock restoration.
-- **Seller Orders**: Sellers can view and manage orders from their shop.
-- **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
-- **Human-Readable Order Numbers**: Date-prefixed order numbers in `ORD-YYYYMMDD-XXXX-XXXXXXXX` format (random suffix guarantees uniqueness under concurrency).
-- **Idempotency Support**: Prevent duplicate orders with idempotency keys.
-- **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
-- **Payment Validation**: Payment amounts validated against order totals.
-- **Payment History**: Track all payments for each order.
-
-### 6. Discount & Coupon System
-
-- **Promo Codes**: Create and manage fixed or percentage-based discount coupons.
-- **Usage Limits**: Enforce expiration dates, usage limits per coupon, and minimum order amounts.
-- **Admin Controls**: Dedicated administrative interface for managing the coupon lifecycle.
-
-### 7. Refund Management
-
-- **Refund Requests**: Customers can request refunds for order items with reasons and evidence images.
-- **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
-- **Return Shipping**: Customers can mark approved refunds as shipped with tracking numbers.
-- **Refund Tracking**: Complete refund lifecycle tracking from request to resolution.
-
-### 8. Scalability and Performance
-
-- **Asynchronous Processing**: Leverage Ktor's async capabilities for high performance.
-- **Load Balancing**: Easily scale your application to accommodate increased traffic.
-
-### 9. Security
-
-- **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
-- **Refresh Tokens**: Secure token refresh with hashed storage and automatic revocation.
-- **Rate Limiting**: Auth endpoints protected against brute-force attacks (5 req/10min).
-- **Account Lockout**: Automatic 30-minute lockout after 5 failed login attempts.
-- **Password Strength**: Enforced password complexity requirements (min 8 chars, mixed case, digit, special char).
-- **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
-- **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
-
-### 10. Dashboard Analytics
-
-- **Summary Statistics**: Quick overview of revenue, orders, users, products, and shops.
-- **Revenue Analytics**: Detailed revenue breakdown with daily trends and average order value.
-- **Order Statistics**: Order status distribution and recent order activity.
-- **User Growth**: User registration trends with breakdown by role and daily signups.
-- **Top Products**: Best-selling products ranked by sales volume and revenue.
-- **Activity Feed**: Recent platform activity including orders and user registrations.
-
-### 11. Audit Logging
-
-- **Action Tracking**: Records every admin action with actor identity, action type, and target resource.
-- **Rich Context**: Captures actor email, role, IP address, user agent, and outcome for full audit trail.
-- **Filterable Queries**: Search audit logs by actor, action type, resource, or outcome.
-- **Immutable Records**: Append-only log records that cannot be modified or deleted.
-
-### 12. Code Quality & Static Analysis
-
-- **Ktlint**: Automated Kotlin linting to ensure consistent code style.
-- **Detekt**: Static code analysis for finding potential bugs and code smells.
-- **Pre-commit Hooks**: Enforce quality standards before code is even committed.
-
-### 13. Testing & Coverage
-
-- **Unit + route tests**: `./gradlew test` (no database required)
-- **PostgreSQL integration tests**: Flyway migrations, repositories, order/payment/refund/payout
-  lifecycles and concurrency guards
-- **Coverage gate**: JaCoCo overall + per-package rules; CI enforces the integration-backed target
-- **Current baseline**: 654 tests, **59.4% instruction / 31.6% branch / 69.5% line** (PostgreSQL-backed run)
-
-```bash
-./gradlew test jacocoTestReport
-# report: build/reports/jacoco/test/html/index.html
-```
-
-## Architecture
-
-<p align="center">
-  </br>
-  <img width="60%" height="60%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
-</p>
-<p align="center">
-<b>Fig. Clean / Onion Architecture </b>
-</p>
-
-The project follows **Clean Architecture** with clear separation of concerns:
-
-- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates logic to services/repositories
-- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs
-- **Repository Layer** (`*Repository` interface + `*RepositoryImpl`) — Data access, Exposed queries, transaction management
-- **Mapper Layer** (`*Mappers.kt`) — Object mapping between DAO entities and response DTOs, fully separated from entities
-- **Plugin Layer** — Cross-cutting concerns: auth, status pages, routing configuration, OpenAPI generation
-
-This architecture ensures:
-- **Testability**: Repositories can be mocked for service-layer unit tests
-- **Swapability**: Data access implementation can change without affecting business logic
-- **Discoverability**: Each concern lives in its own well-named file, not hidden inside god classes
-- **Safety**: Flyway-managed schema migrations prevent destructive table recreation in production
-
-### Production readiness notes
-
-- **Single-instance defaults.** The rate limiter, catalog cache, JWT blacklist cache, email throttle
-  and SMTP circuit breaker are in-process. Running more than one replica requires replacing
-  `CacheService.cache` with a Redis-backed implementation (the `Cache` interface is ready) and using
-  a shared rate-limit store. Until then, deploy as a single instance or accept per-instance limits.
-- **HSTS** is only emitted when `FORCE_HTTPS=true` (set it behind a TLS-terminating proxy).
-- **Pretty JSON** is opt-in via `JSON_PRETTY_PRINT=true`; production should leave it disabled.
-- **Read replicas** are supported via `DB_READ_URL`; only explicitly read-only paths use `readQuery`.
-
-## Built With 🛠
-
-- [Ktor](https://ktor.io/docs/welcome.html) - An asynchronous framework for creating microservices, web applications, and more.
-- [Exposed](https://github.com/JetBrains/Exposed) - A lightweight SQL library on top of JDBC driver for the Kotlin language.
-- [PostgreSQL](https://www.postgresql.org/) - A powerful, open-source object-relational database system.
-- [Flyway](https://flywaydb.org/) - Database migration tool for safe, version-controlled schema management.
-- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin.
-- [Ktlint](https://github.com/jlleitschuh/ktlint-gradle) - An anti-bikeshedding Kotlin linter with built-in formatter.
-- [Detekt](https://detekt.dev/) - A static code analysis tool for the Kotlin programming language.
-- [Valiktor](https://github.com/valiktor/valiktor) - A type-safe, powerful and extensible fluent DSL to validate objects in Kotlin.
-- [Ktor OpenAPI/Swagger](https://ktor.io/docs/server-openapi.html) - Ktor's built-in OpenAPI generation and Swagger UI.
-
-## Requirements
-
-- **Java**: JDK 17 or latest
-- **PostgreSQL**: Version 14 or latest (the migrations use partial unique indexes and are tested on PostgreSQL 14 and 16)
-
-## Clone the repository
+## 🚀 Quick start
 
 ```bash
 git clone git@github.com:piashcse/ktor-E-Commerce.git
-```
-
-Note: some installation instructions are for mac, for windows/linux please install accordingly.
-
-## Environment Configuration
-
-This project uses DotEnv for configuration management. Follow these steps to set up your environment:
-
-1. Create a `.env` file in the project root directory:
-   ```bash
-   touch .env
-   ```
-
-2. Add the following variables to your `.env` file:
-
-   ```env
-   # Database Configuration
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_NAME=ktor-ecommerce
-   DB_USER=postgres
-   DB_PASSWORD=p123
-
-   # Server Configuration
-   PORT=8080
-   HOST=localhost
-
-   # JWT Configuration
-   JWT_SECRET=your-super-secret-jwt-secret-key-change-in-production
-   JWT_ISSUER=ktor-ecommerce-app
-   JWT_AUDIENCE=ktor-ecommerce
-   JWT_REALM=ktor-ecommerce
-
-   # Email Configuration
-   EMAIL_HOST=smtp.gmail.com
-   EMAIL_PORT=587
-   EMAIL_USERNAME=your-email@gmail.com
-   EMAIL_PASSWORD=your-gmail-app-password
-   ```
-
-3. Update the values as needed for your environment, especially:
-   - Database credentials to match your PostgreSQL setup
-   - JWT secret with a strong, unique value for production
-   - Email credentials with your actual Gmail and app password
-
-The `.env` file is included in `.gitignore` to prevent sensitive information from being committed to the repository.
-
-> **Note**: For email configuration, make sure to use a Gmail app password rather than your regular Gmail password. You can generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
-
-## PgAdmin Setup
-
-On Terminal
-
-```
-brew install --cask pgadmin4
-```
-
-Open PgAdmin
-
-In the "Create - Server" dialog that appears, fill in the following information:
-
-General tab:
-
-- Name: Give your server a name (e.g., "Ktor Ecommerce App")
-
-Connection tab:
-
-- Host name/address: localhost (if your PostgreSQL server is on the same machine)
-- Port: 5432 (default PostgreSQL port)
-- Maintenance database: postgres (default database)
-- Username: piashcse (the user you created for your application)
-- Password: p123 (the password you set for piashcse)
-
-![server1](screenshots/ktor-postgres.png)
-
-
-
-## 📧 SMTP Email Setup
-
-This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). The email configuration is managed through environment variables in your `.env` file.
-
-### 🔧 SMTP Configuration
-Configure your email settings in the `.env` file:
-
-- `EMAIL_HOST`: SMTP server host (e.g., `smtp.gmail.com`)
-- `EMAIL_PORT`: SMTP server port (e.g., `587` for TLS)
-- `EMAIL_USERNAME`: Your email address
-- `EMAIL_PASSWORD`: Your email app password
-
-> **Important**: Use Gmail app passwords instead of your regular Gmail password. Generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
-
-## API Documentation & OpenAPI Specification
-
-The application includes built-in API documentation and OpenAPI specification generation:
-
-### Accessing API Documentation
-
-- **Swagger UI**: Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery.
-- **Raw OpenAPI Specification**: Generated at runtime by Ktor's OpenAPI plugin and served through Swagger UI.
-
-### Generating OpenAPI Specification
-
-OpenAPI is generated at runtime from the route documentation annotations. There is no static `openapi.json` file and no `transformOpenApiJson` Gradle task. Use Swagger UI at `/swagger` for the live specification.
-
-## Run the project
-
-On Terminal
-
-```
+cd ktor-E-Commerce
+cp .env.example .env       # set DB_* and JWT_SECRET
 ./gradlew run
 ```
 
-## API Response Format
+Swagger UI: `http://localhost:8080/swagger`
 
-This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, predictable responses.
+Minimum `.env` values:
 
-### Success Responses
-
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** - no wrapper objects
-
-> The historical examples below sometimes show an older `{ "data": ..., "message": ... }` envelope. The current API returns the raw DTO (or a paginated `{data, metadata}` object); error responses use `ApiError`.
-- No `isSuccess` or `statusCode` fields needed
-
-**Example (200 OK):**
-```json
-{
-  "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-  "email": "customer@gmail.com",
-  "userType": "customer"
-}
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ktor-ecommerce
+DB_USER=postgres
+DB_PASSWORD=change-me
+JWT_SECRET=<openssl rand -base64 48>
 ```
 
-### Error Responses
+See [.env.example](.env.example) for every supported setting (email, payments, shipping, uploads, Redis, rate limits).
 
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Invalid email or password"
-}
+## 🧪 Tests
+
+```bash
+./gradlew test                 # unit + route tests
+./gradlew jacocoTestReport     # coverage report
 ```
 
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters with uppercase, lowercase, digit, and special character"}
-  ]
-}
-```
+PostgreSQL integration tests use `DB_*` when provided and otherwise reuse a Testcontainers instance. CI enforces the coverage gate.
 
-### Pagination
+## 📡 API conventions
 
-All collection endpoints use the same offset pagination contract:
+- Success responses return the payload directly; list endpoints use `{ "data": [...], "metadata": {...} }`.
+- Errors use the `ApiError` envelope with `message`, `code`, `errors`, `requestId` and RFC 9457 aliases.
+- Mutating endpoints accept `Idempotency-Key` where retries matter (checkout, payments, refunds, payouts).
+- Collection endpoints prefer `page`/`perPage`; `limit`/`offset` remain supported.
 
-- **`page`** (default: 1) and **`perPage`** (default: 20, max: 100) — preferred
-- **`limit`** (default: 20, max: 100) and **`offset`** (default: 0) — legacy alias
-- If `page`/`perPage` are present they take precedence over `limit`/`offset`.
-- Cursor feeds (`/orders/cursor`, `/notifications/cursor`) accept `cursor` + `limit` (or `perPage`).
-
-**Paginated Response Format:**
-```json
-{
-  "data": [
-    { ... item 1 ... },
-    { ... item 2 ... }
-  ],
-  "metadata": {
-    "totalCount": 100,
-    "limit": 20,
-    "offset": 0,
-    "page": 1,
-    "perPage": 20,
-    "totalPages": 5,
-    "hasNext": true,
-    "hasPrev": false
-  }
-}
-```
-
-Cursor feeds return `data`, `nextCursor`, `hasMore` and `limit` instead of offset metadata.
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email address"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `410` | Gone | `"API version v0 for 'product' is no longer available"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-### Message Constants
-
-All error messages are centralized in `Message.kt` for consistency and maintainability:
-- **Validation**: Field-level validation messages
-- **Auth**: Authentication and authorization errors  
-- **Orders/Products/Shops**: Domain-specific errors
-- **General**: Common error messages
-
-This ensures consistent, actionable error messages across all endpoints.
-
-## Documentation
+See [API Contracts](docs/api-contracts.md) and [Errors](docs/errors.md).
 
 ### 📖 MkDocs Documentation
 
