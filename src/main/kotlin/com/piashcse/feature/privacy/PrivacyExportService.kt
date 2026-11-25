@@ -1,0 +1,277 @@
+package com.piashcse.feature.privacy
+
+import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.feature.notification.NotificationResponse
+import com.piashcse.mapper.*
+import com.piashcse.model.response.*
+import com.piashcse.utils.common.DateTimes.toUtcString
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.throwNotFound
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
+
+/** GDPR-style data export: account, orders, wallet, subscriptions and platform records. */
+class PrivacyExportService {
+    suspend fun export(userId: String): PrivacyExportResponse =
+        query {
+            val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
+            val orders = OrderDAO.find { OrderTable.userId eq user.id }.toList()
+            val orderItems = OrderItemDAO.itemsForOrders(orders.map { it.id })
+            PrivacyExportResponse(
+                user = user.toUserResponse(),
+                profile = UserProfileDAO.find { UserProfileTable.userId eq user.id }.firstOrNull()?.toUserProfileResponse(),
+                shippingAddresses =
+                    ShippingAddressDAO.find { ShippingAddressTable.userId eq user.id }
+                        .map { it.toShippingAddressResponse() },
+                orders =
+                    orders.map {
+                        it.toOrderResponse(
+                            orderItems[it.id.value].orEmpty().map { item -> item.toOrderItemResponse() },
+                        )
+                    },
+                payments = PaymentDAO.find { PaymentTable.userId eq user.id }.map { it.toPaymentResponse() },
+                refunds = RefundRequestDAO.find { RefundRequestTable.userId eq user.id }.map { it.toRefundRequestResponse() },
+                consents = PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }.map { it.toPolicyConsentResponse() },
+                reviews = ReviewRatingDAO.find { ReviewRatingTable.userId eq user.id }.map { it.toReviewRatingResponse() },
+                notifications = NotificationDAO.find { NotificationTable.userId eq user.id }.map { it.toPrivacyNotification() },
+                additionalData = additionalExportData(user),
+                exportedAt = currentUtc().toUtcString(),
+            )
+        }
+
+    /** User-linked rows for the GDPR export, grouped by table. */
+    private fun additionalExportData(user: UserDAO): Map<String, List<Map<String, String>>> =
+        accountExportData(user) + shoppingExportData(user)
+
+    private fun accountExportData(user: UserDAO): Map<String, List<Map<String, String>>> =
+        buildMap {
+            put("walletLedger", WalletLedgerDAO.find { WalletLedgerTable.userId eq user.id }.map { it.toPrivacyMap() })
+            put(
+                "giftCardRedemptions",
+                GiftCardRedemptionDAO.find { GiftCardRedemptionTable.userId eq user.id }
+                    .map { it.toPrivacyMap() },
+            )
+            val subscriptions = SubscriptionDAO.find { SubscriptionTable.userId eq user.id }.toList()
+            put("subscriptions", subscriptions.map { it.toPrivacyMap() })
+            val invoicesBySubscription =
+                if (subscriptions.isEmpty()) {
+                    emptyMap()
+                } else {
+                    SubscriptionInvoiceDAO.find {
+                        SubscriptionInvoiceTable.subscriptionId inList subscriptions.map { it.id }
+                    }.groupBy { it.subscriptionId.value }
+                }
+            put(
+                "subscriptionInvoices",
+                subscriptions.flatMap { subscription ->
+                    invoicesBySubscription[subscription.id.value].orEmpty().map { it.toPrivacyMap() }
+                },
+            )
+            put("supportTickets", SupportTicketDAO.find { SupportTicketTable.userId eq user.id }.map { it.toPrivacyMap() })
+            put(
+                "supportMessages",
+                SupportMessageDAO.find { SupportMessageTable.senderId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put(
+                "digitalEntitlements",
+                DigitalEntitlementDAO.find { DigitalEntitlementTable.userId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put("passkeys", PasskeyCredentialDAO.find { PasskeyCredentialTable.userId eq user.id }.map { it.toPrivacyMap() })
+            put(
+                "b2bQuotes",
+                B2bQuoteDAO.find { B2bQuoteTable.buyerUserId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put(
+                "b2bPurchaseOrders",
+                B2bPurchaseOrderDAO.find { B2bPurchaseOrderTable.buyerUserId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put(
+                "sellerReviews",
+                SellerReviewDAO.find { SellerReviewTable.userId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put(
+                "sellerDisputes",
+                SellerDisputeDAO.find { SellerDisputeTable.userId eq user.id }.map { it.toPrivacyMap() },
+            )
+            put(
+                "analyticsEvents",
+                AnalyticsEventDAO.find { AnalyticsEventTable.userId eq user.id }.map { it.toPrivacyMap() },
+            )
+        }
+
+    private fun shoppingExportData(user: UserDAO): Map<String, List<Map<String, String>>> =
+        buildMap {
+            put(
+                "cartItems",
+                CartItemDAO.find { CartItemTable.userId eq user.id }.map {
+                    mapOf(
+                        "productId" to it.productId.value,
+                        "variantId" to it.variantId?.value.orEmpty(),
+                        "quantity" to it.quantity.toString(),
+                    )
+                },
+            )
+            put(
+                "wishlist",
+                WishlistDAO.find { WishlistTable.userId eq user.id }.map {
+                    mapOf("productId" to it.productId.value, "createdAt" to it.createdAt.toUtcString())
+                },
+            )
+            put(
+                "stockAlerts",
+                StockAlertDAO.find { StockAlertTable.userId eq user.id }.map {
+                    mapOf(
+                        "productId" to it.productId.value,
+                        "variantId" to it.variantId?.value.orEmpty(),
+                        "notifiedAt" to (it.notifiedAt?.toUtcString() ?: ""),
+                    )
+                },
+            )
+            put(
+                "notificationPreferences",
+                NotificationPreferenceDAO.find { NotificationPreferenceTable.userId eq user.id }.map {
+                    mapOf("eventType" to it.eventType, "channel" to it.channel)
+                },
+            )
+            put(
+                "apiKeys",
+                ApiKeyDAO.find { ApiKeyTable.userId eq user.id }.map {
+                    mapOf(
+                        "id" to it.id.value,
+                        "name" to it.name,
+                        "prefix" to it.prefix,
+                        "scopes" to it.scopes,
+                        "isActive" to it.isActive.toString(),
+                        "createdAt" to it.createdAt.toUtcString(),
+                    )
+                },
+            )
+            put(
+                "couponUsage",
+                CouponUsageDAO.find { CouponUsageTable.userId eq user.id }.map {
+                    mapOf(
+                        "couponId" to it.couponId.value,
+                        "orderId" to it.orderId?.value.orEmpty(),
+                        "usedAt" to it.usedAt.toUtcString(),
+                    )
+                },
+            )
+            put(
+                "taxExemptions",
+                TaxExemptionDAO.find { TaxExemptionTable.userId eq user.id }.map {
+                    mapOf(
+                        "id" to it.id.value,
+                        "businessTaxId" to it.businessTaxId.orEmpty(),
+                        "country" to it.country.orEmpty(),
+                        "expiresAt" to (it.expiresAt?.toUtcString() ?: ""),
+                    )
+                },
+            )
+            put(
+                "walletAccount",
+                WalletAccountDAO.find { WalletAccountTable.userId eq user.id }.map {
+                    mapOf(
+                        "creditBalance" to it.creditBalance.toPlainString(),
+                        "pointsBalance" to it.pointsBalance.toString(),
+                        "lifetimePoints" to it.lifetimePoints.toString(),
+                        "referralCode" to it.referralCode,
+                    )
+                },
+            )
+            put(
+                "seller",
+                SellerDAO.find { SellerTable.userId eq user.id }.map {
+                    mapOf(
+                        "sellerId" to it.id.value,
+                        "shopId" to (it.shopId?.value ?: ""),
+                        "businessName" to (it.businessName ?: ""),
+                        "businessRegistrationNumber" to (it.businessRegistrationNumber ?: ""),
+                        "taxId" to (it.taxId ?: ""),
+                        "bankName" to (it.bankName ?: ""),
+                        "bankAccountNumber" to (it.bankAccountNumber ?: ""),
+                        "bankRoutingNumber" to (it.bankRoutingNumber ?: ""),
+                        "kycStatus" to it.kycStatus.name,
+                        "kycDocumentUrl" to (it.kycDocumentUrl ?: ""),
+                    )
+                },
+            )
+        }
+
+    private fun WalletLedgerDAO.toPrivacyMap() =
+        mapOf(
+            "id" to id.value,
+            "type" to type.name,
+            "pointsDelta" to pointsDelta.toString(),
+            "creditDelta" to creditDelta.toPlainString(),
+            "referenceType" to referenceType.orEmpty(),
+            "referenceId" to referenceId.orEmpty(),
+            "createdAt" to createdAt.toUtcString(),
+        )
+
+    private fun GiftCardRedemptionDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "giftCardId" to giftCardId.value, "orderId" to orderId.value, "amount" to amount.toPlainString())
+
+    private fun SubscriptionDAO.toPrivacyMap() =
+        mapOf(
+            "id" to id.value,
+            "planId" to planId.value,
+            "status" to status.name,
+            "currentPeriodEnd" to currentPeriodEnd.toUtcString(),
+            "cancelAtPeriodEnd" to cancelAtPeriodEnd.toString(),
+        )
+
+    private fun SubscriptionInvoiceDAO.toPrivacyMap() =
+        mapOf(
+            "id" to id.value,
+            "subscriptionId" to subscriptionId.value,
+            "amount" to amount.toPlainString(),
+            "currency" to currency,
+            "status" to status.name,
+        )
+
+    private fun SupportTicketDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "subject" to subject, "status" to status.name, "createdAt" to createdAt.toUtcString())
+
+    private fun SupportMessageDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "ticketId" to ticketId.value, "body" to body, "createdAt" to createdAt.toUtcString())
+
+    private fun DigitalEntitlementDAO.toPrivacyMap() =
+        mapOf(
+            "id" to id.value,
+            "productId" to productId.value,
+            "fileName" to fileName.orEmpty(),
+            "expiresAt" to (expiresAt?.toUtcString() ?: ""),
+        )
+
+    private fun PasskeyCredentialDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "credentialId" to credentialId, "name" to name.orEmpty(), "createdAt" to createdAt.toUtcString())
+
+    private fun B2bQuoteDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "status" to status.name, "total" to total.toPlainString(), "createdAt" to createdAt.toUtcString())
+
+    private fun B2bPurchaseOrderDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "poNumber" to poNumber, "status" to status.name, "total" to total.toPlainString())
+
+    private fun SellerReviewDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "sellerId" to sellerId.value, "rating" to rating.toString(), "comment" to comment.orEmpty())
+
+    private fun SellerDisputeDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "subject" to subject, "status" to status.name, "createdAt" to createdAt.toUtcString())
+
+    private fun AnalyticsEventDAO.toPrivacyMap() =
+        mapOf("id" to id.value, "eventType" to eventType.name, "path" to path.orEmpty(), "occurredAt" to occurredAt.toUtcString())
+
+    private fun NotificationDAO.toPrivacyNotification() =
+        NotificationResponse(
+            id = id.value,
+            channel = channel,
+            type = type,
+            title = title,
+            body = body,
+            resourceType = resourceType,
+            resourceId = resourceId,
+            isRead = isRead,
+            createdAt = createdAt.toUtcString(),
+        )
+}
