@@ -3,6 +3,7 @@
 package com.piashcse.feature.brand
 
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.pageRequest
@@ -61,8 +62,8 @@ fun Route.brandAdminRoutes() {
             val url =
                 call.receiveSingleImage(
                     purpose = "brand image",
-                    upload = UploadService::uploadBrandImage,
-                    publicUrl = UploadService::getBrandImageUrl,
+                    upload = { file, bytes -> UploadService.upload(UploadPurpose.BRAND, file, bytes) },
+                    publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.BRAND, fileName) },
                 )
             call.respondOk(brandRepo.updateBrandLogo(id, url))
         }.describe { summary = "Admin - Upload a brand logo" }

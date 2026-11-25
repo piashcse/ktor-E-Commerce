@@ -31,15 +31,6 @@ object UploadService {
     // Upload configuration
     private val uploadBaseDir = DotEnvConfig.uploadDir
 
-    // Upload directories
-    private const val PROFILE_DIR = "profile-images"
-    private const val PRODUCT_DIR = "product-images"
-    private const val SHOP_DIR = "shop-images"
-    private const val REFUND_DIR = "refund-images"
-    private const val SUPPORT_DIR = "support-attachments"
-    private const val CATEGORY_DIR = "category-images"
-    private const val BRAND_DIR = "brand-images"
-
     // File size limit (applies to all image types)
     private const val MAX_FILE_SIZE = 5L * 1024 * 1024 // 5 MB
     private const val MAX_STORAGE_PER_DIR = 500L * 1024 * 1024 // 500 MB per upload directory
@@ -58,60 +49,17 @@ object UploadService {
 
     init {
         // Create all upload directories on startup
-        listOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, SUPPORT_DIR, CATEGORY_DIR, BRAND_DIR)
-            .forEach { ensureDirectoryExists(it) }
+        UploadPurpose.entries.forEach { ensureDirectoryExists(it.directory) }
     }
 
     /**
-     * Uploads a profile image (5MB limit).
+     * Uploads a file to [purpose]'s directory with the shared 5 MB limit.
      */
-    suspend fun uploadProfileImage(
+    suspend fun upload(
+        purpose: UploadPurpose,
         file: PartData.FileItem,
         preloadedBytes: ByteArray? = null,
-    ): String = upload(file, PROFILE_DIR, MAX_FILE_SIZE, "profile image", preloadedBytes)
-
-    /**
-     * Uploads a product image (5MB limit).
-     */
-    suspend fun uploadProductImage(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, PRODUCT_DIR, MAX_FILE_SIZE, "product image", preloadedBytes)
-
-    /**
-     * Uploads a shop image (5MB limit).
-     */
-    suspend fun uploadShopImage(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, SHOP_DIR, MAX_FILE_SIZE, "shop image", preloadedBytes)
-
-    /**
-     * Uploads a refund evidence image (5MB limit).
-     */
-    suspend fun uploadRefundImage(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, REFUND_DIR, MAX_FILE_SIZE, "refund image", preloadedBytes)
-
-    /** Uploads a support-ticket evidence image (5MB limit). */
-    suspend fun uploadSupportAttachment(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, SUPPORT_DIR, MAX_FILE_SIZE, "support attachment", preloadedBytes)
-
-    /**
-     * Uploads a category image (5MB limit).
-     */
-    suspend fun uploadCategoryImage(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, CATEGORY_DIR, MAX_FILE_SIZE, "category image", preloadedBytes)
-
-    suspend fun uploadBrandImage(
-        file: PartData.FileItem,
-        preloadedBytes: ByteArray? = null,
-    ): String = upload(file, BRAND_DIR, MAX_FILE_SIZE, "brand image", preloadedBytes)
+    ): String = upload(file, purpose.directory, MAX_FILE_SIZE, purpose.label, preloadedBytes)
 
     /**
      * Checks if the magic bytes of the file match the given extension.
@@ -269,17 +217,17 @@ object UploadService {
             fileName
         }
 
+    private val allowedDirectories = UploadPurpose.entries.map { it.directory }.toSet()
+
     /**
      * Deletes a file from the specified upload directory.
      */
-    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, SUPPORT_DIR, CATEGORY_DIR, BRAND_DIR)
-
     fun delete(
         directory: String,
         fileName: String?,
     ): Boolean {
         if (fileName.isNullOrBlank()) return false
-        if (directory !in ALLOWED_DIRS) return false
+        if (directory !in allowedDirectories) return false
         if (fileName.contains("/") || fileName.contains("\\") || fileName.contains("..")) return false
 
         return try {
@@ -298,32 +246,10 @@ object UploadService {
         }
     }
 
-    /**
-     * Deletes a profile image.
-     */
-    fun deleteProfileImage(fileName: String?): Boolean = delete(PROFILE_DIR, fileName)
-
-    /**
-     * Deletes a product image.
-     */
-    fun deleteProductImage(fileName: String?): Boolean = delete(PRODUCT_DIR, fileName)
-
-    /**
-     * Deletes a shop image.
-     */
-    fun deleteShopImage(fileName: String?): Boolean = delete(SHOP_DIR, fileName)
-
-    /**
-     * Deletes a category image.
-     */
-    fun deleteCategoryImage(fileName: String?): Boolean = delete(CATEGORY_DIR, fileName)
-
-    fun deleteBrandImage(fileName: String?): Boolean = delete(BRAND_DIR, fileName)
-
-    /**
-     * Deletes a refund image.
-     */
-    fun deleteRefundImage(fileName: String?): Boolean = delete(REFUND_DIR, fileName)
+    fun delete(
+        purpose: UploadPurpose,
+        fileName: String?,
+    ): Boolean = delete(purpose.directory, fileName)
 
     /**
      * Gets the public URL for an uploaded file.
@@ -333,20 +259,10 @@ object UploadService {
         fileName: String,
     ): String = "/uploads/$directory/$fileName"
 
-    /**
-     * Gets URL helpers for different file types.
-     */
-    fun getProfileImageUrl(fileName: String) = getPublicUrl(PROFILE_DIR, fileName)
-
-    fun getProductImageUrl(fileName: String) = getPublicUrl(PRODUCT_DIR, fileName)
-
-    fun getShopImageUrl(fileName: String) = getPublicUrl(SHOP_DIR, fileName)
-
-    fun getRefundImageUrl(fileName: String) = getPublicUrl(REFUND_DIR, fileName)
-
-    fun getCategoryImageUrl(fileName: String) = getPublicUrl(CATEGORY_DIR, fileName)
-
-    fun getBrandImageUrl(fileName: String) = getPublicUrl(BRAND_DIR, fileName)
+    fun getPublicUrl(
+        purpose: UploadPurpose,
+        fileName: String,
+    ): String = getPublicUrl(purpose.directory, fileName)
 
     /**
      * Gets the upload directory with path traversal prevention.

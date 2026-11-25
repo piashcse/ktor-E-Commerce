@@ -22,6 +22,7 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.standardErrors
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.extension.respondDeleted
@@ -258,8 +259,8 @@ fun Route.productSellerRoutes() {
             val imageUrl =
                 call.receiveSingleImage(
                     purpose = "product image",
-                    upload = UploadService::uploadProductImage,
-                    publicUrl = UploadService::getProductImageUrl,
+                    upload = { file, bytes -> UploadService.upload(UploadPurpose.PRODUCT, file, bytes) },
+                    publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.PRODUCT, fileName) },
                 )
             call.respondOk(imageUrl)
         }.describe { summary = "Seller - Upload a product image" }

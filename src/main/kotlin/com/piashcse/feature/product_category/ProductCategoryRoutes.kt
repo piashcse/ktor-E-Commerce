@@ -3,6 +3,7 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.pageRequest
@@ -61,8 +62,8 @@ fun Route.productCategoryAdminRoutes() {
             val url =
                 call.receiveSingleImage(
                     purpose = "category image",
-                    upload = UploadService::uploadCategoryImage,
-                    publicUrl = UploadService::getCategoryImageUrl,
+                    upload = { file, bytes -> UploadService.upload(UploadPurpose.CATEGORY, file, bytes) },
+                    publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.CATEGORY, fileName) },
                 )
             call.respondOk(productCategoryRepo.updateCategoryImage(id, url))
         }.describe { summary = "Admin - Upload a category image" }

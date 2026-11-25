@@ -13,6 +13,7 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
@@ -119,8 +120,8 @@ fun Route.shopSellerRoutesV1() {
             val url =
                 call.receiveSingleImage(
                     purpose = "shop image",
-                    upload = UploadService::uploadShopImage,
-                    publicUrl = UploadService::getShopImageUrl,
+                    upload = { file, bytes -> UploadService.upload(UploadPurpose.SHOP, file, bytes) },
+                    publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.SHOP, fileName) },
                 )
             call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, UpdateShopRequest(logo = url)))
         }.describe { summary = "Seller - Upload a shop logo" }

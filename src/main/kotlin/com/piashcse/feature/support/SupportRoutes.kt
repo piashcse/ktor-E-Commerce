@@ -11,6 +11,7 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
@@ -74,7 +75,7 @@ fun Route.supportRoutes() {
                 try {
                     if (part is PartData.FileItem) {
                         val bytes = UploadService.readAndValidateImagePart(part, "support attachment")
-                        val storage = UploadService.uploadSupportAttachment(part, bytes)
+                        val storage = UploadService.upload(UploadPurpose.SUPPORT, part, bytes)
                         attachment =
                             service.attach(
                                 call.currentUserId,

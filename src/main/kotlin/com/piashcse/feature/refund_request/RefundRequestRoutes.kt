@@ -20,6 +20,7 @@ import com.piashcse.plugin.requireAdminPermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.service.UploadPurpose
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.extension.receiveSingleImage
@@ -69,8 +70,8 @@ fun Route.refundRequestRoutes() {
                 val imageUrl =
                     call.receiveSingleImage(
                         purpose = "refund evidence",
-                        upload = { file, bytes -> UploadService.uploadRefundImage(file, bytes) },
-                        publicUrl = UploadService::getRefundImageUrl,
+                        upload = { file, bytes -> UploadService.upload(UploadPurpose.REFUND, file, bytes) },
+                        publicUrl = { fileName -> UploadService.getPublicUrl(UploadPurpose.REFUND, fileName) },
                     )
                 call.respondCreated(refundRequestRepo.addRefundEvidence(refundId, call.currentUserId, imageUrl))
             }.describe {
