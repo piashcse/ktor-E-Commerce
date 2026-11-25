@@ -35,4 +35,32 @@ class LayeringTest {
 
         assertTrue(offenders.isEmpty(), "Route files must live under feature/: $offenders")
     }
+
+    @Test
+    fun `shared service and database layers do not depend on features`() {
+        val offenders =
+            sourceRoot.walkTopDown()
+                .filter { it.isFile && (it.path.contains("/service/") || it.path.contains("/database/")) }
+                .filter { file -> file.readLines().any { it.startsWith("import com.piashcse.feature.") } }
+                .map { it.relativeTo(sourceRoot).path }
+                .toList()
+
+        assertTrue(offenders.isEmpty(), "service/database must not import feature packages: $offenders")
+    }
+
+    @Test
+    fun `payment does not depend on subscription or refund features`() {
+        val offenders =
+            sourceRoot.walkTopDown()
+                .filter { it.isFile && it.path.contains("/feature/payment/") }
+                .filter { file ->
+                    file.readLines().any {
+                        it.startsWith("import com.piashcse.feature.subscription.") ||
+                            it.startsWith("import com.piashcse.feature.refund_request.")
+                    }
+                }.map { it.relativeTo(sourceRoot).path }
+                .toList()
+
+        assertTrue(offenders.isEmpty(), "Payment must use service.payment ports instead: $offenders")
+    }
 }
