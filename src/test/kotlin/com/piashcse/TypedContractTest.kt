@@ -14,6 +14,7 @@ import com.piashcse.database.entities.LoginResponse
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.feature.auth.AuthRepository
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.auth.authRoutes
 import com.piashcse.feature.cart.CartRepository
@@ -68,7 +69,8 @@ class TypedContractTest {
                 installTestInfra(
                     module {
                         single<AuthRepository> { authRepo }
-                        single { UserAuthenticationService(get()) }
+                        single { MfaService() }
+                        single { UserAuthenticationService(get(), get()) }
                     },
                 )
                 routing { route("/api/v1/auth") { authRoutes() } }
@@ -115,7 +117,8 @@ class TypedContractTest {
                 installTestInfra(
                     module {
                         single<AuthRepository> { authRepo }
-                        single { UserAuthenticationService(get()) }
+                        single { MfaService() }
+                        single { UserAuthenticationService(get(), get()) }
                     },
                 )
                 routing { route("/api/v1/auth") { authRoutes() } }

@@ -28,14 +28,10 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionService
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.CountDownLatch
@@ -43,63 +39,12 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 /**
  * DB-backed concurrency guard tests. Prefers the CI `DB_*` service and falls
  * back to Testcontainers locally; skipped only when neither is available.
  */
 class ConcurrencyIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
-    private fun withDatabase(block: () -> Unit) {
-        val external = envDb()
-        if (external != null) {
-            setup(external.first, external.second, external.third)
-            block()
-            return
-        }
-        // CI must never silently skip the only real-database check.
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            setup(pg.jdbcUrl, pg.username, pg.password)
-            block()
-        } finally {
-            pg.stop()
-        }
-    }
-
-    private fun setup(
-        jdbcUrl: String,
-        user: String,
-        password: String,
-    ) {
-        Flyway.configure()
-            .dataSource(jdbcUrl, user, password)
-            .locations("classpath:db/migration")
-            .load()
-            .migrate()
-        Database.connect(jdbcUrl, user = user, password = password)
-    }
-
     private fun runConcurrently(
         count: Int,
         block: () -> Unit,
@@ -123,7 +68,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent stock decrements never oversell`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var productId: EntityID<String>
             lateinit var shopId: EntityID<String>
             transaction {
@@ -184,7 +129,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent order idempotency keys keep one row`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var userId: EntityID<String>
             lateinit var shopId: EntityID<String>
             transaction {
@@ -229,7 +174,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent payment transaction ids keep one row`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var orderId: EntityID<String>
             lateinit var userId: EntityID<String>
             transaction {
@@ -281,7 +226,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent payout request keys keep one request`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var sellerId: EntityID<String>
             transaction {
                 val user =
@@ -314,7 +259,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent coupon usage rows keep one row`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var couponId: EntityID<String>
             lateinit var userId: EntityID<String>
             lateinit var orderId: EntityID<String>
@@ -379,7 +324,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent loyalty redemptions cannot double spend`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var userId: EntityID<String>
             transaction {
                 val user =
@@ -415,7 +360,7 @@ class ConcurrencyIntegrationTest {
 
     @Test
     fun `concurrent promotion usage respects the limit`() {
-        withDatabase {
+        PostgresTestSupport.withMigratedDatabase {
             lateinit var promoUserId: EntityID<String>
             lateinit var promoOrderId: EntityID<String>
             lateinit var promotionId: EntityID<String>

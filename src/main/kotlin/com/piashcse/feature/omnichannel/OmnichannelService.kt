@@ -143,9 +143,9 @@ data class PosSessionResponse(
 )
 
 class OmnichannelService(
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
-    private val taxService: TaxService = TaxService(),
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
+    private val digitalDelivery: DigitalDeliveryService,
+    private val taxService: TaxService,
+    private val loyaltyService: LoyaltyService,
 ) {
     private val pos = PosService(digitalDelivery, taxService, loyaltyService)
 

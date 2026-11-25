@@ -13,5 +13,6 @@ object ApiErrorCode {
     const val CONFLICT = "CONFLICT"
     const val VALIDATION_FAILED = "VALIDATION_FAILED"
     const val SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
+    const val INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
     const val DEFAULT = "DEFAULT"
 }

@@ -5,8 +5,8 @@ import com.piashcse.utils.common.PaginatedResponse
 import java.time.LocalDateTime
 
 class SubscriptionService(
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
-    private val billing: SubscriptionBillingService = SubscriptionBillingService(digitalDelivery),
+    private val digitalDelivery: DigitalDeliveryService,
+    private val billing: SubscriptionBillingService,
 ) {
     private val plans = SubscriptionPlanService()
     private val lifecycle = SubscriptionLifecycleService(billing)

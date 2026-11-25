@@ -24,10 +24,10 @@ import java.math.RoundingMode
 
 /** Builds the server-owned checkout quote shown before order placement. */
 internal class CheckoutPreviewService(
-    private val fxService: FxService = FxService(),
-    private val taxService: TaxService = TaxService(),
-    private val promotionService: PromotionService = PromotionService(),
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
+    private val fxService: FxService,
+    private val taxService: TaxService,
+    private val promotionService: PromotionService,
+    private val loyaltyService: LoyaltyService,
 ) {
     private val i18n = I18nService()
 

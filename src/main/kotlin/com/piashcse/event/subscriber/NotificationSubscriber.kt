@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory
 /** Writes in-app notifications + seller payout rows. Notification writes are non-fatal;
  * payout capture failures are audit-logged and propagated (EventBus retries + dead-letters). */
 class NotificationSubscriber(
-    private val dispatcher: NotificationDispatcher = NotificationDispatcher(),
+    private val dispatcher: NotificationDispatcher,
 ) : Subscriber {
     private val log = LoggerFactory.getLogger(NotificationSubscriber::class.java)
 

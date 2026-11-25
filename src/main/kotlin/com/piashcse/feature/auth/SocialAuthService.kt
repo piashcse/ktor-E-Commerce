@@ -16,7 +16,7 @@ import java.util.UUID
 class SocialAuthService(
     private val authRepo: AuthRepository,
     private val googleVerifier: GoogleTokenVerifier,
-    private val mfaService: MfaService = MfaService(),
+    private val mfaService: MfaService,
 ) {
     suspend fun googleLogin(
         idToken: String,

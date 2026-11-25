@@ -28,49 +28,18 @@ import com.piashcse.feature.seller.SellerToolsService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 /** Seller reviews, disputes and commission rules against PostgreSQL. */
 class SellerToolsIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     @Test
     fun `reviews disputes and commission rules persist`() {
-        val external = envDb()
-        if (external != null) {
-            runSellerFlow(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runSellerFlow(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runSellerFlow(jdbcUrl, user, password)
         }
     }
 

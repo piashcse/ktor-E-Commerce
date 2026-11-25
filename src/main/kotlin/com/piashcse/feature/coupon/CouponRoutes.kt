@@ -7,7 +7,6 @@ import com.piashcse.model.request.CouponRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.sellerWriteRateLimit
-import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.queryBooleanOrNull
@@ -34,7 +33,7 @@ fun Route.couponRoutes() {
         if (coupon != null) {
             call.respondOk(coupon)
         } else {
-            call.respond(HttpStatusCode.NotFound, ApiError(message = Message.Coupons.NOT_FOUND, code = "NOT_FOUND"))
+            throw NotFoundException(Message.Coupons.NOT_FOUND)
         }
     }.describe { summary = "Retrieve detailed information about a coupon by its code" }
 }

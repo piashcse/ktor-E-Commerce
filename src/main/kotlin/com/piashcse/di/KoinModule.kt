@@ -1,6 +1,7 @@
 package com.piashcse.di
 
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.analytics.AnalyticsService
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepository
@@ -111,7 +112,8 @@ val serviceModule =
         single<BrandRepository> { BrandRepositoryImpl() }
         single<CartRepository> { CartRepositoryImpl() }
         single<ConsentRepository> { ConsentRepositoryImpl() }
-        single<NotificationRepository> { NotificationRepositoryImpl() }
+        single<NotificationRepository> { NotificationRepositoryImpl(get()) }
+        single { NotificationSubscriber(get()) }
         single { NotificationPreferencesService() }
         single { NotificationDispatcher(get()) }
         single<PayoutRepository> { PayoutRepositoryImpl() }
@@ -126,7 +128,7 @@ val serviceModule =
         single { DigitalDeliveryService() }
         single { SubscriptionBillingService(get(), get()) }
         single { SubscriptionService(get(), get()) }
-        single { B2bService() }
+        single { B2bService(get(), get()) }
         single { OmnichannelService(get(), get(), get()) }
         single { CmsService() }
         single { SupportService() }
@@ -189,7 +191,7 @@ val serviceModule =
         single { ApiKeyService() }
         single { RbacService() }
         single { ShopMembershipService() }
-        single { GuestCheckoutService(get()) }
+        single { GuestCheckoutService(get(), get(), get(), get()) }
         single { RmaService() }
         single { KycService() }
         single { AdminUserService() }

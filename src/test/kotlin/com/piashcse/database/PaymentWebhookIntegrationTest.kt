@@ -12,19 +12,22 @@ import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentWebhookEventDAO
 import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.payment.GatewayChargeResult
 import com.piashcse.feature.payment.GatewayEventType
 import com.piashcse.feature.payment.GatewayRefundResult
 import com.piashcse.feature.payment.GatewayWebhookEvent
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
+import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.utils.validator.ValidationException
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
@@ -34,59 +37,17 @@ import kotlin.test.assertTrue
 
 /** Signed provider webhooks against a real PostgreSQL database. */
 class PaymentWebhookIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     @Test
     fun `signed webhook completes a payment exactly once`() {
-        val external = envDb()
-        if (external != null) {
-            runWebhookFlow(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runWebhookFlow(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runWebhookFlow(jdbcUrl, user, password)
         }
     }
 
     @Test
     fun `late payment for a canceled order is refunded`() {
-        val external = envDb()
-        if (external != null) {
-            runLatePaymentFlow(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runLatePaymentFlow(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runLatePaymentFlow(jdbcUrl, user, password)
         }
     }
 
@@ -184,7 +145,17 @@ class PaymentWebhookIntegrationTest {
                     )
             }
 
-        val result = kotlinx.coroutines.runBlocking { PaymentRepositoryImpl(gateway).handleWebhook("stripe", "{}", "sig") }
+        val result =
+            kotlinx.coroutines.runBlocking {
+                PaymentRepositoryImpl(
+                    gateway,
+                    FraudService(),
+                    LoyaltyService(),
+                    DigitalDeliveryService(),
+                    SubscriptionBillingService(DigitalDeliveryService(), gateway),
+                    RefundRequestRepositoryImpl(gateway),
+                ).handleWebhook("stripe", "{}", "sig")
+            }
         assertTrue(result.accepted)
         assertEquals(1, refunds)
         transaction {
@@ -296,7 +267,15 @@ class PaymentWebhookIntegrationTest {
                     )
             }
 
-        val repo = PaymentRepositoryImpl(gateway)
+        val repo =
+            PaymentRepositoryImpl(
+                gateway,
+                FraudService(),
+                LoyaltyService(),
+                DigitalDeliveryService(),
+                SubscriptionBillingService(DigitalDeliveryService(), gateway),
+                RefundRequestRepositoryImpl(gateway),
+            )
         val first = kotlinx.coroutines.runBlocking { repo.handleWebhook("stripe", "{}", "sig") }
         assertTrue(first.accepted)
         assertTrue(!first.duplicate)

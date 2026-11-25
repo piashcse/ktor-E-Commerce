@@ -62,11 +62,10 @@ data class GuestCheckoutResult(
 
 class GuestCheckoutService(
     private val orderRepository: OrderRepository,
+    private val taxService: TaxService,
+    private val fxService: FxService,
+    private val promotionService: PromotionService,
 ) {
-    private val taxService = TaxService()
-    private val fxService = FxService()
-    private val promotionService = PromotionService()
-
     private data class CouponQuote(
         val discount: BigDecimal,
         val error: String?,

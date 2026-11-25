@@ -33,6 +33,7 @@ import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.validator.RateLimitExceededException
+import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -133,7 +134,7 @@ fun Route.authRoutes() {
                 call.bearerToken()?.let { authRepo.blacklistToken(it) }
                 call.respondMessage(Message.Auth.PASSWORD_CHANGE_SUCCESS)
             } else {
-                call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
+                throw UnauthorizedException(Message.Auth.INVALID_CREDENTIALS)
             }
         }.describe { summary = "Change password for authenticated user" }
 
@@ -255,16 +256,12 @@ fun Route.authAdminRoutes() {
         put("/{userId}/change-user-type") {
             val userId = call.requirePathParameter("userId")
 
-            if (authRepo.changeUserType(
-                    call.currentUserId,
-                    userId,
-                    call.requireQueryParameter("userType").parseEnum<UserType>("userType"),
-                )
-            ) {
-                call.respondMessage("User type updated successfully")
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to update user type"))
-            }
+            authRepo.changeUserType(
+                call.currentUserId,
+                userId,
+                call.requireQueryParameter("userType").parseEnum<UserType>("userType"),
+            )
+            call.respondMessage("User type updated successfully")
         }.describe { summary = "Admin - Change user type" }
 
         /**
@@ -273,11 +270,8 @@ fun Route.authAdminRoutes() {
          */
         put("/{userId}/deactivate") {
             val userId = call.requirePathParameter("userId")
-            if (authRepo.deactivateUser(call.currentUserId, userId)) {
-                call.respondMessage("User deactivated successfully")
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to deactivate user"))
-            }
+            authRepo.deactivateUser(call.currentUserId, userId)
+            call.respondMessage("User deactivated successfully")
         }.describe { summary = "Admin - Deactivate a user account" }
 
         /**
@@ -286,11 +280,8 @@ fun Route.authAdminRoutes() {
          */
         put("/{userId}/activate") {
             val userId = call.requirePathParameter("userId")
-            if (authRepo.activateUser(call.currentUserId, userId)) {
-                call.respondMessage(Message.Auth.ACCOUNT_ACTIVATED)
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to activate user"))
-            }
+            authRepo.activateUser(call.currentUserId, userId)
+            call.respondMessage(Message.Auth.ACCOUNT_ACTIVATED)
         }.describe { summary = "Admin - activate a user account" }
     }
 }

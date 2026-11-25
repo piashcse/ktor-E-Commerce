@@ -17,8 +17,6 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -34,20 +32,6 @@ import kotlin.test.assertTrue
  * user → shop → product → inventory → wishlist.
  */
 class PostgresIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     private fun columnExists(
         table: String,
         column: String,
@@ -60,24 +44,8 @@ class PostgresIntegrationTest {
 
     @Test
     fun `migrations apply and vertical slice persists`() {
-        val external = envDb()
-        if (external != null) {
-            runSlice(external.first, external.second, external.third)
-            return
-        }
-
-        // CI must never silently skip the only real-database check.
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runSlice(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runSlice(jdbcUrl, user, password)
         }
     }
 

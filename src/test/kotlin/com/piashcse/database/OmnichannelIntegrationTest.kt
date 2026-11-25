@@ -23,18 +23,21 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.omnichannel.OmnichannelService
 import com.piashcse.feature.omnichannel.PosSaleItem
 import com.piashcse.feature.omnichannel.PosSaleRequest
 import com.piashcse.feature.omnichannel.PosSessionCloseRequest
 import com.piashcse.feature.omnichannel.PosSessionOpenRequest
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
+import com.piashcse.service.FxService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
@@ -43,38 +46,10 @@ import kotlin.test.assertTrue
 
 /** Store locator, BOPIS and POS flows against PostgreSQL. */
 class OmnichannelIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     @Test
     fun `pickup and POS sales work end to end`() {
-        val external = envDb()
-        if (external != null) {
-            runOmnichannelFlow(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runOmnichannelFlow(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runOmnichannelFlow(jdbcUrl, user, password)
         }
     }
 
@@ -192,7 +167,7 @@ class OmnichannelIntegrationTest {
             }
         }
 
-        val service = OmnichannelService()
+        val service = OmnichannelService(DigitalDeliveryService(), TaxService(), LoyaltyService())
         val stores = kotlinx.coroutines.runBlocking { service.stores(23.80, 90.40, 5.0, 10) }
         assertTrue(stores.any { it.id == warehouseId && it.distanceKm != null && it.distanceKm!! < 5.0 })
 
@@ -251,7 +226,7 @@ class OmnichannelIntegrationTest {
         kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }
         val bopis =
             kotlinx.coroutines.runBlocking {
-                OrderRepositoryImpl().placeOrder(
+                OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService()).placeOrder(
                     customerId,
                     CheckoutRequest(
                         fulfillmentType = FulfillmentType.PICKUP,

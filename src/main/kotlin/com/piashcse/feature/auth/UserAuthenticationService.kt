@@ -21,7 +21,7 @@ import com.piashcse.utils.validator.ValidationException
 
 class UserAuthenticationService(
     private val authRepo: AuthRepository,
-    private val mfaService: MfaService = MfaService(),
+    private val mfaService: MfaService,
 ) {
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         val userType =

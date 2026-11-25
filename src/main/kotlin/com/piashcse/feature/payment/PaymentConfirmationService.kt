@@ -18,8 +18,8 @@ import org.jetbrains.exposed.v1.core.eq
 
 /** Admin review release and manual payment confirmation. */
 class PaymentConfirmationService(
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
+    private val loyaltyService: LoyaltyService,
+    private val digitalDelivery: DigitalDeliveryService,
 ) {
     suspend fun releaseReview(
         paymentId: String,

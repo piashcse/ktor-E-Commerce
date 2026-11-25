@@ -67,9 +67,9 @@ import java.util.UUID
 
 /** Point-of-sale sales, sessions, receipts and session reports. */
 class PosService(
-    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
-    private val taxService: TaxService = TaxService(),
-    private val loyaltyService: LoyaltyService = LoyaltyService(),
+    private val digitalDelivery: DigitalDeliveryService,
+    private val taxService: TaxService,
+    private val loyaltyService: LoyaltyService,
 ) {
     private fun requireOperationalShop(shopId: String) {
         val shop =

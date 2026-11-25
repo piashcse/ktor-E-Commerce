@@ -31,7 +31,9 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.seller.SellerLedger
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -54,9 +56,12 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
-class B2bService {
+class B2bService(
+    private val loyaltyService: LoyaltyService,
+    private val digitalDelivery: DigitalDeliveryService,
+) {
     private val accounts = B2bAccountService()
-    private val invoices = B2bInvoiceService()
+    private val invoices = B2bInvoiceService(loyaltyService, digitalDelivery)
 
     suspend fun account(userId: String): B2bAccountResponse = accounts.account(userId)
 

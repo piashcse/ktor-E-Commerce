@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.PasskeyDeleteRequest
 import com.piashcse.feature.auth.PasskeyLoginOptionsRequest
 import com.piashcse.feature.auth.PasskeyLoginRequest
@@ -12,8 +13,6 @@ import com.piashcse.feature.auth.PasskeyService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
@@ -27,38 +26,10 @@ import kotlin.test.assertTrue
 
 /** WebAuthn passkey registration and assertion against PostgreSQL. */
 class PasskeyIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     @Test
     fun `passkey registration and login`() {
-        val external = envDb()
-        if (external != null) {
-            runPasskeyFlow(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runPasskeyFlow(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runPasskeyFlow(jdbcUrl, user, password)
         }
     }
 
@@ -90,9 +61,9 @@ class PasskeyIntegrationTest {
             email = customer.email
         }
 
-        val service = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
+        val service = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000", MfaService())
         // A second instance simulates another node: the DB challenge store must be shared.
-        val otherNode = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
+        val otherNode = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000", MfaService())
         val keyPair = generateKeyPair()
         val credentialId = "cred-$suffix"
 

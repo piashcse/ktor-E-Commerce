@@ -7,7 +7,8 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
-import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.common.ApiErrorCode
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
@@ -44,7 +45,10 @@ fun Route.paymentRoutes() {
         } else {
             // Ask the provider to retry an event that arrived before the local
             // payment/refund row was visible.
-            call.respond(HttpStatusCode.InternalServerError, MessageResponse(result.message))
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ApiError.of(result.message, ApiErrorCode.INTERNAL_SERVER_ERROR, HttpStatusCode.InternalServerError),
+            )
         }
     }.describe {
         summary = "Payment provider webhook"

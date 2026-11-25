@@ -6,7 +6,6 @@ import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
@@ -26,7 +25,7 @@ import org.jetbrains.exposed.v1.core.inList
 import java.math.BigDecimal
 
 class RefundRequestRepositoryImpl(
-    private val gateway: PaymentGateway = ManualPaymentGateway(),
+    private val gateway: PaymentGateway,
 ) : RefundRequestRepository {
     private val provider = RefundProviderService(gateway)
 

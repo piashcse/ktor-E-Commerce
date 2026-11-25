@@ -26,7 +26,9 @@ import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-class NotificationRepositoryImpl : NotificationRepository {
+class NotificationRepositoryImpl(
+    private val dispatcher: NotificationDispatcher,
+) : NotificationRepository {
     private fun NotificationDAO.toResponse() =
         NotificationResponse(
             id = id.value,
@@ -181,7 +183,7 @@ class NotificationRepositoryImpl : NotificationRepository {
                     )
             }
         // External channel delivery happens after the inbox row commits.
-        NotificationDispatcher().dispatchExternal(message)
+        dispatcher.dispatchExternal(message)
         return notification
     }
 

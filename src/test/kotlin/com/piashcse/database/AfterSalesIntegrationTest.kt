@@ -24,19 +24,26 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.payout.PayoutRepositoryImpl
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
+import com.piashcse.service.FxService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
@@ -45,8 +52,6 @@ import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.junit.Assume
-import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
@@ -58,38 +63,10 @@ import kotlin.test.assertTrue
 
 /** Refund and payout lifecycle against a real PostgreSQL database. */
 class AfterSalesIntegrationTest {
-    private fun envDb(): Triple<String, String, String>? {
-        val host = System.getenv("DB_HOST")?.takeIf { it.isNotBlank() } ?: return null
-        val port = System.getenv("DB_PORT") ?: "5432"
-        val name = System.getenv("DB_NAME") ?: "ktor-ecommerce"
-        val user = System.getenv("DB_USER") ?: "postgres"
-        val password = System.getenv("DB_PASSWORD") ?: "postgres"
-        return Triple("jdbc:postgresql://$host:$port/$name", user, password)
-    }
-
-    private fun dockerAvailable(): Boolean =
-        runCatching {
-            ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
-        }.getOrDefault(false)
-
     @Test
     fun `refund and payout lifecycle`() {
-        val external = envDb()
-        if (external != null) {
-            runChecks(external.first, external.second, external.third)
-            return
-        }
-        if (System.getenv("CI") != null) {
-            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
-        } else {
-            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
-        }
-        val pg = PostgreSQLContainer("postgres:16-alpine")
-        pg.start()
-        try {
-            runChecks(pg.jdbcUrl, pg.username, pg.password)
-        } finally {
-            pg.stop()
+        PostgresTestSupport.withDatabase { jdbcUrl, user, password ->
+            runChecks(jdbcUrl, user, password)
         }
     }
 
@@ -194,8 +171,16 @@ class AfterSalesIntegrationTest {
             }
         val methodId = kotlinx.coroutines.runBlocking { ShippingMethodRepositoryImpl().getShippingMethods(10, 0) }.data.first().id
         val cart = CartRepositoryImpl()
-        val orders = OrderRepositoryImpl()
-        val payments = PaymentRepositoryImpl(ManualPaymentGateway())
+        val orders = OrderRepositoryImpl(FxService(), TaxService(), PromotionService(), LoyaltyService(), DigitalDeliveryService())
+        val payments =
+            PaymentRepositoryImpl(
+                ManualPaymentGateway(),
+                FraudService(),
+                LoyaltyService(),
+                DigitalDeliveryService(),
+                SubscriptionBillingService(DigitalDeliveryService(), ManualPaymentGateway()),
+                RefundRequestRepositoryImpl(ManualPaymentGateway()),
+            )
 
         kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }
         val checkout =
@@ -219,7 +204,7 @@ class AfterSalesIntegrationTest {
         kotlinx.coroutines.runBlocking { orders.updateOrderStatus(sellerUserId, order.orderId, OrderStatus.DELIVERED) }
 
         val itemId = assertNotNull(order.items?.firstOrNull()).id
-        val refunds = RefundRequestRepositoryImpl()
+        val refunds = RefundRequestRepositoryImpl(ManualPaymentGateway())
         val refund =
             kotlinx.coroutines.runBlocking {
                 refunds.createRefundRequest(customerId, order.orderId, RefundRequestRequest(itemId, "damaged", null, 1))
