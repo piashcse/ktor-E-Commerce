@@ -14,7 +14,7 @@
       
       
       
-        <link rel="next" href="config/">
+        <link rel="next" href="architecture/">
       
       
       <link rel="icon" href="assets/images/favicon.png">
@@ -792,6 +792,98 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Contracts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Operations
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -2776,7 +2868,7 @@ request/response examples. Swagger UI remains the live contract generated from t
 <li><strong>Input Validation</strong>: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).</li>
 <li><strong>Atomic Stock Operations</strong>: Thread-safe inventory updates within database transactions.</li>
 <li><strong>Health Checks</strong>: Comprehensive health monitoring with <code>/health</code>, <code>/health/live</code>, and <code>/health/ready</code> endpoints.</li>
-<li><strong>Structured Logging</strong>: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.</li>
+<li><strong>Structured Logging</strong>: Correlation IDs (Request IDs) propagated through logs and responses. The default logback pattern is plain text; JSON encoding can be enabled with a logback encoder.</li>
 </ul>
 <h3 id="12-dashboard-analytics">12. Dashboard Analytics</h3>
 <ul>
@@ -2803,13 +2895,13 @@ request/response examples. Swagger UI remains the live contract generated from t
 <b>Fig.  Onion / Clean Architecture </b>
 </p>
 
-<p>The project follows <strong>Clean Architecture</strong> with clear separation of concerns:</p>
+<p>The project is a <strong>modular monolith</strong> with a pragmatic layered structure. Vertical feature slices own their routes, DTOs and repositories, while shared cross-cutting helpers live outside <code>feature/</code>:</p>
 <ul>
-<li><strong>Route Layer</strong> — HTTP routing only, uses <code>by inject()</code> for dependency injection</li>
-<li><strong>Service Layer</strong> — Business logic orchestration, works with domain models and DTOs</li>
-<li><strong>Repository Layer</strong> — Data access with Exposed queries and transaction management</li>
-<li><strong>Mapper Layer</strong> — Object mapping between DAO entities and response DTOs</li>
-<li><strong>Flyway</strong> — Version-controlled database migrations for safe schema management</li>
+<li><strong>Route Layer</strong> (<code>feature/*/*Routes.kt</code>) — HTTP routing, OpenAPI metadata and auth/rate-limit scopes. Routes never import Exposed directly and are guarded by an architecture test.</li>
+<li><strong>Service / Use Case Layer</strong> (<code>*Service.kt</code>, <code>*RepositoryImpl.kt</code>) — Business orchestration. Some services are still persistence-aware; a staged refactor moves remaining Exposed access into repositories.</li>
+<li><strong>Repository Layer</strong> (<code>*Repository</code> interface + <code>*RepositoryImpl</code>) — Data access and transaction boundaries. Note that some <code>*RepositoryImpl</code> classes currently hold use-case logic (for example order checkout) and are being split into explicit use cases.</li>
+<li><strong>Mapper Layer</strong> (<code>mapper/</code> plus feature-local mapping) — DAO-to-DTO mapping. Both conventions exist today; new code should use feature-local mappers or <code>mapper/</code>, not private mapping inside services.</li>
+<li><strong>Flyway</strong> — Version-controlled database migrations for safe schema management.</li>
 </ul>
 <h3 id="requirements">Requirements</h3>
 <ul>

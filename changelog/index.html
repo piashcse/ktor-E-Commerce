@@ -523,6 +523,98 @@
   
   
     <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Contracts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Operations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../config/" class="md-nav__link">
         
   
@@ -640,6 +732,39 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      [Unreleased]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#351-11-jul-2026" class="md-nav__link">
@@ -2513,6 +2638,39 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      [Unreleased]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Unreleased]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fixed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#351-11-jul-2026" class="md-nav__link">
     <span class="md-ellipsis">
       [3.5.1] - 11 Jul 2026
@@ -2870,6 +3028,25 @@
 
 
 <h1 id="changelog">Changelog</h1>
+<h2 id="unreleased">[Unreleased]</h2>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Dependency injection no longer falls back to hidden <code>ManualPaymentGateway</code> or
+  duplicate service instances; payment, order, subscription, checkout, B2B and
+  auth dependencies are explicit Koin registrations.</li>
+<li>Koin is split into repository, feature, gateway and auth modules.</li>
+<li>Outbox event encoding/decoding uses one codec registry instead of two parallel
+  <code>when</code> blocks.</li>
+<li>Uploads use an <code>UploadPurpose</code> enum and a single generic upload/delete/URL API.</li>
+<li>Stripe/Shippo adapters are split from their gateway contracts.</li>
+<li>Route tests live beside the feature they cover.</li>
+<li>API errors consistently use the <code>ApiError</code> envelope.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li><code>/health/live</code> documentation now reports <code>{"message":"UP"}</code>.</li>
+<li>Docs no longer claim <code>204 No Content</code> or <code>422</code> responses that the API does not return.</li>
+</ul>
 <h2 id="351-11-jul-2026">[3.5.1] - 11 Jul 2026</h2>
 <h3 id="whats-changed">What's Changed</h3>
 <ul>
