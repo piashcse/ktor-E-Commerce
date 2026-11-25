@@ -41,7 +41,7 @@ fun Application.configureSwagger() {
                             "orders, payments, refunds, RMA, notifications, seller KYC/payouts and admin tools.\n\n" +
                             "Authenticated operations accept either the **jwt-auth** bearer token or a scoped " +
                             "**api-key** bearer token. Get a JWT from `POST /api/v1/auth/login`.\n\n" +
-                            "Human-readable guides: https://piashcse.github.io/ktor-ecommerce/",
+                            "Human-readable guides: https://piashcse.github.io/ktor-E-Commerce/",
                     termsOfService = "https://piashcse.github.io/",
                     contact = OpenApiInfo.Contact(name = "Mehedi Hassan Piash", email = "piash599@gmail.com"),
                     license = OpenApiInfo.License(name = "Apache-2.0"),

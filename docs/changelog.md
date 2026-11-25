@@ -4,6 +4,26 @@ hide:
 ---
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Dependency injection no longer falls back to hidden `ManualPaymentGateway` or
+  duplicate service instances; payment, order, subscription, checkout, B2B and
+  auth dependencies are explicit Koin registrations.
+- Koin is split into repository, feature, gateway and auth modules.
+- Outbox event encoding/decoding uses one codec registry instead of two parallel
+  `when` blocks.
+- Uploads use an `UploadPurpose` enum and a single generic upload/delete/URL API.
+- Stripe/Shippo adapters are split from their gateway contracts.
+- Route tests live beside the feature they cover.
+- API errors consistently use the `ApiError` envelope.
+
+### Fixed
+
+- `/health/live` documentation now reports `{"message":"UP"}`.
+- Docs no longer claim `204 No Content` or `422` responses that the API does not return.
+
 ## [3.5.1] - 11 Jul 2026
 
 ### What's Changed
